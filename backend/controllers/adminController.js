@@ -356,21 +356,20 @@ const getDashboardStats = async (req, res) => {
       Completed: 0,
       Rejected: 0
     };
+    // Roll each raw status into a single canonical bucket. IMPORTANT: count it
+    // exactly once — do not also add the raw key, or statuses whose name equals
+    // a bucket (e.g. "Approved") get counted twice (the old 4,145 → 8,288 bug).
     statusCounts.forEach(item => {
       if (!item._id) return;
-      const raw = String(item._id).trim();
-      statusMap[raw] = (statusMap[raw] || 0) + item.count;
-
-      const norm = raw.toLowerCase();
+      const norm = String(item._id).trim().toLowerCase();
       if (norm.includes('approve') || norm.includes('complete')) {
-        statusMap.Approved = (statusMap.Approved || 0) + item.count;
+        statusMap.Approved += item.count;
       } else if (norm.includes('reject')) {
-        statusMap.Rejected = (statusMap.Rejected || 0) + item.count;
+        statusMap.Rejected += item.count;
       } else if (norm.includes('process') || norm.includes('progress') || norm.includes('call') || norm.includes('verif')) {
-        statusMap['In Progress'] = (statusMap['In Progress'] || 0) + item.count;
-        statusMap.Processing = (statusMap.Processing || 0) + item.count;
+        statusMap['In Progress'] += item.count;
       } else {
-        statusMap.Pending = (statusMap.Pending || 0) + item.count;
+        statusMap.Pending += item.count;
       }
     });
 
@@ -507,9 +506,9 @@ const getDashboardStats = async (req, res) => {
         totalRegisteredUsers,
         totalVotersInRoll,
         totalApplications,
-        approvedDirectives: statusMap['Approved'] || statusMap['approved'] || 0,
-        pendingDirectives: (statusMap['Pending'] || statusMap['pending'] || 0) + (statusMap['Submitted'] || statusMap['submitted'] || 0),
-        rejectedDirectives: statusMap['Rejected'] || statusMap['rejected'] || 0,
+        approvedDirectives: statusMap.Approved || 0,
+        pendingDirectives: statusMap.Pending || 0, // Submitted is already bucketed into Pending
+        rejectedDirectives: statusMap.Rejected || 0,
         statusBreakdown: statusMap
       },
       districtStats,
@@ -1803,8 +1802,17 @@ const computeLiveStats = async (scopeQuery) => {
       ])
     ]);
 
-  const statusBreakdown = {};
-  statusAgg.forEach((s) => { if (s._id) statusBreakdown[s._id] = s.count; });
+  // Canonical status buckets — identical logic to getDashboardStats so the live
+  // panel and the Overview cards always show the same Approved/Pending/Rejected.
+  const statusBreakdown = { Approved: 0, Pending: 0, Rejected: 0, 'In Progress': 0 };
+  statusAgg.forEach((s) => {
+    if (!s._id) return;
+    const norm = String(s._id).trim().toLowerCase();
+    if (norm.includes('approve') || norm.includes('complete')) statusBreakdown.Approved += s.count;
+    else if (norm.includes('reject')) statusBreakdown.Rejected += s.count;
+    else if (norm.includes('process') || norm.includes('progress') || norm.includes('call') || norm.includes('verif')) statusBreakdown['In Progress'] += s.count;
+    else statusBreakdown.Pending += s.count;
+  });
 
   return {
     totalMembers,
