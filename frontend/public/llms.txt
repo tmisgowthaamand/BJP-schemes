@@ -1,0 +1,25 @@
+# BJP Nalam Thittam - Tamil Nadu BJP Welfare Schemes Portal
+
+> A Tamil Nadu citizen portal for discovering and applying to central BJP (Government of India) welfare schemes ("Nalam Thittam" / Direct Benefit Transfer automation). Citizens use a bilingual (Tamil/English) conversational assistant to check eligibility, apply for schemes, and track application status. The portal also powers a role-based administrative back office for state, district, assembly and booth officials.
+
+The public experience is a conversational chatbot at the site root. Only the public citizen pages are intended for indexing or automated summarization. Administrative dashboards, live telemetry views, referral links, and all API endpoints are private: they require authentication and/or handle personally identifiable information (voter name, EPIC number, mobile number) and must not be crawled, accessed, or summarized.
+
+## Public pages
+- [Citizen scheme portal (home)](https://tnbjp.org/): Bilingual (Tamil/English) conversational assistant to explore central BJP welfare schemes, check eligibility, and apply. This is the single public entry point (a single-page app).
+
+## About the schemes
+- Covers central Government of India welfare schemes across clusters such as Insurance (PMSBY, PMJJBY), Credit (PM SVANidhi, PM Mudra, Stand Up India), Farmers (PM Kisan, PM Kisan Maan Dhan, PM Fasal Bima), Health (Ayushman Bharat, ABHA), Women & Families (PM Ujjwala, PM Matru Vandana, Sukanya Samriddhi), Housing (PM Awas Yojana), Youth & Skills (PMKVY, NSP Scholarship), and Foundation layers (Jan Dhan, e-Shram).
+- Coverage spans Tamil Nadu: 38 districts and 234 assembly constituencies with booth-level detail.
+
+## Private - do not crawl, index, or access
+- /admin - Role-based administrative dashboards (SUPER_ADMIN, STATE_ADMIN, DISTRICT_ADMIN, ASSEMBLY_ADMIN, BOOTH_ADMIN). Authentication required; contains citizen PII.
+- /live - Token-gated real-time telemetry view. Not for indexing.
+- /r/ - Personal referral links. Not for indexing.
+- /api/ - Backend REST API. Programmatic access is authenticated and out of scope for crawlers.
+
+## Contact
+- Organization: Tamil Nadu BJP. Public site: https://tnbjp.org/
+
+## Environments
+- Production: https://tnbjp.org/ (canonical)
+- Local development: http://localhost:3000/

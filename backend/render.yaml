@@ -1,0 +1,58 @@
+# Render Blueprint for the BJP Nalam Thittam backend API.
+# NOTE: For Render to auto-detect a Blueprint it must live at the repository
+# ROOT. This copy lives in /backend for convenience — if you use Blueprints,
+# either move it to the repo root (and add `rootDir: backend`) or create the
+# Render Web Service manually with Root Directory = backend.
+# Secrets are marked `sync: false` — set their values in the Render dashboard.
+services:
+  - type: web
+    name: bjp-nalam-thittam-api
+    runtime: node
+    plan: free
+    region: singapore
+    branch: main
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      # Render injects PORT automatically; server.js reads process.env.PORT.
+      - key: JWT_SECRET
+        sync: false
+      # DB 1 — voter database (READ ONLY)
+      - key: MONGO_VOTER_URL
+        sync: false
+      - key: MONGO_VOTER_DB_NAME
+        value: voter_db
+      # DB 2 — Atlas app database (READ + WRITE)
+      - key: MONGO_APP_URL
+        sync: false
+      - key: MONGO_DB
+        value: bjp_nalam_thittam_db
+      # Deployment URLs
+      - key: FRONTEND_URL
+        value: https://bjp-scheme.vercel.app
+      - key: BACKEND_URL
+        value: https://bjp-scheme.onrender.com
+      # SMS providers
+      - key: FAST2SMS_API_KEY
+        sync: false
+      - key: SMS_API_KEY
+        sync: false
+      - key: SMS_TEMPLATE_NAME
+        value: OTP1
+      # Gemini AI (admin analytics)
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-flash-latest
+      # Logging (Render captures stdout; keep file logging off)
+      - key: LOG_LEVEL
+        value: info
+      - key: LOG_TO_FILE
+        value: "false"
+      # Live tracking
+      - key: LIVE_CACHE_TTL_MS
+        value: "3000"
+      - key: LIVE_SHARE_TOKEN
+        sync: false

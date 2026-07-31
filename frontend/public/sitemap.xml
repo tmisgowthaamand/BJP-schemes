@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Local dev: http://localhost:3000/sitemap.xml | Production: https://tnbjp.org/sitemap.xml.
+     URLs below are the canonical production domain (required for search engines). -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://tnbjp.org/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tnbjp.org/" />
+    <xhtml:link rel="alternate" hreflang="ta" href="https://tnbjp.org/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tnbjp.org/" />
+  </url>
+</urlset>

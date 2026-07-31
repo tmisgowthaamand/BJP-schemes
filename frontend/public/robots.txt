@@ -1,0 +1,17 @@
+# BJP Nalam Thittam - Tamil Nadu BJP Welfare Schemes Portal
+# Public citizen portal is crawlable; authenticated/PII and utility routes are not.
+# Local dev: http://localhost:3000/robots.txt  |  Production: https://tnbjp.org/robots.txt
+
+User-agent: *
+Allow: /
+
+# Keep private/authenticated, PII, token-gated and utility routes out of the index
+Disallow: /admin
+Disallow: /live
+Disallow: /r/
+Disallow: /verify
+Disallow: /refer
+Disallow: /my-members
+Disallow: /api/
+
+Sitemap: https://tnbjp.org/sitemap.xml
