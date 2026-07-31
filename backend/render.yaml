@@ -31,9 +31,11 @@ services:
         value: bjp_nalam_thittam_db
       # Deployment URLs
       - key: FRONTEND_URL
-        value: https://bjp-scheme.vercel.app
+        value: http://localhost:3000
+      - key: FRONTEND_URL_PROD
+        value: https://bjp-schemes.vercel.app
       - key: BACKEND_URL
-        value: https://bjp-scheme.onrender.com
+        value: https://bjp-schemes.onrender.com
       # SMS providers
       - key: FAST2SMS_API_KEY
         sync: false

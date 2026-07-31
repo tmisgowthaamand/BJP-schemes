@@ -30,8 +30,27 @@ if (missingEnv.length) {
 const app = express();
 
 // Middlewares
+// Allowlisted CORS origins: local dev (port 3000) + deployed Vercel frontend.
+// Extra origins can be added via ALLOWED_ORIGINS (comma-separated) in the env.
+const allowedOrigins = [
+  process.env.FRONTEND_URL,        // e.g. http://localhost:3000
+  process.env.FRONTEND_URL_PROD,   // e.g. https://bjp-schemes.vercel.app
+  'http://localhost:3000',
+  'https://bjp-schemes.vercel.app',
+  ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [])
+]
+  .filter(Boolean)
+  .map((o) => o.trim().replace(/\/$/, '')); // normalize (drop trailing slash)
+
 app.use(cors({
-  origin: true, // Allow all origins including vercel app & localhost
+  origin: (origin, callback) => {
+    // Allow non-browser clients (no Origin header) and any allowlisted origin.
+    if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ''))) {
+      return callback(null, true);
+    }
+    logger.warn('[CORS] Blocked origin', { origin });
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }));
 app.use(requestContext);        // assign a correlation id per request
@@ -44,8 +63,8 @@ app.get('/', (req, res) => {
     status: 'ONLINE',
     message: 'BJP Nalam Thittam API Server Operational',
     version: '1.0.0',
-    backend_url: process.env.BACKEND_URL || 'https://bjp-scheme.onrender.com',
-    frontend_url: process.env.FRONTEND_URL || 'https://bjp-scheme.vercel.app',
+    backend_url: process.env.BACKEND_URL || 'https://bjp-schemes.onrender.com',
+    frontend_url: process.env.FRONTEND_URL || 'https://bjp-schemes.vercel.app',
     database_connections: {
       app_database: 'CONNECTED (Mongoose - bjp_nalam_thittam_db)',
       voter_database: 'CONNECTED (MongoClient - voter_db)'
