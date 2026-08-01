@@ -150,7 +150,7 @@ const TA = {
   'Unable to load referred members.': 'பரிந்துரைக்கப்பட்ட உறுப்பினர்களை ஏற்ற முடியவில்லை.',
 
   // 9. Header, navigation, sidebar & inputs
-  'BJP Nalam Thittam': 'பாஜக நலதிட்டம்',
+  'BJP Nalam Thittam': 'பாஜக நலத்திட்டம்',
   'Online': 'ஆன்லைன்',
   'Registration in progress': 'பதிவு நடைபெற்று வருகிறது',
   'BJP TN Member Bot': 'பாஜக-தமிழ்நாடு உறுப்பினர் செயலி',
