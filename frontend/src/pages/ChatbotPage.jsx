@@ -1463,7 +1463,7 @@ function MySchemePanel({ epicNo, mobile, onBack }) {
                   return (
                     <div 
                       key={scheme.id} 
-                      className="scheme-card"
+                      className={`scheme-card${bgImg ? ' has-bg' : ''}`}
                       style={{
                         border: `1.5px solid ${sc.border}`,
                         borderRadius: 16,
@@ -1481,6 +1481,20 @@ function MySchemePanel({ epicNo, mobile, onBack }) {
                       }}
                       onClick={() => openTracking(scheme)}
                     >
+                      {/* Mobile-only artwork band. The desktop layout paints this
+                          same image as a card background behind the 50% text
+                          column; on a phone we render it as a real <img> so the
+                          browser keeps the banner's 2.84:1 aspect ratio. */}
+                      {bgImg && (
+                        <img
+                          src={bgImg}
+                          alt=""
+                          aria-hidden="true"
+                          className="scheme-card-art"
+                          loading="lazy"
+                          onError={(e) => { e.currentTarget.style.display = 'none' }}
+                        />
+                      )}
                       <div style={{ maxWidth: '50%', zIndex: 2, position: 'relative' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' }}>
                           <div className="scheme-meta-cat" style={{ color: '#2ecc71', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -1563,7 +1577,7 @@ function MySchemePanel({ epicNo, mobile, onBack }) {
                   return (
                     <div 
                       key={scheme.id} 
-                      className="scheme-card"
+                      className={`scheme-card${bgImg ? ' has-bg' : ''}`}
                       style={{
                         border: '1px solid #e5e5ea',
                         borderRadius: 16,
@@ -1581,6 +1595,17 @@ function MySchemePanel({ epicNo, mobile, onBack }) {
                       }}
                       onClick={() => setExpandedId(isExpanded ? null : scheme.id)}
                     >
+                      {/* Mobile-only artwork band — see note on the applied card. */}
+                      {bgImg && (
+                        <img
+                          src={bgImg}
+                          alt=""
+                          aria-hidden="true"
+                          className="scheme-card-art"
+                          loading="lazy"
+                          onError={(e) => { e.currentTarget.style.display = 'none' }}
+                        />
+                      )}
                       <div style={{ maxWidth: '50%', zIndex: 2, position: 'relative' }}>
                         <div className="scheme-meta-cat" style={{ color: 'var(--color-saffron, #ea580c)', fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
                           {t(scheme.category)}

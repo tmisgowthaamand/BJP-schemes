@@ -2,6 +2,36 @@
    CHATBOT PAGE — Clean Consumer Onboarding Console
    ============================================================ */
 
+/* ── Design tokens ────────────────────────────────────────────
+   These spacing/typography/radius tokens live in styles/global.css,
+   but only index.css is imported by main.jsx — so on this page they
+   resolved to nothing and every padding/gap collapsed to 0 (cramped
+   drawer, icons touching labels, text against the edges).
+   Declared here, scoped to .chatbot-app, so the page is self-contained
+   and nothing leaks into the admin theme. Values mirror global.css. */
+.chatbot-app {
+  /* Spacing scale */
+  --spacing-8:  8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-48: 48px;
+
+  /* Radius */
+  --radius-buttons: 8px;
+
+  /* Typography */
+  --font-display: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --text-caption: 14px;
+  --text-body: 16px;
+  --text-heading-sm: 24px;
+
+  /* Accent used by the congratulations modal */
+  --color-gold: #d1b078;
+}
+
 /* ── App Shell ────────────────────────────────────────────── */
 .chatbot-app {
   width: 100%;
@@ -971,7 +1001,9 @@
 }
 
 .sidebar-header {
-  padding: var(--spacing-24);
+  /* Reserve room on the right so the long Tamil tagline never runs under
+     the absolutely-positioned close (X) button. */
+  padding: var(--spacing-16) 56px var(--spacing-16) var(--spacing-16);
   border-bottom: 1px solid var(--color-graphite);
   display: flex;
   align-items: center;
@@ -983,16 +1015,24 @@
   width: 40px;
   height: 40px;
   object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* Let the text column shrink instead of overflowing the drawer. */
+.sidebar-header > div:not(.sidebar-logo) {
+  min-width: 0;
 }
 
 .sidebar-brand {
   font-size: 15px;
   font-weight: 600;
+  line-height: 1.3;
   color: var(--color-chalk);
 }
 
 .sidebar-tagline {
   font-size: 11px;
+  line-height: 1.4;
   color: var(--color-signal-mint);
 }
 
@@ -1010,29 +1050,50 @@
   align-items: center;
   gap: var(--spacing-16);
   width: 100%;
-  padding: var(--spacing-12) var(--spacing-24);
+  padding: var(--spacing-12) var(--spacing-16);
+  min-height: 48px;                  /* comfortable touch target on mobile */
   background: none;
   border: none;
-  color: var(--color-ash);
-  font-size: 14px;
+  color: var(--color-chalk);
+  font-size: 15px;
   font-weight: 500;
+  line-height: 1.4;
   cursor: pointer;
   text-align: left;
-  transition: all 0.15s;
+  transition: background-color 0.15s, color 0.15s;
 }
 
 .sidebar-nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: rgba(250, 93, 0, 0.06);
   color: var(--color-chalk);
 }
 
+/* Fixed-width icon column so every label starts on the same x-axis,
+   regardless of how wide the individual glyph is. */
 .sidebar-nav-item i {
-  font-size: 16px;
+  font-size: 18px;
+  line-height: 1;
+  width: 24px;
+  flex-shrink: 0;
+  text-align: center;
   color: var(--color-signal-mint);
 }
 
+/* The nav label sits in nested flex wrappers in the markup — make sure the
+   inner rows inherit the same alignment and can wrap long Tamil strings. */
+.sidebar-nav-item > div {
+  min-width: 0;
+}
+
+.sidebar-nav-item span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .sidebar-footer {
-  padding: var(--spacing-24);
+  padding: var(--spacing-16);
+  /* Clear the Android/iOS home indicator at the bottom of the screen. */
+  padding-bottom: calc(var(--spacing-16) + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--color-graphite);
   flex-shrink: 0;
 }
@@ -1042,15 +1103,24 @@
   align-items: center;
   gap: var(--spacing-8);
   width: 100%;
-  padding: 10px 14px;
+  padding: 12px 16px;
+  min-height: 48px;
   background: transparent;
   border: 1px solid var(--color-graphite);
   border-radius: var(--radius-buttons);
   color: var(--color-chalk);
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
   justify-content: center;
-  transition: all 0.15s;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.sidebar-logout-btn i {
+  font-size: 17px;
+  line-height: 1;
+  flex-shrink: 0;
+  color: var(--color-signal-mint);
 }
 
 .sidebar-logout-btn:hover {
@@ -1868,6 +1938,13 @@
   overflow: hidden;
 }
 
+/* Mobile-only artwork band (see the max-width:640px block at the end of this
+   file). On desktop the same image is painted as the card's background behind
+   the 50% text column, so the <img> stays hidden here. */
+.scheme-card-art {
+  display: none;
+}
+
 .scheme-card:hover {
   border-color: rgba(255, 153, 51, 0.4);
   transform: translateY(-2px);
@@ -2196,4 +2273,102 @@
 /* ── Language toggle sizing on small screens ── */
 @media (max-width: 400px) {
   .lang-toggle-btn { padding: 4px 8px; font-size: 12px; min-width: 22px; }
+}
+
+/* ── My Schemes dashboard: mobile stacked layout ───────────────
+   On desktop a scheme card shows the artwork filling the card with the text
+   confined to the left 50% column. On a phone that 50% clamp squeezes the
+   title, description and buttons into a few characters per line, and the
+   text sits directly on the photo. Below 640px the card becomes a clean
+   vertical stack instead: artwork band on top, full-width text below it on
+   a solid surface. Inline styles set these properties, hence !important. */
+@media (max-width: 640px) {
+  /* Panel header: keep the back chevron and icon on the first line and let
+     the long Tamil title wrap underneath, left-aligned. */
+  .brochure-header {
+    padding: 12px 16px;
+    gap: var(--spacing-8);
+  }
+  .brochure-title {
+    font-size: 16px;
+    line-height: 1.3;
+    align-items: flex-start;
+    min-width: 0;
+    text-align: left;
+  }
+  .brochure-title > button,
+  .brochure-title > i {
+    flex-shrink: 0;
+  }
+  .brochure-title > i {
+    margin-top: 2px;
+  }
+  .brochure-title span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .brochure-content {
+    padding: var(--spacing-16) var(--spacing-12);
+  }
+
+  /* Section heading rows ("My Applied Schemes", "Available Central Schemes"):
+     allow the label to wrap without shrinking the icon or count badge. */
+  .brochure-content h3 {
+    min-width: 0;
+    flex-wrap: wrap;
+    row-gap: 4px;
+    line-height: 1.35;
+  }
+  .brochure-content h3 > i,
+  .brochure-content h3 > span {
+    flex-shrink: 0;
+  }
+
+  /* Card shell: drop the desktop inset so the artwork can span edge to edge. */
+  .schemes-list .scheme-card {
+    padding: 0 !important;
+    min-height: 0 !important;
+  }
+
+  /* Artwork: drop the card background entirely and show the <img> band, so the
+     banner is displayed whole at its natural 2.84:1 ratio. Using background-size
+     here does not work — `cover` zooms a 600x211 banner into a narrow centre
+     slice (which is the blank half of the artwork), and `100% 100%` squashes it. */
+  .schemes-list .scheme-card.has-bg {
+    background-image: none !important;
+    background-color: var(--color-carbon) !important;
+  }
+  .scheme-card-art {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Text column: full width, on a solid surface so it never sits on the photo. */
+  .schemes-list .scheme-card > div {
+    max-width: 100% !important;
+    padding: var(--spacing-16);
+    background: var(--color-carbon);
+  }
+
+  .schemes-list .scheme-title {
+    font-size: 16px !important;
+  }
+
+  /* The expanded details block uses width:190% to break out of the desktop
+     50% column — that would overflow once the column is full width. */
+  .schemes-list .scheme-details-expanded {
+    width: 100% !important;
+  }
+
+  /* Action buttons: share the row evenly and keep labels on one line with a
+     comfortable tap target. */
+  .schemes-list .scheme-toggle-btn,
+  .schemes-list .btn-apply-scheme {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-height: 42px;
+    white-space: nowrap;
+  }
 }
