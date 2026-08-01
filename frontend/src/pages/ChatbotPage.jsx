@@ -3417,7 +3417,7 @@ export default function ChatbotPage() {
 
   // Cache-busting comment v1.0.5 to force new hash
   return (
-    <div className="chatbot-app bjp-theme">
+    <div className={`chatbot-app bjp-theme${lang === 'ta' ? ' lang-ta' : ''}`} lang={lang === 'ta' ? 'ta' : 'en'}>
       {/* ── Main Layout ── */}
       <div className="main-content-layout single-layout">
         

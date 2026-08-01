@@ -23,7 +23,7 @@
   --radius-buttons: 8px;
 
   /* Typography */
-  --font-display: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Outfit', 'Noto Sans Tamil', ui-sans-serif, system-ui, sans-serif;
   --text-caption: 14px;
   --text-body: 16px;
   --text-heading-sm: 24px;
@@ -1210,7 +1210,9 @@
   --color-chalk:       #1d1e1c; /* Warm near-black primary text */
   --color-signal-mint: #fa5d00; /* BJP Harvest Flame accent color */
   --color-ink-dim:     #615f5c; /* Secondary body text */
-  font-family: 'Barlow', sans-serif !important;
+  /* Barlow has no Tamil glyphs, so Tamil characters fall through to
+     Noto Sans Tamil while Latin stays Barlow (per-glyph font resolution). */
+  font-family: 'Barlow', 'Noto Sans Tamil', sans-serif !important;
 }
 
 .chatbot-app.bjp-theme {
@@ -1303,7 +1305,7 @@
   font-weight: 700;
   color: var(--color-signal-mint);
   letter-spacing: 0.03em;
-  font-family: 'Barlow Condensed', sans-serif !important;
+  font-family: 'Barlow Condensed', 'Noto Sans Tamil', sans-serif !important;
 }
 
 .chatbot-app.bjp-theme .left-menu-status {
@@ -2371,4 +2373,98 @@
     min-height: 42px;
     white-space: nowrap;
   }
+}
+
+/* ── Tamil typography ──────────────────────────────────────────
+   Tamil glyphs stack vowel signs above and below the baseline and form wide
+   conjuncts, so the metrics tuned for Barlow read cramped and thin in Tamil.
+   When Tamil is active (.lang-ta on the chatbot root) we give the script more
+   leading, remove letter-spacing, and nudge sizes and weights up so it carries
+   the same visual weight as the Latin type. Many of these values are set inline
+   in the JSX, so overriding them needs !important. */
+.chatbot-app.lang-ta {
+  font-feature-settings: 'kern' 1, 'liga' 1, 'clig' 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tracking pulls Tamil vowel signs away from the consonant they attach to, so
+   it is switched off wherever Tamil is rendered. Applied broadly because the
+   values come from a mix of CSS rules and inline style props. */
+.chatbot-app.lang-ta,
+.chatbot-app.lang-ta * {
+  letter-spacing: normal !important;
+}
+
+/* Uppercase is a no-op in Tamil (the script is caseless) but the eyebrow
+   labels keep their weight and colour. */
+.chatbot-app.lang-ta .scheme-meta-cat {
+  font-size: 11.5px !important;
+  line-height: 1.55 !important;
+  text-transform: none !important;
+}
+
+/* Card titles */
+.chatbot-app.lang-ta .scheme-title {
+  font-size: 17px !important;
+  line-height: 1.5 !important;
+  font-weight: 700 !important;
+}
+
+/* Body copy — the biggest readability win: 1.5 leading is too tight for Tamil. */
+.chatbot-app.lang-ta .scheme-overview {
+  font-size: 14px !important;
+  line-height: 1.75 !important;
+  font-weight: 500 !important;
+}
+
+.chatbot-app.lang-ta .scheme-tag {
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+  padding: 3px 9px !important;
+}
+
+/* Buttons: Tamil labels are longer, so give them room to breathe vertically. */
+.chatbot-app.lang-ta .scheme-toggle-btn,
+.chatbot-app.lang-ta .btn-apply-scheme,
+.chatbot-app.lang-ta .btn-start,
+.chatbot-app.lang-ta .quick-reply-btn,
+.chatbot-app.lang-ta .sidebar-logout-btn {
+  font-size: 13.5px !important;
+  line-height: 1.6 !important;
+}
+
+/* Section headings and panel header */
+.chatbot-app.lang-ta .brochure-content h3 {
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+}
+.chatbot-app.lang-ta .brochure-title {
+  line-height: 1.55;
+}
+
+/* Chat message text and the welcome banner */
+.chatbot-app.lang-ta .msg-bubble {
+  line-height: 1.75;
+}
+.chatbot-app.lang-ta .banner-content h2 {
+  line-height: 1.55;
+}
+.chatbot-app.lang-ta .banner-content p {
+  line-height: 1.8;
+}
+
+/* Navigation labels (drawer + desktop left panel) */
+.chatbot-app.lang-ta .sidebar-nav-item,
+.chatbot-app.lang-ta .sidebar-brand,
+.chatbot-app.lang-ta .sidebar-tagline,
+.chatbot-app.lang-ta .left-menu-brand {
+  line-height: 1.55;
+}
+
+/* Expanded scheme details: eligibility / documents lists */
+.chatbot-app.lang-ta .scheme-details-expanded,
+.chatbot-app.lang-ta .details-section-title,
+.chatbot-app.lang-ta .doc-item {
+  line-height: 1.75;
 }
