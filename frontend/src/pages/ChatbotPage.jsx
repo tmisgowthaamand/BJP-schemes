@@ -5,6 +5,7 @@ import { chat } from '../api'
 import '../styles/chatbot.css'
 import { useLang } from '../i18n/LanguageContext'
 import { getSchemeBgImage } from '../components/MemberProfileTimelineView'
+import { SCHEMES_TA } from '../i18n/schemesTamil'
 
 // ── Scheme application status → colour + icon metadata (tracking timeline) ──
 const SCHEME_STATUS_META = {
@@ -787,7 +788,7 @@ function SchemeInfoModal({ scheme, onClose }) {
 
 // ── Scheme Selection Message ─────────────────────────────────
 function SchemeSelectionMsg({ isLatest, onSubmit, disabled }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const [selected, setSelected] = useState(new Set())
   const [submitted, setSubmitted] = useState(false)
   const [infoScheme, setInfoScheme] = useState(null)
@@ -890,7 +891,7 @@ function SchemeSelectionMsg({ isLatest, onSubmit, disabled }) {
                         overflow: 'hidden', display: '-webkit-box',
                         WebkitLineClamp: 2, WebkitBoxOrient: 'vertical'
                       }}>
-                        {scheme.name_en.replace(/^[A-Z0-9\s]+—\s*/, '')}
+                        {lang === 'ta' && SCHEMES_TA[scheme.id] ? SCHEMES_TA[scheme.id].title : scheme.name_en.replace(/^[A-Z0-9\s]+—\s*/, '')}
                       </div>
                     </div>
                     <button
@@ -956,7 +957,14 @@ function SchemeSelectionMsg({ isLatest, onSubmit, disabled }) {
 
 // ── My Schemes Dashboard Panel ──────────────────────────────
 function MySchemePanel({ epicNo, mobile, onBack }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
+  // Localised scheme field: Tamil content when lang === 'ta', else English.
+  const L = (scheme, field) => {
+    if (lang === 'ta' && scheme && SCHEMES_TA[scheme.id] && SCHEMES_TA[scheme.id][field] != null) {
+      return SCHEMES_TA[scheme.id][field]
+    }
+    return scheme ? scheme[field] : undefined
+  }
   const [applyStatus, setApplyStatus] = useState({});
   const [expandedId, setExpandedId] = useState(null);
   const [selectedSchemeForModal, setSelectedSchemeForModal] = useState(null);
@@ -1268,7 +1276,7 @@ function MySchemePanel({ epicNo, mobile, onBack }) {
                   {selectedSchemeForModal.category}
                 </span>
                 <h3 style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-chalk, #fff)', margin: '4px 0 0 0' }}>
-                  {selectedSchemeForModal.title}
+                  {L(selectedSchemeForModal, 'title')}
                 </h3>
               </div>
               <button 
@@ -1304,10 +1312,10 @@ function MySchemePanel({ epicNo, mobile, onBack }) {
                 display: 'block', 
                 marginBottom: 4 
               }}>
-                ⚡ {selectedSchemeForModal.highlight}
+                ⚡ {L(selectedSchemeForModal, 'highlight')}
               </span>
               <p style={{ fontSize: 13, color: 'var(--color-chalk, #eee)', margin: 0, lineHeight: 1.4 }}>
-                {selectedSchemeForModal.overview}
+                {L(selectedSchemeForModal, 'overview')}
               </p>
             </div>
 
@@ -1316,7 +1324,7 @@ function MySchemePanel({ epicNo, mobile, onBack }) {
                 {t('Required Documents for Verification:')}
               </span>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {selectedSchemeForModal.documents.map((doc, idx) => (
+                {L(selectedSchemeForModal, 'documents').map((doc, idx) => (
                   <span key={idx} style={{
                     fontSize: 11,
                     background: 'rgba(255,255,255,0.06)',
@@ -1496,11 +1504,11 @@ function MySchemePanel({ epicNo, mobile, onBack }) {
                         </div>
 
                         <h3 className="scheme-title" style={{ fontSize: 18, fontWeight: 700, color: '#1d1d1f', margin: '2px 0 0 0', lineHeight: 1.25 }}>
-                          {scheme.id}. {scheme.title}
+                          {scheme.id}. {L(scheme, 'title')}
                         </h3>
 
                         <p className="scheme-overview" style={{ marginTop: 8, marginBottom: 14, fontSize: 13, color: '#2d2d32', lineHeight: 1.5, fontWeight: 500 }}>
-                          {scheme.overview}
+                          {L(scheme, 'overview')}
                         </p>
 
                         <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -1579,11 +1587,11 @@ function MySchemePanel({ epicNo, mobile, onBack }) {
                         </div>
 
                         <h3 className="scheme-title" style={{ fontSize: 18, fontWeight: 700, color: '#1d1d1f', margin: 0, lineHeight: 1.25 }}>
-                          {scheme.id}. {scheme.title}
+                          {scheme.id}. {L(scheme, 'title')}
                         </h3>
 
                         <div className="scheme-tags-row" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '8px 0' }}>
-                          {scheme.tags.map((tItem, idx) => (
+                          {L(scheme, 'tags').map((tItem, idx) => (
                             <span key={idx} className="scheme-tag" style={{ background: 'rgba(255,255,255,0.88)', border: '1px solid #d2d2d7', color: '#1d1d1f', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6 }}>
                               {tItem}
                             </span>
@@ -1591,7 +1599,7 @@ function MySchemePanel({ epicNo, mobile, onBack }) {
                         </div>
 
                         <p className="scheme-overview" style={{ fontSize: 13, color: '#2d2d32', lineHeight: 1.5, fontWeight: 500, margin: '8px 0 14px 0' }}>
-                          {scheme.overview}
+                          {L(scheme, 'overview')}
                         </p>
 
                         <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -1642,7 +1650,7 @@ function MySchemePanel({ epicNo, mobile, onBack }) {
                               <div className="details-section-title" style={{ fontWeight: 700, color: '#1d1d1f' }}>
                                 <i className="bi bi-info-circle-fill" style={{ color: '#ea580c' }} /> {t('Eligibility & Benefits')}
                               </div>
-                              <p className="details-text" style={{ color: '#333' }}>{scheme.eligibility}</p>
+                              <p className="details-text" style={{ color: '#333' }}>{L(scheme, 'eligibility')}</p>
                             </div>
 
                             <div style={{ marginTop: 10 }}>
@@ -1650,7 +1658,7 @@ function MySchemePanel({ epicNo, mobile, onBack }) {
                                 <i className="bi bi-file-earmark-check-fill" style={{ color: '#2ecc71' }} /> {t('Required Documents')}
                               </div>
                               <div className="documents-list">
-                                {scheme.documents.map((doc, idx) => (
+                                {L(scheme, 'documents').map((doc, idx) => (
                                   <div key={idx} className="doc-item" style={{ color: '#333' }}>
                                     <i className="bi bi-check-circle-fill" style={{ color: '#2ecc71' }} />
                                     <span>{doc}</span>
@@ -2205,9 +2213,6 @@ function FullProfilePanel({ epicNo, mobile, referredCount, onBack }) {
             {/* Header Name & Role Badge */}
             <div style={{ textAlign: 'center', marginBottom: 8 }}>
               <h3 style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-chalk)', marginBottom: 4 }}>{voterName}</h3>
-              <p style={{ fontSize: 13, color: 'var(--color-signal-mint)', fontWeight: 600, margin: 0 }}>
-                {referredCount >= 5 ? t('BJP Volunteer Agent') : t('BJP Registered Member')}
-              </p>
             </div>
 
             {/* Details Grid */}
@@ -2767,7 +2772,7 @@ export default function ChatbotPage() {
     setActiveView('chat')
     setMessages([])
     setChatState(S.WELCOME)
-    addMsg('bot', 'text', { text: t('🔒 You have been logged out after 30 minutes of inactivity. Tap Start to continue.') })
+    addMsg('bot', 'text', { textKey: '🔒 You have been logged out after 30 minutes of inactivity. Tap Start to continue.' })
     addMsg('bot', 'welcome_banner', {})
   // addMsg is a stable useCallback([]) declared later — referencing it in the
   // dep array here would hit the temporal dead zone at render (ReferenceError).
@@ -2821,11 +2826,14 @@ export default function ChatbotPage() {
     }])
   }, [])
 
-  const botSay = useCallback(async (text, delay = 500) => {
+  // Store the ENGLISH key (+ params) instead of pre-translated text, so messages
+  // re-translate live when the user switches language. Unknown strings (e.g.
+  // dynamic error text) pass through t() unchanged.
+  const botSay = useCallback(async (textKey, delay = 500, params = null) => {
     setIsTyping(true)
     await sleep(delay)
     setIsTyping(false)
-    addMsg('bot', 'text', { text })
+    addMsg('bot', 'text', { textKey, params })
   }, [addMsg])
 
   // ── Initialise ────────────────────────────────────────────
@@ -2853,9 +2861,9 @@ export default function ChatbotPage() {
       // value, which caused a false "Already registered" on a plain revisit.
       const urlRef = hasReferralInUrl()
       if (urlRef) {
-        addMsg('bot', 'text', { text: t('⚠️ *You are already registered!* Your schemes are active.') })
+        addMsg('bot', 'text', { textKey: '⚠️ *You are already registered!* Your schemes are active.' })
       } else {
-        addMsg('bot', 'text', { text: t('👋 Welcome back to *Nalam Thittam!*') })
+        addMsg('bot', 'text', { textKey: '👋 Welcome back to *Nalam Thittam!*' })
       }
       setTimeout(() => {
         const cachedRefLink = toFrontendReferralLink(cache.card.referral_link, cache.card.bjp_code)
@@ -2873,15 +2881,15 @@ export default function ChatbotPage() {
 
   // ── Flow handlers ─────────────────────────────────────────
   const handleStart = async () => {
-    addMsg('user', 'text', { text: t('Start') })
+    addMsg('user', 'text', { textKey: 'Start' })
     setChatState(S.AWAIT_MOBILE)
-    await botSay(t('📱 Please enter your 10-digit mobile number to get started.'), 400)
+    await botSay('📱 Please enter your 10-digit mobile number to get started.', 400)
   }
 
   const handleMobileSubmit = async () => {
     const mobile = inputValue.trim()
     if (!/^\d{10}$/.test(mobile)) {
-      await botSay(t('❌ Please enter a valid 10-digit mobile number.'), 300)
+      await botSay('❌ Please enter a valid 10-digit mobile number.', 300)
       return
     }
     mobileRef.current = mobile
@@ -2893,11 +2901,11 @@ export default function ChatbotPage() {
       const res = await chat.sendOtp(mobile)
       setIsTyping(false)
       if (res?.success) {
-        await botSay(t('📱 A 6-digit OTP has been sent to {mobile}. Please enter the OTP to verify.', { mobile: maskMobile(mobile) }), 300)
+        await botSay('📱 A 6-digit OTP has been sent to {mobile}. Please enter the OTP to verify.', 300, { mobile: maskMobile(mobile) })
         setChatState(S.AWAIT_OTP)
         startOtpCountdown(60)
       } else {
-        await botSay(t('❌ Could not send OTP. Please try again.'), 300)
+        await botSay('❌ Could not send OTP. Please try again.', 300)
       }
     } catch (err) {
       setIsTyping(false)
@@ -2908,7 +2916,7 @@ export default function ChatbotPage() {
   const handleOtpSubmit = async () => {
     const otp = inputValue.trim()
     if (!/^\d{6}$/.test(otp)) {
-      await botSay(t('❌ Please enter the 6-digit OTP sent to your number.'), 300)
+      await botSay('❌ Please enter the 6-digit OTP sent to your number.', 300)
       return
     }
     const mobile = mobileRef.current
@@ -2942,7 +2950,7 @@ export default function ChatbotPage() {
         if (card.bjp_code) {
           fetchMemberStatus(card.bjp_code)
         }
-        await botSay(t('👋 Welcome back! Mobile number verified.'), 300)
+        await botSay('👋 Welcome back! Mobile number verified.', 300)
         const refLink = toFrontendReferralLink(card.referral_link, card.bjp_code)
         if (refLink) {
           addMsg('bot', 'referral_link', { link: refLink })
@@ -2951,8 +2959,8 @@ export default function ChatbotPage() {
         return
       }
       // Verified and no existing registration → start a new registration.
-      await botSay(t('✅ Mobile verified! You are not registered yet — enter your EPIC Number (Voter ID) to continue.'), 300)
-      await botSay(t('📋 Format: 3 letters + 7 digits  e.g. ABC1234567'), 200)
+      await botSay('✅ Mobile verified! You are not registered yet — enter your EPIC Number (Voter ID) to continue.', 300)
+      await botSay('📋 Format: 3 letters + 7 digits  e.g. ABC1234567', 200)
       setChatState(S.AWAIT_EPIC)
     } catch (err) {
       setIsTyping(false)
@@ -2983,10 +2991,10 @@ export default function ChatbotPage() {
       const sent = await chat.sendOtp(mobile)
       setIsTyping(false)
       if (sent?.success) {
-        await botSay(t('📨 A new OTP has been sent to {mobile}.', { mobile: maskMobile(mobile) }), 250)
+        await botSay('📨 A new OTP has been sent to {mobile}.', 250, { mobile: maskMobile(mobile) })
         startOtpCountdown(60)
       } else {
-        await botSay(t('❌ Could not resend OTP. Please try again shortly.'), 250)
+        await botSay('❌ Could not resend OTP. Please try again shortly.', 250)
       }
     } catch (e) {
       setIsTyping(false)
@@ -2994,14 +3002,14 @@ export default function ChatbotPage() {
       const msg = e?.message || t('Could not resend OTP. Please try again.')
       const m = /(\d+)\s*s/.exec(msg)
       if (m) startOtpCountdown(Math.min(60, parseInt(m[1], 10)))
-      await botSay(t('⏳ {message}', { message: msg }), 250)
+      await botSay('⏳ {message}', 250, { message: msg })
     }
   }
 
   const handleEpicSubmit = async () => {
     const epic = inputValue.trim().toUpperCase()
     if (!/^[A-Z]{3}\d{7}$/.test(epic)) {
-      await botSay(t('❌ Invalid format. Use 3 letters + 7 digits (e.g., ABC1234567).'), 300)
+      await botSay('❌ Invalid format. Use 3 letters + 7 digits (e.g., ABC1234567).', 300)
       return
     }
     epicRef.current = epic
@@ -3028,7 +3036,7 @@ export default function ChatbotPage() {
         if (card.bjp_code) {
           fetchMemberStatus(card.bjp_code)
         }
-        await botSay(t('👋 Welcome back! Mobile number verified.'), 300)
+        await botSay('👋 Welcome back! Mobile number verified.', 300)
         const refLink = toFrontendReferralLink(card.referral_link, card.bjp_code)
         if (refLink) {
           addMsg('bot', 'referral_link', { link: refLink })
@@ -3042,7 +3050,7 @@ export default function ChatbotPage() {
         throw new Error(t('Voter data not found in response'))
       }
       voterRef.current = voter
-      await botSay(t('✅ Voter found! Please confirm your details:'), 200)
+      await botSay('✅ Voter found! Please confirm your details:', 200)
       addMsg('bot', 'voter_card', { voter })
       setChatState(S.CONFIRM)
     } catch (err) {
@@ -3061,7 +3069,7 @@ export default function ChatbotPage() {
         }
         cardRef.current = card
         saveCache(card, {})
-        await botSay(t('👋 Welcome back! Mobile number verified.'), 300)
+        await botSay('👋 Welcome back! Mobile number verified.', 300)
         const refLink = toFrontendReferralLink(card.referral_link, card.bjp_code)
         if (refLink) {
           addMsg('bot', 'referral_link', { link: refLink })
@@ -3074,23 +3082,23 @@ export default function ChatbotPage() {
   }
 
   const handleConfirm = async () => {
-    addMsg('user', 'text', { text: t('✓ Confirmed') })
-    await botSay(t('🎯 Please select the Central Government schemes you are interested in applying for:'), 400)
+    addMsg('user', 'text', { textKey: '✓ Confirmed' })
+    await botSay('🎯 Please select the Central Government schemes you are interested in applying for:', 400)
     addMsg('bot', 'scheme_selection', {})
     setChatState(S.SELECT_SCHEMES)
   }
 
   const handleRetry = async () => {
-    addMsg('user', 'text', { text: t('↩ Try Again') })
+    addMsg('user', 'text', { textKey: '↩ Try Again' })
     epicRef.current = ''
     voterRef.current = null
-    await botSay(t('📋 Please enter your EPIC Number again.'), 300)
+    await botSay('📋 Please enter your EPIC Number again.', 300)
     setChatState(S.AWAIT_EPIC)
   }
 
   const handleSchemesSubmit = async (selectedIds) => {
     const { ref } = referralRef.current
-    addMsg('user', 'text', { text: t('{count} scheme(s) selected ✓', { count: selectedIds.length }) })
+    addMsg('user', 'text', { textKey: '{count} scheme(s) selected ✓', params: { count: selectedIds.length } })
     setIsTyping(true)
     try {
       const res = await chat.registerSchemes({
@@ -3118,7 +3126,7 @@ export default function ChatbotPage() {
         saveCache(cardRef.current, profileRef.current || {})
       }
       try { localStorage.removeItem('bjp_referral') } catch (_) {}
-      await botSay(t('🎉 Your scheme registration is complete!'), 300)
+      await botSay('🎉 Your scheme registration is complete!', 300)
       if (refLink) {
         await sleep(500)
         addMsg('bot', 'referral_link', { link: refLink })
@@ -3300,7 +3308,10 @@ export default function ChatbotPage() {
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;')
-        const safeHtml = escapeHtml(msg.text || '').replace(/\*(.*?)\*/g, '<strong>$1</strong>')
+        // Translate at render time: known keys switch language live; dynamic
+        // strings (errors) pass through unchanged.
+        const rawText = msg.textKey != null ? t(msg.textKey, msg.params) : (msg.text || '')
+        const safeHtml = escapeHtml(rawText).replace(/\*(.*?)\*/g, '<strong>$1</strong>')
         return <span dangerouslySetInnerHTML={{ __html: safeHtml }} />
       }
       case 'welcome_banner':
