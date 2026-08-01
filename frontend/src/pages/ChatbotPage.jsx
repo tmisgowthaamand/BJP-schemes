@@ -152,7 +152,7 @@ function WelcomeBannerMsg({ onStart }) {
   const { t } = useLang()
   return (
     <div className="welcome-banner">
-      <img src="/banner.png" alt="BJP Tamil Nadu" className="banner-img"
+      <img src="https://res.cloudinary.com/dkjrdntf/image/upload/f_auto,q_auto,w_1000/v1785563946/bjp_schemes/bjp_final_banner.png" alt="BJP Tamil Nadu" className="banner-img"
         loading="lazy"
         onError={(e) => { e.target.style.display = 'none' }} />
       <div className="banner-content">
@@ -835,10 +835,9 @@ function SchemeSelectionMsg({ isLatest, onSubmit, disabled }) {
             {cluster}
           </div>
 
-          {/* 3-column grid */}
-          <div style={{
+          {/* Responsive scheme grid (columns set in chatbot.css: 3 → 2 on small screens) */}
+          <div className="scheme-select-grid" style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
             gap: 5
           }}>
             {NT_SCHEMES.filter(s => s.cluster === cluster).map(scheme => {
@@ -2573,7 +2572,7 @@ export default function ChatbotPage() {
   const sendHintTimer = useRef(null)
   const [otpResendIn, setOtpResendIn] = useState(0)  // seconds left before "Resend OTP" is allowed
   const otpTimerRef = useRef(null)
-  const { t } = useLang()
+  const { t, lang, setLang } = useLang()
   const [activeView, setActiveView] = useState('chat')
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -3400,6 +3399,11 @@ export default function ChatbotPage() {
             </div>
             <div className="left-menu-header-actions" style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
 
+              <div className="lang-toggle" role="group" aria-label="Language">
+                <button type="button" className={`lang-toggle-btn ${lang === 'en' ? 'active' : ''}`} onClick={() => setLang('en')}>EN</button>
+                <button type="button" className={`lang-toggle-btn ${lang === 'ta' ? 'active' : ''}`} onClick={() => setLang('ta')}>தமிழ்</button>
+              </div>
+
               {isDone && (
                 <button
                   className="chat-header-btn"
@@ -3517,6 +3521,11 @@ export default function ChatbotPage() {
                 </div>
               </div>
               <div className="chat-header-actions" style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+
+                <div className="lang-toggle" role="group" aria-label="Language">
+                  <button type="button" className={`lang-toggle-btn ${lang === 'en' ? 'active' : ''}`} onClick={() => setLang('en')}>EN</button>
+                  <button type="button" className={`lang-toggle-btn ${lang === 'ta' ? 'active' : ''}`} onClick={() => setLang('ta')}>தமிழ்</button>
+                </div>
 
                 {isDone && (
                   <button

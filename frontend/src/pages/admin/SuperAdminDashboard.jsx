@@ -3,7 +3,7 @@ import API from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import StatusBadge from '../../components/StatusBadge';
 import LiveTrackingPanel from '../../components/LiveTrackingPanel';
-import MemberProfileTimelineView, { formatSchemeName } from '../../components/MemberProfileTimelineView';
+import MemberProfileTimelineView, { formatSchemeName, getSchemeBgImage } from '../../components/MemberProfileTimelineView';
 import ReportsView from '../../components/ReportsView';
 import { BJP_SCHEMES } from '../../utils/constants';
 import {
@@ -886,7 +886,9 @@ const SuperAdminDashboard = () => {
                 <span style={{ fontSize: '12px', color: 'var(--color-slate)' }}>Click any scheme to filter applications</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px', width: '100%' }}>
-                {statsData.schemePopularity?.map((item) => (
+                {statsData.schemePopularity?.map((item) => {
+                  const schemeImg = getSchemeBgImage(item._id);
+                  return (
                   <div
                     key={item._id}
                     onClick={() => {
@@ -914,6 +916,15 @@ const SuperAdminDashboard = () => {
                       e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
                     }}
                   >
+                    {schemeImg && (
+                      <img
+                        src={schemeImg}
+                        alt={formatSchemeName(item._id)}
+                        loading="lazy"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                        style={{ width: '100%', height: '96px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px', display: 'block', border: '1px solid var(--color-linen)' }}
+                      />
+                    )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--color-midnight-ink)' }}>{formatSchemeName(item._id)}</div>
                       <span style={{ fontSize: '11px', color: '#c4b5fd', fontWeight: '600' }}>View →</span>
@@ -923,7 +934,8 @@ const SuperAdminDashboard = () => {
                       {item.count.toLocaleString()} <span style={{ fontSize: '12px', fontWeight: '500', color: 'var(--color-slate)' }}>applications</span>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
