@@ -20,6 +20,87 @@ export const formatSchemeName = (schemeName, schemeId) => {
   return schemeName;
 };
 
+export const formatAppliedDateTime = (dateStr) => {
+  if (!dateStr) return '—';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  } catch (e) {
+    return '—';
+  }
+};
+
+import { CLOUDINARY_SCHEME_IMAGES, optimizeCloudinaryUrl } from '../utils/cloudinarySchemes';
+
+const SCHEME_ALIASES = [
+  { key: 'PMSBY', keywords: ['pmsby', 'suraksha', 'bima'] },
+  { key: 'PMJJBY', keywords: ['pmjjby', 'jeevan', 'jyoti'] },
+  { key: 'APY', keywords: ['apy', 'atal', 'pension'] },
+  { key: 'PM SVANidhi', keywords: ['svanidhi', 'street vendor'] },
+  { key: 'PM Mudra Shishu', keywords: ['shishu'] },
+  { key: 'PM Mudra Kishor', keywords: ['kishor'] },
+  { key: 'Udyam', keywords: ['udyam', 'msme'] },
+  { key: 'Stand Up India', keywords: ['stand up'] },
+  { key: 'Startup Seed Fund', keywords: ['startup', 'seed'] },
+  { key: 'PM Kisan Maan Dhan', keywords: ['maan dhan', 'kisan maan'] },
+  { key: 'PM Kisan', keywords: ['kisan'] },
+  { key: 'PM Fasal Bima', keywords: ['fasal bima', 'pmfby'] },
+  { key: 'Ayushman Bharat', keywords: ['ayushman', 'pmjay'] },
+  { key: 'ABHA', keywords: ['abha', 'health id'] },
+  { key: 'PM Ujjwala', keywords: ['ujjwala'] },
+  { key: 'PM Matru Vandana', keywords: ['matru vandana', 'pmmvy'] },
+  { key: 'Sukanya Samridhi', keywords: ['sukanya', 'samridhi', 'samriddhi'] },
+  { key: 'PM Awas Yojana', keywords: ['awas', 'pmay'] },
+  { key: 'PMKVY', keywords: ['pmkvy', 'kaushal vikas'] },
+  { key: 'NSP Scholarship', keywords: ['scholarship', 'nsp', 'national scholarship'] },
+  { key: 'PM Vishwakarma', keywords: ['vishwakarma'] },
+  { key: 'Jan Dhan', keywords: ['jan dhan', 'pmjdy'] },
+  { key: 'e-Shram', keywords: ['shram', 'eshram'] }
+];
+
+export const getSchemeBgImage = (schemeIdOrName) => {
+  if (!schemeIdOrName) return null;
+  const name = formatSchemeName(schemeIdOrName);
+  let rawUrl = CLOUDINARY_SCHEME_IMAGES[name];
+
+  if (!rawUrl) {
+    const lower = String(name).toLowerCase().trim();
+    
+    // 1. Check exact key or substring match
+    for (const [key, path] of Object.entries(CLOUDINARY_SCHEME_IMAGES)) {
+      const kLower = key.toLowerCase();
+      if (kLower === lower || lower.includes(kLower) || kLower.includes(lower)) {
+        rawUrl = path;
+        break;
+      }
+    }
+
+    // 2. Check alias keywords
+    if (!rawUrl) {
+      for (const item of SCHEME_ALIASES) {
+        if (item.keywords.some(kw => lower.includes(kw))) {
+          rawUrl = CLOUDINARY_SCHEME_IMAGES[item.key];
+          break;
+        }
+      }
+    }
+  }
+
+  return optimizeCloudinaryUrl(rawUrl);
+};
+
+
+
+
+
 const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSelectVoter, targetSchemeName }) => {
   if (!voterData) return null;
 
@@ -201,22 +282,10 @@ const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSel
         <button
           type="button"
           onClick={handleDirectCall}
-          className="btn"
-          style={{
-            padding: '10px 24px',
-            fontSize: '14px',
-            fontWeight: '700',
-            borderRadius: '9999px',
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            color: '#ffffff',
-            border: 'none',
-            boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
+          className="btn btn-filled"
+          style={{ padding: '10px 22px', fontSize: '14px', fontWeight: '700', borderRadius: '9999px', background: 'var(--color-midnight-ink)' }}
         >
-          <PhoneCall size={16} color="#ffffff" /> Call Voter ({mobile})
+          <PhoneCall size={16} /> Call Voter ({mobile})
         </button>
       </div>
 
@@ -236,7 +305,7 @@ const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSel
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                 <span className="tag-pill tag-sunlit" style={{ fontSize: '11px' }}>MEMBER PROFILE PAGE</span>
                 <span className="tag-pill tag-active" style={{ fontSize: '11px' }}>{applications.length} Schemes Applied</span>
-                <span className="tag-pill" style={{ fontSize: '11px', background: 'rgba(167, 139, 250, 0.18)', color: '#c4b5fd', border: '1px solid rgba(167, 139, 250, 0.3)', fontWeight: '700' }}>
+                <span className="tag-pill tag-muted" style={{ fontSize: '11px', background: 'var(--color-sunlit-cream)', color: 'var(--color-ember-brown)', fontWeight: '700' }}>
                   <Share2 size={12} /> {loadingReferrals ? 'Loading...' : `${referredVoters.length} Member(s) Referred`}
                 </span>
               </div>
@@ -244,16 +313,16 @@ const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSel
                 {voterName}
               </h1>
               <div style={{ fontSize: '14px', color: 'var(--color-slate)', marginTop: '4px' }}>
-                EPIC ID: <strong style={{ fontFamily: 'var(--font-ui-monospace)', color: '#c4b5fd' }}>{epicNo}</strong> • Mobile: <strong style={{ color: '#f5f3ff' }}>{mobile}</strong>
+                EPIC ID: <strong style={{ fontFamily: 'var(--font-ui-monospace)', color: 'var(--color-midnight-ink)' }}>{epicNo}</strong> • Mobile: <strong style={{ color: 'var(--color-midnight-ink)' }}>{mobile}</strong>
               </div>
             </div>
 
             {/* Jurisdiction Badge */}
-            <div style={{ background: '#1b162b', border: '1px solid #2b2242', padding: '12px 18px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <MapPin size={18} color="#a78bfa" />
+            <div style={{ background: 'var(--color-fog-gray)', padding: '12px 18px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <MapPin size={18} color="var(--color-campfire-orange)" />
               <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-midnight-ink)' }}>
                 {district} • {assemblyName}
-                <div style={{ fontSize: '12px', color: '#c4b5fd', fontWeight: '700' }}>
+                <div style={{ fontSize: '12px', color: 'var(--color-campfire-orange)', fontWeight: '700' }}>
                   Polling Booth #{boothNo}
                 </div>
               </div>
@@ -280,10 +349,10 @@ const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSel
                     style={{
                       padding: '16px',
                       borderRadius: '12px',
-                      border: isSelected ? '2px solid #a78bfa' : '1px solid var(--color-linen)',
-                      background: isSelected ? 'rgba(139, 92, 246, 0.18)' : 'var(--color-paper-white)',
+                      border: isSelected ? '2px solid var(--color-campfire-orange)' : '1px solid var(--color-linen)',
+                      background: isSelected ? 'var(--color-sunlit-cream)' : 'var(--color-paper-white)',
                       cursor: 'pointer',
-                      boxShadow: isSelected ? '0 4px 14px rgba(139, 92, 246, 0.25)' : 'none',
+                      boxShadow: isSelected ? '0 4px 12px rgba(255, 107, 26, 0.1)' : 'none',
                       transition: 'all 0.2s ease'
                     }}
                   >
@@ -301,28 +370,28 @@ const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSel
 
             {/* Member's Unique Referral Code & Link Box */}
             <div style={{
-              background: 'rgba(139, 92, 246, 0.12)',
-              border: '1.5px dashed #a78bfa',
+              background: '#fff7ed',
+              border: '1.5px dashed var(--color-saffron)',
               borderRadius: '12px',
-              padding: '16px',
+              padding: '14px',
               marginBottom: '20px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: '#f5f3ff', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Share2 size={15} color="#a78bfa" />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-midnight-ink)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Share2 size={14} color="var(--color-campfire-orange)" />
                   Member Referral Link
                 </div>
-                <span className="tag-pill tag-sunlit" style={{ fontSize: '11px', fontWeight: '700', background: 'rgba(167, 139, 250, 0.2)', color: '#c4b5fd', border: '1px solid rgba(167, 139, 250, 0.3)' }}>
+                <span className="tag-pill tag-sunlit" style={{ fontSize: '11px', fontWeight: '700' }}>
                   {referralCode || epicNo}
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                 <input
                   type="text"
                   readOnly
                   value={`${window.location.origin}/r/${referralCode || epicNo}`}
                   className="form-control"
-                  style={{ fontSize: '12px', padding: '8px 10px', fontFamily: 'var(--font-ui-monospace)', background: '#110d1e', color: '#c4b5fd', border: '1px solid #2b2242' }}
+                  style={{ fontSize: '11px', padding: '6px 8px', fontFamily: 'var(--font-ui-monospace)', background: '#fff' }}
                 />
                 <button
                   type="button"
@@ -333,7 +402,7 @@ const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSel
                     setTimeout(() => setToastMsg(''), 3000);
                   }}
                   className="btn btn-ghost"
-                  style={{ padding: '8px 12px', fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(167, 139, 250, 0.18)', color: '#f5f3ff', border: '1px solid #a78bfa' }}
+                  style={{ padding: '6px 10px', fontSize: '11px', fontWeight: '700', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
                   <Copy size={13} /> Copy Link
                 </button>
