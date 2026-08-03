@@ -2327,10 +2327,12 @@
     flex-shrink: 0;
   }
 
-  /* Card shell: drop the desktop inset so the artwork can span edge to edge. */
+  /* Card shell: drop the desktop inset so the artwork can span edge to edge,
+     and constrain overflow so expanded details can't push content off-screen. */
   .schemes-list .scheme-card {
     padding: 0 !important;
     min-height: 0 !important;
+    overflow: hidden;
   }
 
   /* Artwork: drop the card background entirely and show the <img> band, so the
@@ -2359,9 +2361,13 @@
   }
 
   /* The expanded details block uses width:190% to break out of the desktop
-     50% column — that would overflow once the column is full width. */
-  .schemes-list .scheme-details-expanded {
+     50% column — that would overflow once the column is full width. Force it
+     back to 100% and constrain to the card so it can't push the image off. */
+  .schemes-list .scheme-card .scheme-details-expanded {
     width: 100% !important;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
   }
 
   /* Action buttons: share the row evenly and keep labels on one line with a
