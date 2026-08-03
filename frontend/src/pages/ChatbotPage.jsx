@@ -1461,8 +1461,8 @@ function MySchemePanel({ epicNo, mobile, onBack }) {
                     ? app.statusHistory[app.statusHistory.length - 1].updatedAt
                     : app?.appliedAt;
                   return (
+                    <div key={scheme.id} className="scheme-wrapper">
                     <div 
-                      key={scheme.id} 
                       className={`scheme-card${bgImg ? ' has-bg' : ''}`}
                       style={{
                         border: `1.5px solid ${sc.border}`,
@@ -1547,6 +1547,7 @@ function MySchemePanel({ epicNo, mobile, onBack }) {
                         </div>
                       </div>
                     </div>
+                    </div>
                   );
                 })}
               </div>
@@ -1575,8 +1576,8 @@ function MySchemePanel({ epicNo, mobile, onBack }) {
                   const isExpanded = expandedId === scheme.id;
                   const bgImg = getSchemeBgImage(scheme.title);
                   return (
+                    <div key={scheme.id} className="scheme-wrapper">
                     <div 
-                      key={scheme.id} 
                       className={`scheme-card${bgImg ? ' has-bg' : ''}`}
                       style={{
                         border: '1px solid #e5e5ea',
@@ -1668,32 +1669,34 @@ function MySchemePanel({ epicNo, mobile, onBack }) {
                             {t('Apply Now')}
                           </button>
                         </div>
-
-                        {isExpanded && (
-                          <div className="scheme-details-expanded" onClick={(e) => e.stopPropagation()} style={{ marginTop: 16, background: 'rgba(255,255,255,0.95)', padding: 16, borderRadius: 12, border: '1px solid #e5e5ea', width: '190%' }}>
-                            <div>
-                              <div className="details-section-title" style={{ fontWeight: 700, color: '#1d1d1f' }}>
-                                <i className="bi bi-info-circle-fill" style={{ color: '#ea580c' }} /> {t('Eligibility & Benefits')}
-                              </div>
-                              <p className="details-text" style={{ color: '#333' }}>{L(scheme, 'eligibility')}</p>
-                            </div>
-
-                            <div style={{ marginTop: 10 }}>
-                              <div className="details-section-title" style={{ fontWeight: 700, color: '#1d1d1f' }}>
-                                <i className="bi bi-file-earmark-check-fill" style={{ color: '#2ecc71' }} /> {t('Required Documents')}
-                              </div>
-                              <div className="documents-list">
-                                {L(scheme, 'documents').map((doc, idx) => (
-                                  <div key={idx} className="doc-item" style={{ color: '#333' }}>
-                                    <i className="bi bi-check-circle-fill" style={{ color: '#2ecc71' }} />
-                                    <span>{doc}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        )}
                       </div>
+                    </div>
+
+                    {/* Expanded details panel — sits below the card as a separate block */}
+                    {isExpanded && (
+                      <div className="scheme-details-expanded" onClick={(e) => e.stopPropagation()} style={{ marginTop: 12, background: 'rgba(255,255,255,0.95)', padding: 16, borderRadius: 12, border: '1px solid #e5e5ea' }}>
+                        <div>
+                          <div className="details-section-title" style={{ fontWeight: 700, color: '#1d1d1f' }}>
+                            <i className="bi bi-info-circle-fill" style={{ color: '#ea580c' }} /> {t('Eligibility & Benefits')}
+                          </div>
+                          <p className="details-text" style={{ color: '#333' }}>{L(scheme, 'eligibility')}</p>
+                        </div>
+
+                        <div style={{ marginTop: 10 }}>
+                          <div className="details-section-title" style={{ fontWeight: 700, color: '#1d1d1f' }}>
+                            <i className="bi bi-file-earmark-check-fill" style={{ color: '#2ecc71' }} /> {t('Required Documents')}
+                          </div>
+                          <div className="documents-list">
+                            {L(scheme, 'documents').map((doc, idx) => (
+                              <div key={idx} className="doc-item" style={{ color: '#333' }}>
+                                <i className="bi bi-check-circle-fill" style={{ color: '#2ecc71' }} />
+                                <span>{doc}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     </div>
                   );
                 })}
