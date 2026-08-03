@@ -6,11 +6,13 @@ import MemberProfileTimelineView, { formatSchemeName } from '../../components/Me
 import ReportsView from '../../components/ReportsView';
 import LiveTrackingPanel from '../../components/LiveTrackingPanel';
 import { BJP_SCHEMES } from '../../utils/constants';
+import { CLOUDINARY_SCHEME_IMAGES } from '../../utils/cloudinarySchemes';
 import {
   Shield, Users, Building, PhoneCall, RefreshCw, Search, Eye, Award, Share2, ChevronRight, FileText,
   LayoutDashboard, BarChart3
 } from 'lucide-react';
 import TopReferrersCard from '../../components/TopReferrersCard';
+import '../../styles/booth-admin-dark.css';
 
 const LIMIT = 20;
 
@@ -258,17 +260,196 @@ const BoothAdminDashboard = () => {
         display: 'flex',
         gap: '24px',
         width: '100%',
+        maxWidth: '100%',
         boxSizing: 'border-box',
-        minHeight: 'calc(100vh - 130px)',
-        alignItems: 'flex-start'
+        minHeight: 'calc(100vh - 80px)',
+        alignItems: 'flex-start',
+        background: 'transparent',
+        margin: '0 auto'
       }}
     >
       <style>{`
-        .boothadmin-scroll { scrollbar-width: thin; scrollbar-color: #3b2e5a #0d0a17; scroll-behavior: smooth; }
+        .theme-boothadmin {
+          --bg-primary: #0a0a0f;
+          --bg-secondary: #13131a;
+          --bg-card: #1a1a24;
+          --bg-hover: #22222e;
+          --border-color: #2a2a38;
+          --text-primary: #ffffff;
+          --text-secondary: #a8a8b8;
+          --text-muted: #6b6b7b;
+          --accent-primary: #FF6B35;
+          --accent-secondary: #FF9933;
+          --accent-success: #10b981;
+          --accent-danger: #ef4444;
+          --accent-warning: #f59e0b;
+          --accent-info: #3b82f6;
+        }
+        
+        .boothadmin-scroll { 
+          scrollbar-width: thin; 
+          scrollbar-color: #FF6B35 #13131a; 
+          scroll-behavior: smooth; 
+        }
         .boothadmin-scroll::-webkit-scrollbar { width: 8px; }
-        .boothadmin-scroll::-webkit-scrollbar-track { background: #0d0a17; border-radius: 8px; }
-        .boothadmin-scroll::-webkit-scrollbar-thumb { background: #3b2e5a; border-radius: 8px; border: 2px solid #0d0a17; }
-        .boothadmin-scroll::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
+        .boothadmin-scroll::-webkit-scrollbar-track { background: #13131a; border-radius: 8px; }
+        .boothadmin-scroll::-webkit-scrollbar-thumb { 
+          background: linear-gradient(180deg, #FF6B35 0%, #FF9933 100%); 
+          border-radius: 8px; 
+          border: 2px solid #13131a; 
+        }
+        .boothadmin-scroll::-webkit-scrollbar-thumb:hover { 
+          background: linear-gradient(180deg, #FF9933 0%, #FFB84D 100%); 
+        }
+        
+        .sidebar-nav-btn {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 16px;
+          background: transparent;
+          border: 1px solid transparent;
+          border-radius: 12px;
+          color: var(--text-secondary);
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          text-align: left;
+          width: 100%;
+        }
+        
+        .sidebar-nav-btn:hover {
+          background: var(--bg-hover);
+          border-color: var(--border-color);
+          color: var(--text-primary);
+          transform: translateX(4px);
+        }
+        
+        .sidebar-nav-btn.active {
+          background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(255, 153, 51, 0.15) 100%);
+          border-color: var(--accent-primary);
+          color: var(--accent-secondary);
+        }
+        
+        .stat-card {
+          background: var(--bg-card);
+          border: 1px solid var(--border-color);
+          border-radius: 16px;
+          padding: 20px;
+          transition: all 0.3s ease;
+          cursor: pointer;
+        }
+        
+        .stat-card:hover {
+          border-color: var(--accent-primary);
+          transform: translateY(-4px);
+          box-shadow: 0 8px 24px rgba(255, 107, 53, 0.2);
+        }
+        
+        .stat-icon {
+          width: 48px;
+          height: 48px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 12px;
+        }
+        
+        .stat-number {
+          font-size: 32px;
+          font-weight: 800;
+          line-height: 1;
+          margin-bottom: 8px;
+          color: var(--text-primary);
+        }
+        
+        .stat-label {
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--text-secondary);
+        }
+        
+        .campsite-card {
+          background: var(--bg-card);
+          border: 1px solid var(--border-color);
+          border-radius: 16px;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+        
+        .tag-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          border-radius: 20px;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
+        .tag-active {
+          background: linear-gradient(135deg, rgba(255, 107, 53, 0.2) 0%, rgba(255, 153, 51, 0.2) 100%);
+          color: var(--accent-secondary);
+          border: 1px solid var(--accent-primary);
+        }
+        
+        .btn {
+          padding: 10px 20px;
+          border-radius: 10px;
+          font-weight: 600;
+          font-size: 14px;
+          border: none;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .btn-primary {
+          background: linear-gradient(135deg, #FF6B35 0%, #FF9933 100%);
+          color: white;
+        }
+        
+        .btn-primary:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+        }
+        
+        .btn-ghost {
+          background: transparent;
+          color: var(--text-secondary);
+          border: 1px solid var(--border-color);
+        }
+        
+        .btn-ghost:hover {
+          background: var(--bg-hover);
+          color: var(--text-primary);
+          border-color: var(--accent-primary);
+        }
+        
+        .form-control {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          color: var(--text-primary);
+          padding: 10px 14px;
+          border-radius: 10px;
+          font-size: 14px;
+          transition: all 0.2s ease;
+        }
+        
+        .form-control:focus {
+          outline: none;
+          border-color: var(--accent-primary);
+          box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+        
+        .form-control::placeholder {
+          color: var(--text-muted);
+        }
       `}</style>
 
       {/* ══════════════════════════════════════════ */}
@@ -278,8 +459,8 @@ const BoothAdminDashboard = () => {
         style={{
           width: '270px',
           minWidth: '270px',
-          background: 'var(--theme-bg-card)',
-          border: '1px solid var(--theme-border)',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-color)',
           borderRadius: '16px',
           padding: '20px 14px',
           boxSizing: 'border-box',
@@ -288,26 +469,26 @@ const BoothAdminDashboard = () => {
           display: 'flex',
           flexDirection: 'column',
           gap: '6px',
-          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)'
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)'
         }}
       >
         {/* Sidebar Header Badge */}
-        <div style={{ padding: '0 8px 14px 8px', borderBottom: '1px solid var(--theme-border)', marginBottom: '8px' }}>
+        <div style={{ padding: '0 8px 14px 8px', borderBottom: '1px solid var(--border-color)', marginBottom: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
             <span className="tag-pill tag-active" style={{ fontSize: '11px', fontWeight: '800' }}>
               <Shield size={12} /> BOOTH ADMIN
             </span>
           </div>
-          <div style={{ fontSize: '16px', fontWeight: '800', color: 'var(--theme-text-main)' }}>
+          <div style={{ fontSize: '16px', fontWeight: '800', color: 'var(--text-primary)' }}>
             Booth {admin.boothNo} Portal
           </div>
-          <div style={{ fontSize: '11.5px', color: 'var(--theme-text-muted)', marginTop: '2px' }}>
+          <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: '2px' }}>
             {admin.assemblyName} Constituency
           </div>
         </div>
 
         {/* Navigation Section Title */}
-        <div style={{ fontSize: '10.5px', fontWeight: '800', color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '4px 10px 2px 10px' }}>
+        <div style={{ fontSize: '10.5px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '4px 10px 2px 10px' }}>
           Main Menu
         </div>
 
@@ -346,7 +527,7 @@ const BoothAdminDashboard = () => {
           </div>
         </button>
 
-        <div style={{ fontSize: '10.5px', fontWeight: '800', color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '12px 10px 2px 10px' }}>
+        <div style={{ fontSize: '10.5px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '12px 10px 2px 10px' }}>
           Exports & Reports
         </div>
 
@@ -359,7 +540,7 @@ const BoothAdminDashboard = () => {
         </button>
 
         {/* Sidebar Footer Info */}
-        <div style={{ marginTop: '20px', paddingTop: '14px', borderTop: '1px solid var(--theme-border)' }}>
+        <div style={{ marginTop: '20px', paddingTop: '14px', borderTop: '1px solid var(--border-color)' }}>
           <button
             onClick={fetchDashboardData}
             className="btn btn-ghost"
@@ -373,7 +554,7 @@ const BoothAdminDashboard = () => {
       {/* ══════════════════════════════════════════ */}
       {/* RIGHT MAIN CONTENT AREA                   */}
       {/* ══════════════════════════════════════════ */}
-      <main className="boothadmin-scroll" style={{ flex: 1, minWidth: 0, paddingRight: '6px', height: 'calc(100vh - 130px)', overflowY: 'auto' }}>
+      <main className="boothadmin-scroll" style={{ flex: 1, minWidth: 0, paddingRight: '6px', maxHeight: 'calc(100vh - 80px)', overflowY: 'auto' }}>
 
       {/* ══════════════════════════════════════════ */}
       {/* PAGE 1: OVERVIEW DASHBOARD                */}
@@ -381,9 +562,8 @@ const BoothAdminDashboard = () => {
       {subPage === 'dashboard' && (
         loadingStats ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px', gap: '16px' }}>
-            <div style={{ width: '40px', height: '40px', border: '4px solid var(--color-linen)', borderTopColor: 'var(--color-saffron)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-            <div style={{ fontSize: '14px', color: 'var(--color-slate)', fontWeight: '500' }}>Loading stats for Booth {admin.boothNo}...</div>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            <div className="loading-spinner" />
+            <div style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: '500' }}>Loading stats for Booth {admin.boothNo}...</div>
           </div>
         ) : statsData ? (
           <div style={{ width: '100%', boxSizing: 'border-box' }}>
@@ -403,7 +583,7 @@ const BoothAdminDashboard = () => {
                       : '—'}
                   </div>
                   <div className="stat-label">Total Voters in Booth {admin.boothNo}</div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-slate)', marginTop: '2px' }}>Electoral Roll (Voter DB)</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>Electoral Roll (Voter DB)</div>
                 </div>
               </div>
 
@@ -415,7 +595,7 @@ const BoothAdminDashboard = () => {
                 <div>
                   <div className="stat-number">{statsData.overview.totalVotersRequested ?? statsData.overview.totalUsers ?? 0}</div>
                   <div className="stat-label">Voters Requested Schemes</div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-slate)', marginTop: '2px' }}>Enrolled in Program</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>Enrolled in Program</div>
                 </div>
               </div>
 
@@ -426,13 +606,13 @@ const BoothAdminDashboard = () => {
                 style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
                 title="Click to view all applications"
               >
-                <div className="stat-icon" style={{ background: 'var(--color-fog-gray)', color: 'var(--color-midnight-ink)' }}>
+                <div className="stat-icon" style={{ background: 'rgba(255, 107, 53, 0.1)', color: 'var(--accent-primary)' }}>
                   <FileText size={20} />
                 </div>
                 <div>
                   <div className="stat-number">{statsData.overview.totalApplications}</div>
                   <div className="stat-label">Booth {admin.boothNo} Applications</div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-saffron)', fontWeight: '600', marginTop: '2px' }}>Click to View Applications →</div>
+                  <div style={{ fontSize: '11px', color: 'var(--accent-secondary)', fontWeight: '600', marginTop: '2px' }}>Click to View Applications →</div>
                 </div>
               </div>
 
@@ -443,15 +623,15 @@ const BoothAdminDashboard = () => {
                 style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
                 title="Click to view approved applications"
               >
-                <div className="stat-icon" style={{ background: '#f0fdf4', color: 'var(--color-forest-pulse)' }}>
+                <div className="stat-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--accent-success)' }}>
                   <Shield size={20} />
                 </div>
                 <div>
-                  <div className="stat-number" style={{ color: 'var(--color-forest-pulse)' }}>
+                  <div className="stat-number" style={{ color: 'var(--accent-success)' }}>
                     {statsData.overview.statusBreakdown?.Approved || 0}
                   </div>
                   <div className="stat-label">Approved Directives</div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-forest-pulse)', fontWeight: '600', marginTop: '2px' }}>Click to View Approved →</div>
+                  <div style={{ fontSize: '11px', color: 'var(--accent-success)', fontWeight: '600', marginTop: '2px' }}>Click to View Approved →</div>
                 </div>
               </div>
             </div>
@@ -463,49 +643,163 @@ const BoothAdminDashboard = () => {
               onViewProfile={(ref) => handleOpenVoterDetails(ref)}
             />
 
-            {/* ── Top Schemes ── */}
+            {/* ── Top Schemes with Images ── */}
             <div className="campsite-card" style={{ width: '100%', padding: '24px', boxSizing: 'border-box' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--color-midnight-ink)', margin: 0 }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>
                   Top Applied BJP Schemes in Booth {admin.boothNo}
                 </h3>
-                <span style={{ fontSize: '12px', color: 'var(--color-slate)' }}>Click any scheme to filter applications</span>
+                <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Click any scheme to filter applications</span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px', width: '100%' }}>
-                {statsData.schemePopularity?.map((item) => (
-                  <div
-                    key={item._id}
-                    onClick={() => {
-                      setSchemeFilter(item._id);
-                      setStatusFilter('');
-                      navigateSubPage('applications');
-                    }}
-                    style={{
-                      padding: '14px', background: '#1b162b', borderRadius: '10px',
-                      border: '1px solid var(--color-linen)', cursor: 'pointer',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)', transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = 'var(--color-lavender-400)';
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 4px 16px rgba(167, 139, 250, 0.25)';
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = 'var(--color-linen)';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--color-midnight-ink)' }}>{formatSchemeName(item._id)}</div>
-                      <span style={{ fontSize: '11px', color: 'var(--color-saffron)', fontWeight: '600' }}>View →</span>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px', width: '100%' }}>
+                {statsData.schemePopularity?.map((item) => {
+                  const schemeImage = CLOUDINARY_SCHEME_IMAGES[item._id] || CLOUDINARY_SCHEME_IMAGES[formatSchemeName(item._id)];
+                  
+                  return (
+                    <div
+                      key={item._id}
+                      onClick={() => {
+                        setSchemeFilter(item._id);
+                        setStatusFilter('');
+                        navigateSubPage('applications');
+                      }}
+                      style={{
+                        background: '#1a1a24',
+                        borderRadius: '12px',
+                        border: '1px solid #2a2a38',
+                        cursor: 'pointer',
+                        overflow: 'hidden',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                        transition: 'all 0.3s ease',
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.borderColor = '#FF6B35';
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow = '0 8px 24px rgba(255, 107, 53, 0.3)';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.borderColor = '#2a2a38';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+                      }}
+                    >
+                      {/* Scheme Image */}
+                      {schemeImage ? (
+                        <div style={{
+                          width: '100%',
+                          height: '120px',
+                          borderBottom: '1px solid #2a2a38',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          background: '#13131a'
+                        }}>
+                          <img 
+                            src={schemeImage} 
+                            alt={formatSchemeName(item._id)}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                              objectPosition: 'center'
+                            }}
+                            loading="lazy"
+                          />
+                          {/* Gradient Overlay */}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            height: '50%',
+                            background: 'linear-gradient(to top, rgba(26, 26, 36, 0.9) 0%, transparent 100%)',
+                            pointerEvents: 'none'
+                          }} />
+                        </div>
+                      ) : (
+                        <div style={{
+                          width: '100%',
+                          height: '120px',
+                          background: 'linear-gradient(135deg, #FF6B35 0%, #FF9933 100%)',
+                          borderBottom: '1px solid #2a2a38',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          <div style={{ fontSize: '40px' }}>🏛️</div>
+                        </div>
+                      )}
+                      
+                      {/* Scheme Info */}
+                      <div style={{ padding: '14px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ 
+                          fontSize: '14px', 
+                          fontWeight: '700', 
+                          color: '#ffffff',
+                          marginBottom: '4px',
+                          lineHeight: '1.3'
+                        }}>
+                          {formatSchemeName(item._id)}
+                        </div>
+                        
+                        <div style={{ 
+                          fontSize: '11px', 
+                          color: '#a8a8b8', 
+                          marginBottom: '12px',
+                          lineHeight: '1.4'
+                        }}>
+                          {item.cluster}
+                        </div>
+                        
+                        {/* Application Count */}
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'baseline', 
+                          gap: '6px',
+                          marginTop: 'auto'
+                        }}>
+                          <span style={{ 
+                            fontSize: '24px', 
+                            fontWeight: '800', 
+                            color: '#FF9933',
+                            lineHeight: '1'
+                          }}>
+                            {item.count}
+                          </span>
+                          <span style={{ 
+                            fontSize: '12px', 
+                            color: '#6b6b7b', 
+                            fontWeight: 'normal' 
+                          }}>
+                            applications
+                          </span>
+                        </div>
+                        
+                        {/* View Arrow */}
+                        <div style={{
+                          marginTop: '10px',
+                          paddingTop: '10px',
+                          borderTop: '1px solid #2a2a38',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'flex-end'
+                        }}>
+                          <span style={{ 
+                            fontSize: '12px', 
+                            color: '#FF9933', 
+                            fontWeight: '600',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}>
+                            View Details <ChevronRight size={14} />
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ fontSize: '11px', color: 'var(--color-slate)', marginTop: '2px' }}>{item.cluster}</div>
-                    <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--color-midnight-ink)', marginTop: '8px' }}>
-                      {item.count} <span style={{ fontSize: '12px', color: 'var(--color-slate)', fontWeight: 'normal' }}>applications</span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -513,7 +807,7 @@ const BoothAdminDashboard = () => {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px', gap: '12px' }}>
             <div style={{ fontSize: '32px' }}>⚠️</div>
-            <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--color-midnight-ink)' }}>Could not load stats</div>
+            <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)' }}>Could not load stats</div>
             <button onClick={fetchStats} className="btn btn-primary" style={{ marginTop: '8px' }}>Retry</button>
           </div>
         )
@@ -537,26 +831,20 @@ const BoothAdminDashboard = () => {
             {/* ── Filter Row 1: Search + Summary ── */}
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '10px', width: '100%', alignItems: 'center' }}>
               <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
-                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
+                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 <input
                   type="text"
                   placeholder={`Search in Booth ${admin.boothNo} voters...`}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="form-control"
-                  style={{ 
-                    paddingLeft: '38px',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    color: '#F3F4F6',
-                    '::placeholder': { color: '#9CA3AF' }
-                  }}
+                  style={{ paddingLeft: '38px' }}
                 />
               </div>
-              <div style={{ fontSize: '13px', color: 'var(--color-slate)', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
                 {loadingVoters
                   ? <span style={{ opacity: 0.6 }}>Loading…</span>
-                  : <><strong style={{ color: 'var(--color-midnight-ink)' }}>{totalVoters.toLocaleString()}</strong> voters · Page {currentPage} of {totalPages}</>
+                  : <><strong style={{ color: 'var(--text-primary)' }}>{totalVoters.toLocaleString()}</strong> voters · Page {currentPage} of {totalPages}</>
                 }
               </div>
             </div>
@@ -567,14 +855,7 @@ const BoothAdminDashboard = () => {
                 value={statusFilter} 
                 onChange={(e) => setStatusFilter(e.target.value)} 
                 className="form-control" 
-                style={{ 
-                  minWidth: '150px', 
-                  flex: '1 1 150px', 
-                  maxWidth: '180px',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  color: '#F3F4F6'
-                }}
+                style={{ minWidth: '150px', flex: '1 1 150px', maxWidth: '180px' }}
               >
                 <option value="">All Statuses</option>
                 <option value="Pending">Pending</option>
@@ -592,13 +873,7 @@ const BoothAdminDashboard = () => {
                 value={BJP_SCHEMES.find(s => s.name.toLowerCase() === (schemeFilter || '').toLowerCase() || (s.fullTitle && s.fullTitle.toLowerCase() === (schemeFilter || '').toLowerCase()))?.name || schemeFilter || ''}
                 onChange={(e) => setSchemeFilter(e.target.value)}
                 className="form-control"
-                style={{ 
-                  flex: '1 1 160px', 
-                  minWidth: '150px',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  color: '#F3F4F6'
-                }}
+                style={{ flex: '1 1 160px', minWidth: '150px' }}
               >
                 <option value="">All 23 Central BJP Schemes</option>
                 {BJP_SCHEMES.map(s => (
@@ -611,7 +886,8 @@ const BoothAdminDashboard = () => {
               {(statusFilter || schemeFilter || searchQuery) && (
                 <button
                   onClick={() => { setSearchQuery(''); setStatusFilter(''); setSchemeFilter(''); }}
-                  style={{ background: 'none', border: '1px solid var(--color-linen)', borderRadius: '20px', padding: '4px 12px', fontSize: '12px', color: 'var(--color-slate)', cursor: 'pointer' }}
+                  className="btn btn-ghost"
+                  style={{ padding: '4px 12px', fontSize: '12px', borderRadius: '20px' }}
                 >
                   Clear All
                 </button>
@@ -620,9 +896,9 @@ const BoothAdminDashboard = () => {
 
             {/* ── Table ── */}
             <div style={{ width: '100%', overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+              <table className="admin-table" style={{ width: '100%' }}>
                 <thead>
-                  <tr style={{ borderBottom: '2px solid var(--color-linen)', color: 'var(--color-slate)', textAlign: 'left', background: 'var(--color-fog-gray)' }}>
+                  <tr>
                     <th style={{ padding: '12px 10px' }}>#</th>
                     <th style={{ padding: '12px 10px' }}>Member &amp; EPIC</th>
                     <th style={{ padding: '12px 10px' }}>Mobile</th>
@@ -634,17 +910,17 @@ const BoothAdminDashboard = () => {
                 <tbody>
                   {loadingVoters ? (
                     Array.from({ length: 8 }).map((_, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid var(--color-linen)' }}>
+                      <tr key={i}>
                         {Array.from({ length: 6 }).map((_, j) => (
                           <td key={j} style={{ padding: '14px 10px' }}>
-                            <div style={{ height: '14px', borderRadius: '6px', background: 'var(--color-linen)', animation: 'pulse 1.4s ease-in-out infinite', width: j === 0 ? '24px' : j === 1 ? '80%' : '60%' }} />
+                            <div className="loading-skeleton" style={{ height: '14px', width: j === 0 ? '24px' : j === 1 ? '80%' : '60%' }} />
                           </td>
                         ))}
                       </tr>
                     ))
                   ) : voters.length === 0 ? (
                     <tr>
-                      <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--color-slate)' }}>
+                      <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
                         <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔍</div>
                         No applications found for Booth {admin.boothNo}.
                       </td>
@@ -654,23 +930,25 @@ const BoothAdminDashboard = () => {
                       const latestApp = voter.applications[voter.applications.length - 1];
                       const rowNum = (currentPage - 1) * LIMIT + idx + 1;
                       return (
-                        <tr key={voter.epicNo || idx}
-                          style={{ borderBottom: '1px solid var(--color-linen)', transition: 'background 0.15s' }}
-                          onMouseEnter={e => e.currentTarget.style.background = 'var(--color-fog-gray)'}
-                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                        >
-                          <td style={{ padding: '12px 10px', color: 'var(--color-ash-gray)', fontSize: '12px', fontWeight: '600' }}>{rowNum}</td>
+                        <tr key={voter.epicNo || idx}>
+                          <td style={{ padding: '12px 10px', color: 'var(--text-muted)', fontSize: '12px', fontWeight: '600' }}>{rowNum}</td>
                           <td style={{ padding: '12px 10px' }}>
-                            <div style={{ fontWeight: '700', color: 'var(--color-midnight-ink)' }}>{voter.voterName}</div>
-                            <div style={{ fontSize: '11px', color: 'var(--color-slate)', fontFamily: 'monospace' }}>{voter.epicNo}</div>
+                            <div style={{ fontWeight: '700', color: 'var(--text-primary)' }}>{voter.voterName}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>{voter.epicNo}</div>
                           </td>
-                          <td style={{ padding: '12px 10px', fontWeight: '600' }}>{voter.mobile}</td>
+                          <td style={{ padding: '12px 10px', fontWeight: '600', color: 'var(--text-primary)' }}>{voter.mobile}</td>
                           <td style={{ padding: '12px 10px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                              <span className="tag-pill tag-sunlit" style={{ fontWeight: '700', fontSize: '11px' }}>
+                              <span className="tag-pill" style={{ 
+                                background: 'linear-gradient(135deg, rgba(255, 107, 53, 0.2) 0%, rgba(255, 153, 51, 0.2) 100%)',
+                                color: 'var(--accent-secondary)',
+                                border: '1px solid var(--accent-primary)',
+                                fontWeight: '700', 
+                                fontSize: '11px' 
+                              }}>
                                 <Award size={12} /> {voter.applications.length} Scheme{voter.applications.length > 1 ? 's' : ''}
                               </span>
-                              <span style={{ fontSize: '11px', color: 'var(--color-slate)' }}>
+                              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
                                 {voter.applications.map(a => formatSchemeName(a.schemeName, a.schemeId)).join(', ')}
                               </span>
                             </div>
@@ -698,30 +976,21 @@ const BoothAdminDashboard = () => {
 
             {/* ── Pagination Controls ── */}
             {!loadingVoters && totalPages > 1 && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '24px', flexWrap: 'wrap' }}>
+              <div className="pagination">
                 <button
                   onClick={() => { const p = currentPage - 1; setCurrentPage(p); fetchVoters(p); }}
                   disabled={currentPage === 1}
-                  className="btn btn-ghost"
-                  style={{ padding: '6px 14px', fontSize: '13px', opacity: currentPage === 1 ? 0.4 : 1 }}
+                  className="page-btn"
                 >← Prev</button>
 
                 {getPageRange().map((item, i) =>
                   item === '...' ? (
-                    <span key={`e-${i}`} style={{ padding: '6px 4px', color: 'var(--color-ash-gray)', fontSize: '13px' }}>…</span>
+                    <span key={`e-${i}`} style={{ padding: '6px 4px', color: 'var(--text-muted)', fontSize: '13px' }}>…</span>
                   ) : (
                     <button
                       key={item}
                       onClick={() => { setCurrentPage(item); fetchVoters(item); }}
-                      className="btn"
-                      style={{
-                        padding: '6px 12px', fontSize: '13px',
-                        fontWeight: item === currentPage ? '700' : '500',
-                        background: item === currentPage ? 'var(--color-saffron)' : 'transparent',
-                        color: item === currentPage ? 'var(--color-midnight-ink)' : 'var(--color-slate)',
-                        border: item === currentPage ? '1.5px solid var(--color-saffron)' : '1.5px solid var(--color-linen)',
-                        borderRadius: '8px', minWidth: '36px'
-                      }}
+                      className={`page-btn ${item === currentPage ? 'active' : ''}`}
                     >{item}</button>
                   )
                 )}
@@ -729,11 +998,8 @@ const BoothAdminDashboard = () => {
                 <button
                   onClick={() => { const p = currentPage + 1; setCurrentPage(p); fetchVoters(p); }}
                   disabled={currentPage === totalPages}
-                  className="btn btn-ghost"
-                  style={{ padding: '6px 14px', fontSize: '13px', opacity: currentPage === totalPages ? 0.4 : 1 }}
+                  className="page-btn"
                 >Next →</button>
-
-                <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
               </div>
             )}
           </div>
@@ -748,10 +1014,10 @@ const BoothAdminDashboard = () => {
           
           {/* Header */}
           <div style={{ marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--color-midnight-ink)', margin: '0 0 8px 0' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--text-primary)', margin: '0 0 8px 0' }}>
               All Voters in Booth {admin.boothNo}
             </h2>
-            <p style={{ fontSize: '14px', color: 'var(--color-slate)', margin: 0 }}>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0 }}>
               {admin.assemblyName} Constituency - Complete voter list with application status
             </p>
           </div>
@@ -867,19 +1133,14 @@ const BoothAdminDashboard = () => {
               
               {/* Search Box */}
               <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
-                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
+                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 <input
                   type="text"
                   placeholder="Search by EPIC No or Voter Name..."
                   value={voterSearchQuery}
                   onChange={(e) => setVoterSearchQuery(e.target.value)}
                   className="form-control"
-                  style={{ 
-                    paddingLeft: '38px',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    color: '#F3F4F6'
-                  }}
+                  style={{ paddingLeft: '38px' }}
                 />
               </div>
 
@@ -944,31 +1205,27 @@ const BoothAdminDashboard = () => {
             
             {loadingAllVoters ? (
               <div style={{ padding: '60px 24px', textAlign: 'center' }}>
-                <div style={{ width: '40px', height: '40px', border: '4px solid var(--color-linen)', borderTopColor: 'var(--color-saffron)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
-                <div style={{ fontSize: '14px', color: 'var(--color-slate)', fontWeight: '500' }}>Loading voters...</div>
-                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                <div className="loading-spinner" style={{ margin: '0 auto 16px' }} />
+                <div style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: '500' }}>Loading voters...</div>
               </div>
             ) : allVoters.length === 0 ? (
               <div style={{ padding: '60px 24px', textAlign: 'center' }}>
                 <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔍</div>
-                <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--color-midnight-ink)', marginBottom: '8px' }}>No voters found</div>
-                <div style={{ fontSize: '14px', color: 'var(--color-slate)' }}>
+                <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '8px' }}>No voters found</div>
+                <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
                   {voterSearchQuery || voterStatusFilter ? 'Try adjusting your search or filters' : 'No voter data available for this booth'}
                 </div>
               </div>
             ) : (
               <div style={{ overflowX: 'auto', width: '100%' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                <table className="admin-table" style={{ width: '100%' }}>
                   <thead>
-                    <tr style={{ 
-                      background: '#0d0a17', 
-                      borderBottom: '2px solid rgba(139, 92, 246, 0.3)' 
-                    }}>
-                      <th style={{ padding: '14px 12px', textAlign: 'left', fontWeight: '700', color: '#8B5CF6', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>#</th>
-                      <th style={{ padding: '14px 12px', textAlign: 'left', fontWeight: '700', color: '#8B5CF6', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>EPIC No</th>
-                      <th style={{ padding: '14px 12px', textAlign: 'left', fontWeight: '700', color: '#8B5CF6', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Voter Name</th>
-                      <th style={{ padding: '14px 12px', textAlign: 'left', fontWeight: '700', color: '#8B5CF6', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Age / Gender</th>
-                      <th style={{ padding: '14px 12px', textAlign: 'center', fontWeight: '700', color: '#8B5CF6', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</th>
+                    <tr>
+                      <th style={{ padding: '14px 12px', textAlign: 'left' }}>#</th>
+                      <th style={{ padding: '14px 12px', textAlign: 'left' }}>EPIC No</th>
+                      <th style={{ padding: '14px 12px', textAlign: 'left' }}>Voter Name</th>
+                      <th style={{ padding: '14px 12px', textAlign: 'left' }}>Age / Gender</th>
+                      <th style={{ padding: '14px 12px', textAlign: 'center' }}>Status</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -976,34 +1233,10 @@ const BoothAdminDashboard = () => {
                       const { status, statusText, backgroundColor, borderColor, textColor, icon } = getVoterStatusAndColor(voter);
                       const rowNum = (allVotersPage - 1) * VOTERS_LIMIT + idx + 1;
 
-                      // Dark theme row background based on status
-                      let darkRowBg = '#1a1625'; // default dark purple
-                      if (status === 'Delivered') {
-                        darkRowBg = '#0f2419'; // dark green tint
-                      } else if (status === 'Submitted') {
-                        darkRowBg = '#2d1810'; // dark orange tint
-                      }
-
                       return (
                         <tr
                           key={voter.epicNo || idx}
-                          style={{
-                            backgroundColor: darkRowBg,
-                            borderLeft: `4px solid ${borderColor}`,
-                            borderBottom: '1px solid rgba(139, 92, 246, 0.2)',
-                            transition: 'all 0.2s ease',
-                            cursor: 'pointer'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#251f3a';
-                            e.currentTarget.style.transform = 'translateX(4px)';
-                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.15)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = darkRowBg;
-                            e.currentTarget.style.transform = 'translateX(0)';
-                            e.currentTarget.style.boxShadow = 'none';
-                          }}
+                          style={{ cursor: status !== 'Not Applied' ? 'pointer' : 'default' }}
                           onClick={() => {
                             // Click anywhere on row to view details (if has applications)
                             if (status !== 'Not Applied') {
@@ -1017,36 +1250,24 @@ const BoothAdminDashboard = () => {
                             }
                           }}
                         >
-                          <td style={{ padding: '14px 12px', fontWeight: '600', color: '#9CA3AF', fontSize: '12px' }}>
+                          <td style={{ padding: '14px 12px', fontWeight: '600', color: 'var(--text-muted)', fontSize: '12px' }}>
                             {rowNum}
                           </td>
 
-                          <td style={{ padding: '14px 12px', fontFamily: 'monospace', fontWeight: '700', fontSize: '13px', color: '#E5E7EB' }}>
+                          <td style={{ padding: '14px 12px', fontFamily: 'monospace', fontWeight: '700', fontSize: '13px', color: 'var(--text-primary)' }}>
                             {voter.epicNo}
                           </td>
 
-                          <td style={{ padding: '14px 12px', fontWeight: '700', fontSize: '14px', color: '#F3F4F6' }}>
+                          <td style={{ padding: '14px 12px', fontWeight: '700', fontSize: '14px', color: 'var(--text-primary)' }}>
                             {voter.voterName}
                           </td>
 
-                          <td style={{ padding: '14px 12px', color: '#9CA3AF', fontSize: '13px' }}>
+                          <td style={{ padding: '14px 12px', color: 'var(--text-secondary)', fontSize: '13px' }}>
                             {voter.age || '—'} / {voter.gender || '—'}
                           </td>
 
                           <td style={{ padding: '14px 12px', textAlign: 'center' }}>
-                            <span style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              padding: '6px 14px',
-                              borderRadius: '20px',
-                              fontSize: '13px',
-                              fontWeight: '700',
-                              backgroundColor: textColor,
-                              color: '#FFFFFF',
-                              border: `2px solid ${borderColor}`,
-                              boxShadow: `0 0 10px ${borderColor}40`
-                            }}>
+                            <span className={`status-badge status-${status.toLowerCase().replace(' ', '')}`}>
                               {icon} {status}
                             </span>
                           </td>
@@ -1065,33 +1286,33 @@ const BoothAdminDashboard = () => {
                 alignItems: 'center', 
                 justifyContent: 'space-between', 
                 padding: '16px 20px',
-                borderTop: '1px solid var(--color-linen)',
+                borderTop: '1px solid var(--border-color)',
                 flexWrap: 'wrap',
                 gap: '12px'
               }}>
-                <div style={{ fontSize: '13px', color: 'var(--color-slate)' }}>
-                  Showing <strong>{(allVotersPage - 1) * VOTERS_LIMIT + 1}</strong> – <strong>{Math.min(allVotersPage * VOTERS_LIMIT, allVotersStats.total)}</strong> of <strong>{allVotersStats.total}</strong> voters
+                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                  Showing <strong style={{ color: 'var(--text-primary)' }}>{(allVotersPage - 1) * VOTERS_LIMIT + 1}</strong> – <strong style={{ color: 'var(--text-primary)' }}>{Math.min(allVotersPage * VOTERS_LIMIT, allVotersStats.total)}</strong> of <strong style={{ color: 'var(--text-primary)' }}>{allVotersStats.total}</strong> voters
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <button
                     onClick={() => fetchAllVoters(allVotersPage - 1)}
                     disabled={allVotersPage === 1}
-                    className="btn btn-ghost"
-                    style={{ padding: '6px 12px', fontSize: '12px', opacity: allVotersPage === 1 ? 0.4 : 1 }}
+                    className="btn btn-ghost page-btn"
+                    style={{ padding: '6px 12px', fontSize: '12px' }}
                   >
                     ← Prev
                   </button>
 
-                  <span style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '600', color: 'var(--color-midnight-ink)' }}>
+                  <span style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)' }}>
                     Page {allVotersPage} of {allVotersTotalPages}
                   </span>
 
                   <button
                     onClick={() => fetchAllVoters(allVotersPage + 1)}
                     disabled={allVotersPage === allVotersTotalPages}
-                    className="btn btn-ghost"
-                    style={{ padding: '6px 12px', fontSize: '12px', opacity: allVotersPage === allVotersTotalPages ? 0.4 : 1 }}
+                    className="btn btn-ghost page-btn"
+                    style={{ padding: '6px 12px', fontSize: '12px' }}
                   >
                     Next →
                   </button>

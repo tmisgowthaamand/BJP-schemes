@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, User as UserIcon, Shield } from 'lucide-react';
+import { LogOut, User as UserIcon, Shield, ChevronRight, Home } from 'lucide-react';
 
 const Navbar = ({ activeTab, setActiveTab }) => {
   const { user, logoutUser, admin, logoutAdmin } = useAuth();
@@ -8,58 +8,121 @@ const Navbar = ({ activeTab, setActiveTab }) => {
   const role = admin?.role || 'SUPER_ADMIN';
 
   const roleThemeInfo = {
-    SUPER_ADMIN: { class: 'theme-superadmin', label: 'DARK LAVENDER', bg: 'rgba(167, 139, 250, 0.2)', color: '#c4b5fd', border: 'rgba(167, 139, 250, 0.3)' },
-    STATE_ADMIN: { class: 'theme-stateadmin', label: 'DARK EMERALD', bg: 'rgba(52, 211, 153, 0.2)', color: '#6ee7b7', border: 'rgba(52, 211, 153, 0.3)' },
-    DISTRICT_ADMIN: { class: 'theme-districtadmin', label: 'DARK SAPPHIRE', bg: 'rgba(56, 189, 248, 0.2)', color: '#7dd3fc', border: 'rgba(56, 189, 248, 0.3)' },
-    ASSEMBLY_ADMIN: { class: 'theme-assemblyadmin', label: 'DARK SAFFRON', bg: 'rgba(249, 115, 22, 0.2)', color: '#ffb07c', border: 'rgba(249, 115, 22, 0.3)' },
-    BOOTH_ADMIN: { class: 'theme-boothadmin', label: 'DARK ROSE', bg: 'rgba(251, 113, 133, 0.2)', color: '#fca5a5', border: 'rgba(251, 113, 133, 0.3)' },
+    SUPER_ADMIN: { class: 'theme-superadmin', label: 'SUPER ADMIN', bg: 'rgba(167, 139, 250, 0.15)', color: '#c4b5fd', border: 'rgba(167, 139, 250, 0.3)' },
+    STATE_ADMIN: { class: 'theme-stateadmin', label: 'STATE ADMIN', bg: 'rgba(52, 211, 153, 0.15)', color: '#6ee7b7', border: 'rgba(52, 211, 153, 0.3)' },
+    DISTRICT_ADMIN: { class: 'theme-districtadmin', label: 'DISTRICT ADMIN', bg: 'rgba(56, 189, 248, 0.15)', color: '#7dd3fc', border: 'rgba(56, 189, 248, 0.3)' },
+    ASSEMBLY_ADMIN: { class: 'theme-assemblyadmin', label: 'ASSEMBLY ADMIN', bg: 'rgba(249, 115, 22, 0.15)', color: '#ffb07c', border: 'rgba(249, 115, 22, 0.3)' },
+    BOOTH_ADMIN: { class: 'theme-boothadmin', label: 'BOOTH ADMIN', bg: 'rgba(255, 107, 53, 0.15)', color: '#FF9933', border: 'rgba(255, 107, 53, 0.3)' },
   };
 
   const currentTheme = roleThemeInfo[role] || roleThemeInfo.SUPER_ADMIN;
+
+  // Generate breadcrumb for admin dashboards
+  const getBreadcrumb = () => {
+    if (!admin) return null;
+    
+    const parts = [];
+    
+    if (admin.district) parts.push(admin.district);
+    if (admin.assemblyName) parts.push(admin.assemblyName);
+    if (admin.boothNo) parts.push(`Booth ${admin.boothNo}`);
+    
+    return parts.length > 0 ? parts.join(' — ') : null;
+  };
+
+  const breadcrumb = getBreadcrumb();
 
   return (
     <header
       className={currentTheme.class}
       style={{
-        background: 'var(--theme-bg-app)',
+        background: admin ? 'var(--bg-primary)' : 'var(--theme-bg-app)',
         backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid var(--theme-border)',
-        position: 'relative',
-        zIndex: 100,
-        padding: '14px 0',
-        marginBottom: '10px',
+        borderBottom: admin ? '1px solid var(--border-color)' : '1px solid var(--theme-border)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000,
         transition: 'all 0.3s ease'
       }}
     >
-      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+      <div 
+        className="container" 
+        style={{ 
+          maxWidth: admin ? '100%' : '1400px',
+          margin: '0 auto',
+          padding: admin ? '12px 24px' : '14px 20px',
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          flexWrap: 'wrap', 
+          gap: '12px' 
+        }}
+      >
         
-        {/* BJP Brand Logo & Title */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setActiveTab && setActiveTab('schemes')}>
+        {/* LEFT: BJP Brand Logo & Title */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer', minWidth: 0, flex: '0 1 auto' }} onClick={() => setActiveTab && setActiveTab('schemes')}>
           <img
             src="/bjp_logo.svg"
             alt="BJP Logo"
-            style={{ height: '38px', width: 'auto', flexShrink: 0 }}
+            style={{ height: admin ? '36px' : '38px', width: 'auto', flexShrink: 0 }}
           />
-          <div>
-            <div style={{ fontSize: '17px', fontWeight: '700', color: 'var(--theme-text-main)', letterSpacing: '-0.3px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>BJP Nalam Thittam</span>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ 
+              fontSize: admin ? '16px' : '17px', 
+              fontWeight: '700', 
+              color: admin ? 'var(--text-primary)' : 'var(--theme-text-main)', 
+              letterSpacing: '-0.02em', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '10px',
+              flexWrap: 'wrap'
+            }}>
+              <span style={{ whiteSpace: 'nowrap' }}>BJP Nalam Thittam</span>
               {admin && (
-                <span style={{ fontSize: '10px', background: currentTheme.bg, color: currentTheme.color, padding: '2px 8px', borderRadius: '9999px', border: `1px solid ${currentTheme.border}`, fontWeight: 700 }}>
+                <span style={{ 
+                  fontSize: '10px', 
+                  background: currentTheme.bg, 
+                  color: currentTheme.color, 
+                  padding: '4px 10px', 
+                  borderRadius: '6px', 
+                  border: `1px solid ${currentTheme.border}`, 
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  whiteSpace: 'nowrap'
+                }}>
                   {currentTheme.label}
                 </span>
               )}
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--theme-text-muted)' }}>
-              Direct Benefit Transfer Automation
-            </div>
+            {/* Breadcrumb for admin */}
+            {breadcrumb && admin ? (
+              <div style={{ 
+                fontSize: '13px', 
+                color: 'var(--text-secondary)', 
+                marginTop: '2px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontWeight: 500,
+                letterSpacing: '-0.01em'
+              }}>
+                <Home size={12} style={{ color: 'var(--text-muted)' }} />
+                {breadcrumb}
+              </div>
+            ) : !admin ? (
+              <div style={{ fontSize: '12px', color: 'var(--theme-text-muted)', marginTop: '2px' }}>
+                Direct Benefit Transfer Automation
+              </div>
+            ) : null}
           </div>
         </div>
 
-        {/* User Pill / Admin Logout */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* RIGHT: User/Admin Info + Logout */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: '0 0 auto' }}>
           {user ? (
             <>
-              <div className="tag-pill tag-sunlit" style={{ padding: '6px 14px', fontSize: '13px' }}>
+              <div className="tag-pill tag-sunlit" style={{ padding: '6px 14px', fontSize: '13px', whiteSpace: 'nowrap' }}>
                 <UserIcon size={14} color="var(--theme-accent)" />
                 <span style={{ fontWeight: '600', color: 'var(--theme-text-main)' }}>{user.voterName}</span>
                 <span style={{ color: 'var(--theme-text-muted)', fontSize: '11px' }}>({user.epicNo})</span>
@@ -69,7 +132,7 @@ const Navbar = ({ activeTab, setActiveTab }) => {
                 onClick={logoutUser}
                 className="btn btn-ghost"
                 title="Logout to restart flow"
-                style={{ padding: '6px 14px', fontSize: '13px' }}
+                style={{ padding: '6px 14px', fontSize: '13px', whiteSpace: 'nowrap' }}
               >
                 <LogOut size={14} />
                 Logout
@@ -77,18 +140,41 @@ const Navbar = ({ activeTab, setActiveTab }) => {
             </>
           ) : admin ? (
             <>
-              <div className="tag-pill tag-active" style={{ padding: '6px 14px', fontSize: '13px' }}>
-                <Shield size={14} />
-                <span>{admin.role} ({admin.username})</span>
+              <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                gap: '2px'
+              }}>
+                <div style={{ 
+                  fontSize: '13px', 
+                  fontWeight: '600', 
+                  color: 'var(--text-primary)',
+                  letterSpacing: '-0.01em'
+                }}>
+                  {admin.username}
+                </div>
+                <div style={{ 
+                  fontSize: '11px', 
+                  color: 'var(--text-muted)',
+                  fontWeight: 500
+                }}>
+                  {admin.assemblyName || admin.district || 'Admin Portal'}
+                </div>
               </div>
 
               <button
                 onClick={logoutAdmin}
                 className="btn btn-ghost"
-                style={{ padding: '6px 14px', fontSize: '13px' }}
+                style={{ 
+                  padding: '8px 16px', 
+                  fontSize: '13px',
+                  whiteSpace: 'nowrap',
+                  borderRadius: '8px'
+                }}
               >
-                <LogOut size={14} />
-                Admin Logout
+                <LogOut size={15} />
+                Sign Out
               </button>
             </>
           ) : null}

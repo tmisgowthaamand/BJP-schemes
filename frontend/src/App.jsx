@@ -20,9 +20,9 @@ const MainAppContent = () => {
   // 1. Render Admin Portal if URL starts with /admin or admin is logged in (UNTOUCHED)
   if (isAdminRoute) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#0a0a0f' }}>
         <Navbar activeTab="admin" setActiveTab={() => {}} />
-        <main className="container" style={{ flex: 1, padding: '30px 20px' }}>
+        <main style={{ flex: 1, padding: '20px 24px' }}>
           <AdminPortal />
         </main>
       </div>
