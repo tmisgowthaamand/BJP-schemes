@@ -283,7 +283,20 @@ const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSel
           type="button"
           onClick={handleDirectCall}
           className="btn btn-filled"
-          style={{ padding: '10px 22px', fontSize: '14px', fontWeight: '700', borderRadius: '9999px', background: 'var(--color-midnight-ink)' }}
+          style={{ 
+            padding: '10px 22px', 
+            fontSize: '14px', 
+            fontWeight: '700', 
+            borderRadius: '9999px', 
+            background: '#fb7185',
+            color: '#FFFFFF',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(251, 113, 133, 0.4)'
+          }}
         >
           <PhoneCall size={16} /> Call Voter ({mobile})
         </button>
@@ -296,33 +309,33 @@ const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSel
       )}
 
       {/* Main Full Page Card */}
-      <div className="campsite-card" style={{ width: '100%', padding: '28px', boxSizing: 'border-box', marginBottom: '30px' }}>
+      <div className="campsite-card" style={{ width: '100%', padding: '28px', boxSizing: 'border-box', marginBottom: '30px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
         
         {/* Header Profile Section */}
-        <div style={{ borderBottom: '1px solid var(--color-linen)', paddingBottom: '20px', marginBottom: '24px' }}>
+        <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '20px', marginBottom: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                 <span className="tag-pill tag-sunlit" style={{ fontSize: '11px' }}>MEMBER PROFILE PAGE</span>
                 <span className="tag-pill tag-active" style={{ fontSize: '11px' }}>{applications.length} Schemes Applied</span>
-                <span className="tag-pill tag-muted" style={{ fontSize: '11px', background: 'var(--color-sunlit-cream)', color: 'var(--color-ember-brown)', fontWeight: '700' }}>
+                <span className="tag-pill tag-muted" style={{ fontSize: '11px', background: 'rgba(255, 107, 53, 0.15)', color: '#FF6B35', fontWeight: '700' }}>
                   <Share2 size={12} /> {loadingReferrals ? 'Loading...' : `${referredVoters.length} Member(s) Referred`}
                 </span>
               </div>
-              <h1 className="text-heading" style={{ fontSize: '26px', margin: 0, color: 'var(--color-midnight-ink)' }}>
+              <h1 className="text-heading" style={{ fontSize: '26px', margin: 0, color: '#F3F4F6' }}>
                 {voterName}
               </h1>
-              <div style={{ fontSize: '14px', color: 'var(--color-slate)', marginTop: '4px' }}>
-                EPIC ID: <strong style={{ fontFamily: 'var(--font-ui-monospace)', color: 'var(--color-midnight-ink)' }}>{epicNo}</strong> • Mobile: <strong style={{ color: 'var(--color-midnight-ink)' }}>{mobile}</strong>
+              <div style={{ fontSize: '14px', color: '#9CA3AF', marginTop: '4px' }}>
+                EPIC ID: <strong style={{ fontFamily: 'var(--font-ui-monospace)', color: '#E5E7EB' }}>{epicNo}</strong> • Mobile: <strong style={{ color: '#E5E7EB' }}>{mobile}</strong>
               </div>
             </div>
 
             {/* Jurisdiction Badge */}
-            <div style={{ background: 'var(--color-fog-gray)', padding: '12px 18px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <MapPin size={18} color="var(--color-campfire-orange)" />
-              <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-midnight-ink)' }}>
+            <div style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '12px 18px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+              <MapPin size={18} color="#FF6B35" />
+              <div style={{ fontSize: '13px', fontWeight: '600', color: '#F3F4F6' }}>
                 {district} • {assemblyName}
-                <div style={{ fontSize: '12px', color: 'var(--color-campfire-orange)', fontWeight: '700' }}>
+                <div style={{ fontSize: '12px', color: '#FF6B35', fontWeight: '700' }}>
                   Polling Booth #{boothNo}
                 </div>
               </div>
@@ -335,7 +348,7 @@ const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSel
           
           {/* Left Column: Applied BJP Schemes Selector */}
           <div>
-            <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-slate)', textTransform: 'uppercase', marginBottom: '14px' }}>
+            <div style={{ fontSize: '13px', fontWeight: '700', color: '#9CA3AF', textTransform: 'uppercase', marginBottom: '14px' }}>
               Applied Schemes ({appsState.length})
             </div>
 
@@ -349,20 +362,20 @@ const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSel
                     style={{
                       padding: '16px',
                       borderRadius: '12px',
-                      border: isSelected ? '2px solid var(--color-campfire-orange)' : '1px solid var(--color-linen)',
-                      background: isSelected ? 'var(--color-sunlit-cream)' : 'var(--color-paper-white)',
+                      border: isSelected ? '2px solid #FF6B35' : '1px solid rgba(255, 255, 255, 0.1)',
+                      background: isSelected ? 'rgba(255, 107, 53, 0.1)' : 'rgba(255, 255, 255, 0.03)',
                       cursor: 'pointer',
-                      boxShadow: isSelected ? '0 4px 12px rgba(255, 107, 26, 0.1)' : 'none',
+                      boxShadow: isSelected ? '0 4px 12px rgba(255, 107, 26, 0.2)' : 'none',
                       transition: 'all 0.2s ease'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <span style={{ fontWeight: '700', fontSize: '15px', color: 'var(--color-midnight-ink)' }}>
+                      <span style={{ fontWeight: '700', fontSize: '15px', color: '#F3F4F6' }}>
                         {formatSchemeName(app.schemeName, app.schemeId)}
                       </span>
                       <StatusBadge status={app.status} />
                     </div>
-                    <div style={{ fontSize: '13px', color: 'var(--color-slate)' }}>{app.benefit}</div>
+                    <div style={{ fontSize: '13px', color: '#9CA3AF' }}>{app.benefit}</div>
                   </div>
                 );
               })}
@@ -370,15 +383,15 @@ const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSel
 
             {/* Member's Unique Referral Code & Link Box */}
             <div style={{
-              background: '#fff7ed',
-              border: '1.5px dashed var(--color-saffron)',
+              background: 'rgba(255, 107, 53, 0.1)',
+              border: '1.5px dashed rgba(255, 107, 53, 0.3)',
               borderRadius: '12px',
               padding: '14px',
               marginBottom: '20px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-midnight-ink)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Share2 size={14} color="var(--color-campfire-orange)" />
+                <div style={{ fontSize: '12px', fontWeight: '700', color: '#FF6B35', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Share2 size={14} color="#FF6B35" />
                   Member Referral Link
                 </div>
                 <span className="tag-pill tag-sunlit" style={{ fontSize: '11px', fontWeight: '700' }}>
@@ -391,7 +404,14 @@ const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSel
                   readOnly
                   value={`${window.location.origin}/r/${referralCode || epicNo}`}
                   className="form-control"
-                  style={{ fontSize: '11px', padding: '6px 8px', fontFamily: 'var(--font-ui-monospace)', background: '#fff' }}
+                  style={{ 
+                    fontSize: '11px', 
+                    padding: '6px 8px', 
+                    fontFamily: 'var(--font-ui-monospace)', 
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: '#F3F4F6'
+                  }}
                 />
                 <button
                   type="button"
@@ -411,15 +431,15 @@ const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSel
 
             {/* Referrals Section inside Left Column */}
             <div style={{ borderTop: '1px solid var(--color-linen)', paddingTop: '20px' }}>
-              <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-midnight-ink)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Users size={16} color="var(--color-campfire-orange)" />
+              <div style={{ fontSize: '13px', fontWeight: '700', color: '#FF6B35', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Users size={16} color="#FF6B35" />
                 Voters Referred by {voterName.split(' ')[0]} ({loadingReferrals ? '...' : referredVoters.length})
               </div>
 
               {loadingReferrals ? (
-                <div style={{ fontSize: '12px', color: 'var(--color-slate)' }}>Loading referral history...</div>
+                <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Loading referral history...</div>
               ) : referredVoters.length === 0 ? (
-                <div style={{ fontSize: '12px', color: 'var(--color-slate)', background: 'var(--color-fog-gray)', padding: '12px', borderRadius: '8px' }}>
+                <div style={{ fontSize: '12px', color: '#9CA3AF', background: 'rgba(255, 255, 255, 0.05)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
                   No members registered under {voterName}'s referral code yet.
                 </div>
               ) : (
@@ -429,28 +449,28 @@ const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSel
                       key={ref.epicNo || ref.id}
                       style={{
                         padding: '12px',
-                        background: 'var(--color-paper-white)',
+                        background: 'rgba(255, 255, 255, 0.05)',
                         borderRadius: '10px',
-                        border: '1px solid var(--color-linen)',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
                         transition: 'all 0.15s ease'
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
                         <div>
-                          <div style={{ fontWeight: '700', fontSize: '13px', color: 'var(--color-midnight-ink)' }}>{ref.voterName}</div>
-                          <div style={{ fontSize: '11px', color: 'var(--color-slate)', fontFamily: 'var(--font-ui-monospace)' }}>{ref.epicNo}</div>
+                          <div style={{ fontWeight: '700', fontSize: '13px', color: '#F3F4F6' }}>{ref.voterName}</div>
+                          <div style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'var(--font-ui-monospace)' }}>{ref.epicNo}</div>
                         </div>
                         <span className="tag-pill tag-sunlit" style={{ fontSize: '10px', fontWeight: '700', flexShrink: 0 }}>
                           {ref.applications?.length || 0} Scheme(s)
                         </span>
                       </div>
 
-                      <div style={{ fontSize: '11px', color: 'var(--color-slate)', marginTop: '8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 12px' }}>
-                        <span>District: <strong style={{ color: 'var(--color-midnight-ink)' }}>{ref.district || '—'}</strong></span>
-                        <span>Assembly: <strong style={{ color: 'var(--color-midnight-ink)' }}>{ref.assemblyName || '—'}</strong></span>
-                        <span>Booth: <strong style={{ color: 'var(--color-midnight-ink)' }}>{ref.boothNo || '—'}</strong></span>
-                        <span>Mobile: <strong style={{ color: 'var(--color-midnight-ink)' }}>{ref.mobile}</strong></span>
+                      <div style={{ fontSize: '11px', color: '#9CA3AF', marginTop: '8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 12px' }}>
+                        <span>District: <strong style={{ color: '#E5E7EB' }}>{ref.district || '—'}</strong></span>
+                        <span>Assembly: <strong style={{ color: '#E5E7EB' }}>{ref.assemblyName || '—'}</strong></span>
+                        <span>Booth: <strong style={{ color: '#E5E7EB' }}>{ref.boothNo || '—'}</strong></span>
+                        <span>Mobile: <strong style={{ color: '#E5E7EB' }}>{ref.mobile}</strong></span>
                       </div>
                     </div>
                   ))}
@@ -462,31 +482,39 @@ const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSel
 
           {/* Right Column: Flipkart-Style Order & Application Status Timeline Tracker */}
           {selectedApp && (
-            <div style={{ border: '1px solid var(--color-linen)', borderRadius: '14px', padding: '24px', background: 'var(--color-paper-white)', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+            <div style={{ border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '14px', padding: '24px', background: 'rgba(255, 255, 255, 0.03)', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
               
               {/* Selected Scheme Details Header */}
-              <div style={{ borderBottom: '1px solid var(--color-linen)', paddingBottom: '16px', marginBottom: '24px' }}>
+              <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '16px', marginBottom: '24px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
                   <div>
                     <span className="tag-pill tag-sunlit" style={{ fontSize: '11px', marginBottom: '4px' }}>{selectedApp.clusterName}</span>
-                    <h3 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--color-midnight-ink)', margin: 0 }}>
+                    <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#F3F4F6', margin: 0 }}>
                       {formatSchemeName(selectedApp.schemeName, selectedApp.schemeId)}
                     </h3>
-                    <div style={{ fontSize: '14px', color: 'var(--color-forest-pulse)', fontWeight: '600', marginTop: '2px' }}>
+                    <div style={{ fontSize: '14px', color: '#10B981', fontWeight: '600', marginTop: '2px' }}>
                       {selectedApp.benefit}
                     </div>
                   </div>
                   
                   {/* Inline Status Dropdown */}
                   <div>
-                    <label style={{ fontSize: '12px', color: 'var(--color-slate)', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
+                    <label style={{ fontSize: '12px', color: '#9CA3AF', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
                       Update Status
                     </label>
                     <select
                       value={selectedApp.status || 'Pending'}
                       onChange={(e) => handleStatusChange(selectedApp._id, e.target.value)}
                       className="form-control"
-                      style={{ padding: '8px 12px', fontSize: '13px', fontWeight: '700', borderRadius: '8px', background: 'var(--color-fog-gray)' }}
+                      style={{ 
+                        padding: '8px 12px', 
+                        fontSize: '13px', 
+                        fontWeight: '700', 
+                        borderRadius: '8px', 
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        color: '#F3F4F6'
+                      }}
                     >
                       {statusOptions.map(st => (
                         <option key={st} value={st}>
@@ -582,7 +610,7 @@ const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSel
 
               {/* Admin Verification Remarks Section */}
               <div style={{ borderTop: '1px solid var(--color-linen)', paddingTop: '20px' }}>
-                <label style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-midnight-ink)', display: 'block', marginBottom: '8px' }}>
+                <label style={{ fontSize: '13px', fontWeight: '700', color: '#F3F4F6', display: 'block', marginBottom: '8px' }}>
                   Admin Verification Remarks & Log Notes
                 </label>
                 <textarea
@@ -591,7 +619,13 @@ const MemberProfileTimelineView = ({ voterData, onBack, onUpdateAppStatus, onSel
                   onChange={(e) => setNotesState({ ...notesState, [selectedApp._id]: e.target.value })}
                   placeholder="Enter remarks for this scheme..."
                   className="form-control"
-                  style={{ fontSize: '13px', marginBottom: '10px' }}
+                  style={{ 
+                    fontSize: '13px', 
+                    marginBottom: '10px',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: '#F3F4F6'
+                  }}
                 />
                 <button
                   type="button"

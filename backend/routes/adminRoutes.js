@@ -9,6 +9,7 @@ const {
   getDashboardStats,
   getMemberReferrals,
   getApplicationsList,
+  getBoothAllVoters,
   exportApplicationsCsv,
   exportApplicationsExcel,
   getFilterMeta,
@@ -34,6 +35,7 @@ router.get('/dashboard-stats', protectAdmin, getDashboardStats);
 router.get('/filter-meta', protectAdmin, getFilterMeta);
 router.get('/member-referrals', protectAdmin, getMemberReferrals);
 router.get('/applications', protectAdmin, getApplicationsList);
+router.get('/booth-all-voters', protectAdmin, getBoothAllVoters);
 router.get('/export-csv', protectAdmin, exportApplicationsCsv);
 router.get('/export-excel', protectAdmin, exportApplicationsExcel);
 router.put('/applications/:id/status', protectAdmin, updateApplicationStatus);

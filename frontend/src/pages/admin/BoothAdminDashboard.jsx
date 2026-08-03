@@ -35,6 +35,16 @@ const BoothAdminDashboard = () => {
   const [schemeFilter, setSchemeFilter] = useState('');
   const [selectedVoterTimeline, setSelectedVoterTimeline] = useState(null);
 
+  // ── All Voters Data (New Page) ──
+  const [allVoters, setAllVoters] = useState([]);
+  const [loadingAllVoters, setLoadingAllVoters] = useState(false);
+  const [allVotersStats, setAllVotersStats] = useState({ total: 0, delivered: 0, submitted: 0, notApplied: 0 });
+  const [voterStatusFilter, setVoterStatusFilter] = useState(''); // 'delivered', 'submitted', 'notapplied', or ''
+  const [voterSearchQuery, setVoterSearchQuery] = useState('');
+  const [allVotersPage, setAllVotersPage] = useState(1);
+  const [allVotersTotalPages, setAllVotersTotalPages] = useState(1);
+  const VOTERS_LIMIT = 50;
+
   const navigateSubPage = (pageKey) => {
     setSubPage(pageKey);
     setSelectedVoterTimeline(null);
@@ -79,6 +89,55 @@ const BoothAdminDashboard = () => {
   };
 
   const fetchDashboardData = () => { fetchStats(); fetchVoters(1); };
+
+  // ── Fetch All Voters with Application Status ──
+  const fetchAllVoters = async (page = 1) => {
+    try {
+      setLoadingAllVoters(true);
+      const params = new URLSearchParams({
+        page,
+        limit: VOTERS_LIMIT,
+        ...(voterSearchQuery && { search: voterSearchQuery }),
+        ...(voterStatusFilter && { statusFilter: voterStatusFilter })
+      });
+      console.log('[fetchAllVoters] Requesting:', `/admin/booth-all-voters?${params.toString()}`);
+      const res = await API.get(`/admin/booth-all-voters?${params}`);
+      console.log('[fetchAllVoters] Response:', res.data);
+      
+      if (res.data.success) {
+        setAllVoters(res.data.voters || []);
+        setAllVotersStats(res.data.stats || { total: 0, delivered: 0, submitted: 0, notApplied: 0 });
+        setAllVotersTotalPages(res.data.totalPages || 1);
+        setAllVotersPage(res.data.currentPage || 1);
+        console.log('[fetchAllVoters] Set voters:', res.data.voters?.length || 0, 'voters');
+      } else {
+        console.error('[fetchAllVoters] API returned success:false', res.data);
+        alert(`Error: ${res.data.message || 'Failed to load voters'}`);
+      }
+    } catch (err) {
+      console.error('Error loading all voters:', err);
+      console.error('Error response:', err.response?.data);
+      if (err.response?.data?.message) {
+        alert(`Error loading voters: ${err.response.data.message}\n\nDebug: ${JSON.stringify(err.response.data.debugInfo || {})}`);
+      }
+    } finally {
+      setLoadingAllVoters(false);
+    }
+  };
+
+  // Fetch all voters when navigating to that page
+  useEffect(() => {
+    if (subPage === 'allvoters') {
+      fetchAllVoters(1);
+    }
+  }, [subPage]);
+
+  // Re-fetch when filters change
+  useEffect(() => {
+    if (subPage === 'allvoters') {
+      fetchAllVoters(1);
+    }
+  }, [voterStatusFilter, voterSearchQuery]);
 
   useEffect(() => { fetchStats(); }, []);
   useEffect(() => { fetchVoters(1); setCurrentPage(1); }, [searchQuery, statusFilter, schemeFilter]);
@@ -138,6 +197,46 @@ const BoothAdminDashboard = () => {
   const handleOpenVoterDetails = (voter) => {
     setSubPage('applications');
     setSelectedVoterTimeline(voter);
+  };
+
+  // ── Helper function to get status and colors for All Voters table ──
+  const getVoterStatusAndColor = (voter) => {
+    // No application → White badge with dark text
+    if (!voter.applications || voter.applications.length === 0) {
+      return {
+        status: 'Not Applied',
+        statusText: '○ Not Applied',
+        backgroundColor: '#FFFFFF',
+        borderColor: '#6B7280',
+        textColor: '#6B7280', // Dark gray text for white badge
+        icon: '○'
+      };
+    }
+
+    // Check latest application
+    const latestApp = voter.applications[voter.applications.length - 1];
+
+    // Delivered/Approved → Green
+    if (latestApp.status === 'Approved' || latestApp.status === 'Completed') {
+      return {
+        status: 'Delivered',
+        statusText: '✓ Delivered',
+        backgroundColor: '#F0FDF4',
+        borderColor: '#10B981',
+        textColor: '#10B981',
+        icon: '✓'
+      };
+    }
+
+    // Any other status → Saffron (Submitted)
+    return {
+      status: 'Submitted',
+      statusText: '⏳ Submitted',
+      backgroundColor: '#FFF7ED',
+      borderColor: '#F97316',
+      textColor: '#F97316',
+      icon: '⏳'
+    };
   };
 
   // Page range for pagination pills
@@ -230,6 +329,19 @@ const BoothAdminDashboard = () => {
             <span>Booth Applications</span>
             <span style={{ fontSize: '10.5px', opacity: 0.8 }}>
               {totalVoters ? `${totalVoters.toLocaleString()} Members` : 'Live DB'}
+            </span>
+          </div>
+        </button>
+
+        <button
+          onClick={() => navigateSubPage('allvoters')}
+          className={`sidebar-nav-btn ${subPage === 'allvoters' ? 'active' : ''}`}
+        >
+          <Users size={18} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1, minWidth: 0 }}>
+            <span>All Voters Data</span>
+            <span style={{ fontSize: '10.5px', opacity: 0.8 }}>
+              Status Tracking
             </span>
           </div>
         </button>
@@ -425,14 +537,20 @@ const BoothAdminDashboard = () => {
             {/* ── Filter Row 1: Search + Summary ── */}
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '10px', width: '100%', alignItems: 'center' }}>
               <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
-                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-ash-gray)' }} />
+                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
                 <input
                   type="text"
                   placeholder={`Search in Booth ${admin.boothNo} voters...`}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="form-control"
-                  style={{ paddingLeft: '38px' }}
+                  style={{ 
+                    paddingLeft: '38px',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: '#F3F4F6',
+                    '::placeholder': { color: '#9CA3AF' }
+                  }}
                 />
               </div>
               <div style={{ fontSize: '13px', color: 'var(--color-slate)', whiteSpace: 'nowrap' }}>
@@ -445,7 +563,19 @@ const BoothAdminDashboard = () => {
 
             {/* ── Filter Row 2: Status + Scheme + Clear ── */}
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '16px', width: '100%', alignItems: 'center' }}>
-              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="form-control" style={{ minWidth: '150px', flex: '1 1 150px', maxWidth: '180px' }}>
+              <select 
+                value={statusFilter} 
+                onChange={(e) => setStatusFilter(e.target.value)} 
+                className="form-control" 
+                style={{ 
+                  minWidth: '150px', 
+                  flex: '1 1 150px', 
+                  maxWidth: '180px',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  color: '#F3F4F6'
+                }}
+              >
                 <option value="">All Statuses</option>
                 <option value="Pending">Pending</option>
                 <option value="Submitted">Submitted</option>
@@ -462,7 +592,13 @@ const BoothAdminDashboard = () => {
                 value={BJP_SCHEMES.find(s => s.name.toLowerCase() === (schemeFilter || '').toLowerCase() || (s.fullTitle && s.fullTitle.toLowerCase() === (schemeFilter || '').toLowerCase()))?.name || schemeFilter || ''}
                 onChange={(e) => setSchemeFilter(e.target.value)}
                 className="form-control"
-                style={{ flex: '1 1 160px', minWidth: '150px' }}
+                style={{ 
+                  flex: '1 1 160px', 
+                  minWidth: '150px',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  color: '#F3F4F6'
+                }}
               >
                 <option value="">All 23 Central BJP Schemes</option>
                 {BJP_SCHEMES.map(s => (
@@ -604,6 +740,370 @@ const BoothAdminDashboard = () => {
         )
       )}
 
+      {/* ══════════════════════════════════════════ */}
+      {/* PAGE 3: ALL VOTERS DATA                    */}
+      {/* ══════════════════════════════════════════ */}
+      {subPage === 'allvoters' && (
+        <div style={{ width: '100%', boxSizing: 'border-box' }}>
+          
+          {/* Header */}
+          <div style={{ marginBottom: '24px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--color-midnight-ink)', margin: '0 0 8px 0' }}>
+              All Voters in Booth {admin.boothNo}
+            </h2>
+            <p style={{ fontSize: '14px', color: 'var(--color-slate)', margin: 0 }}>
+              {admin.assemblyName} Constituency - Complete voter list with application status
+            </p>
+          </div>
+
+          {/* Stats Summary Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px', width: '100%' }}>
+            
+            {/* Total Voters */}
+            <div className="stat-card" style={{
+              background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+              border: '1px solid rgba(139, 92, 246, 0.3)'
+            }}>
+              <div className="stat-icon" style={{ background: 'rgba(139, 92, 246, 0.2)', color: '#A78BFA' }}>
+                <Users size={20} />
+              </div>
+              <div>
+                <div className="stat-number" style={{ color: '#E5E7EB' }}>{allVotersStats.total}</div>
+                <div className="stat-label" style={{ color: '#D1D5DB' }}>Total Voters</div>
+                <div style={{ fontSize: '11px', color: '#9CA3AF', marginTop: '2px' }}>Electoral Roll</div>
+              </div>
+            </div>
+
+            {/* Delivered - GREEN */}
+            <div className="stat-card" style={{ 
+              borderLeft: '4px solid #10B981',
+              background: 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)',
+              border: '1px solid #10B981',
+              cursor: 'pointer',
+              boxShadow: '0 0 20px rgba(16, 185, 129, 0.2)'
+            }}
+            onClick={() => setVoterStatusFilter(voterStatusFilter === 'delivered' ? '' : 'delivered')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = '0 0 30px rgba(16, 185, 129, 0.4)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.2)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+            >
+              <div className="stat-icon" style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10B981' }}>
+                <Award size={20} />
+              </div>
+              <div>
+                <div className="stat-number" style={{ color: '#10B981', fontSize: '32px' }}>{allVotersStats.delivered}</div>
+                <div className="stat-label" style={{ color: '#D1FAE5' }}>🟢 Delivered</div>
+                <div style={{ fontSize: '11px', color: '#6EE7B7', marginTop: '2px', fontWeight: '600' }}>Click to filter</div>
+              </div>
+            </div>
+
+            {/* Submitted - SAFFRON */}
+            <div className="stat-card" style={{ 
+              borderLeft: '4px solid #F97316',
+              background: 'linear-gradient(135deg, #7c2d12 0%, #9a3412 100%)',
+              border: '1px solid #F97316',
+              cursor: 'pointer',
+              boxShadow: '0 0 20px rgba(249, 115, 22, 0.2)'
+            }}
+            onClick={() => setVoterStatusFilter(voterStatusFilter === 'submitted' ? '' : 'submitted')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = '0 0 30px rgba(249, 115, 22, 0.4)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = '0 0 20px rgba(249, 115, 22, 0.2)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+            >
+              <div className="stat-icon" style={{ background: 'rgba(249, 115, 22, 0.2)', color: '#F97316' }}>
+                <FileText size={20} />
+              </div>
+              <div>
+                <div className="stat-number" style={{ color: '#F97316', fontSize: '32px' }}>{allVotersStats.submitted}</div>
+                <div className="stat-label" style={{ color: '#FFEDD5' }}>🟠 Submitted</div>
+                <div style={{ fontSize: '11px', color: '#FDBA74', marginTop: '2px', fontWeight: '600' }}>Click to filter</div>
+              </div>
+            </div>
+
+            {/* Not Applied - WHITE */}
+            <div className="stat-card" style={{ 
+              borderLeft: '4px solid #E5E7EB',
+              background: 'linear-gradient(135deg, #374151 0%, #4B5563 100%)',
+              border: '1px solid #6B7280',
+              cursor: 'pointer',
+              boxShadow: '0 0 20px rgba(107, 114, 128, 0.2)'
+            }}
+            onClick={() => setVoterStatusFilter(voterStatusFilter === 'notapplied' ? '' : 'notapplied')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = '0 0 30px rgba(107, 114, 128, 0.4)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = '0 0 20px rgba(107, 114, 128, 0.2)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+            >
+              <div className="stat-icon" style={{ background: 'rgba(255, 255, 255, 0.1)', color: '#F3F4F6' }}>
+                <Users size={20} />
+              </div>
+              <div>
+                <div className="stat-number" style={{ color: '#F3F4F6', fontSize: '32px' }}>{allVotersStats.notApplied}</div>
+                <div className="stat-label" style={{ color: '#E5E7EB' }}>⚪ Not Applied</div>
+                <div style={{ fontSize: '11px', color: '#D1D5DB', marginTop: '2px', fontWeight: '600' }}>Click to filter</div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Filters & Search */}
+          <div className="campsite-card" style={{ width: '100%', padding: '20px', marginBottom: '20px', boxSizing: 'border-box' }}>
+            
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', width: '100%' }}>
+              
+              {/* Search Box */}
+              <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
+                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} />
+                <input
+                  type="text"
+                  placeholder="Search by EPIC No or Voter Name..."
+                  value={voterSearchQuery}
+                  onChange={(e) => setVoterSearchQuery(e.target.value)}
+                  className="form-control"
+                  style={{ 
+                    paddingLeft: '38px',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: '#F3F4F6'
+                  }}
+                />
+              </div>
+
+              {/* Filter Buttons */}
+              <button
+                onClick={() => setVoterStatusFilter('')}
+                className={`btn ${voterStatusFilter === '' ? 'btn-primary' : 'btn-ghost'}`}
+                style={{ padding: '8px 16px', fontSize: '13px' }}
+              >
+                All ({allVotersStats.total})
+              </button>
+
+              <button
+                onClick={() => setVoterStatusFilter('delivered')}
+                className={`btn ${voterStatusFilter === 'delivered' ? 'btn-primary' : 'btn-ghost'}`}
+                style={{ 
+                  padding: '8px 16px', 
+                  fontSize: '13px',
+                  borderColor: '#10B981',
+                  ...(voterStatusFilter === 'delivered' && { background: '#10B981', color: 'white' })
+                }}
+              >
+                🟢 Delivered ({allVotersStats.delivered})
+              </button>
+
+              <button
+                onClick={() => setVoterStatusFilter('submitted')}
+                className={`btn ${voterStatusFilter === 'submitted' ? 'btn-primary' : 'btn-ghost'}`}
+                style={{ 
+                  padding: '8px 16px', 
+                  fontSize: '13px',
+                  borderColor: '#F97316',
+                  ...(voterStatusFilter === 'submitted' && { background: '#F97316', color: 'white' })
+                }}
+              >
+                🟠 Submitted ({allVotersStats.submitted})
+              </button>
+
+              <button
+                onClick={() => setVoterStatusFilter('notapplied')}
+                className={`btn ${voterStatusFilter === 'notapplied' ? 'btn-primary' : 'btn-ghost'}`}
+                style={{ padding: '8px 16px', fontSize: '13px' }}
+              >
+                ⚪ Not Applied ({allVotersStats.notApplied})
+              </button>
+
+              {(voterStatusFilter || voterSearchQuery) && (
+                <button
+                  onClick={() => { setVoterStatusFilter(''); setVoterSearchQuery(''); }}
+                  className="btn btn-ghost"
+                  style={{ padding: '8px 16px', fontSize: '13px', borderColor: '#EF4444', color: '#EF4444' }}
+                >
+                  Clear All
+                </button>
+              )}
+
+            </div>
+          </div>
+
+          {/* Voters Table */}
+          <div className="campsite-card" style={{ width: '100%', padding: '0', boxSizing: 'border-box', overflow: 'hidden' }}>
+            
+            {loadingAllVoters ? (
+              <div style={{ padding: '60px 24px', textAlign: 'center' }}>
+                <div style={{ width: '40px', height: '40px', border: '4px solid var(--color-linen)', borderTopColor: 'var(--color-saffron)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
+                <div style={{ fontSize: '14px', color: 'var(--color-slate)', fontWeight: '500' }}>Loading voters...</div>
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+              </div>
+            ) : allVoters.length === 0 ? (
+              <div style={{ padding: '60px 24px', textAlign: 'center' }}>
+                <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔍</div>
+                <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--color-midnight-ink)', marginBottom: '8px' }}>No voters found</div>
+                <div style={{ fontSize: '14px', color: 'var(--color-slate)' }}>
+                  {voterSearchQuery || voterStatusFilter ? 'Try adjusting your search or filters' : 'No voter data available for this booth'}
+                </div>
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto', width: '100%' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                  <thead>
+                    <tr style={{ 
+                      background: '#0d0a17', 
+                      borderBottom: '2px solid rgba(139, 92, 246, 0.3)' 
+                    }}>
+                      <th style={{ padding: '14px 12px', textAlign: 'left', fontWeight: '700', color: '#8B5CF6', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>#</th>
+                      <th style={{ padding: '14px 12px', textAlign: 'left', fontWeight: '700', color: '#8B5CF6', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>EPIC No</th>
+                      <th style={{ padding: '14px 12px', textAlign: 'left', fontWeight: '700', color: '#8B5CF6', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Voter Name</th>
+                      <th style={{ padding: '14px 12px', textAlign: 'left', fontWeight: '700', color: '#8B5CF6', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Age / Gender</th>
+                      <th style={{ padding: '14px 12px', textAlign: 'center', fontWeight: '700', color: '#8B5CF6', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allVoters.map((voter, idx) => {
+                      const { status, statusText, backgroundColor, borderColor, textColor, icon } = getVoterStatusAndColor(voter);
+                      const rowNum = (allVotersPage - 1) * VOTERS_LIMIT + idx + 1;
+
+                      // Dark theme row background based on status
+                      let darkRowBg = '#1a1625'; // default dark purple
+                      if (status === 'Delivered') {
+                        darkRowBg = '#0f2419'; // dark green tint
+                      } else if (status === 'Submitted') {
+                        darkRowBg = '#2d1810'; // dark orange tint
+                      }
+
+                      return (
+                        <tr
+                          key={voter.epicNo || idx}
+                          style={{
+                            backgroundColor: darkRowBg,
+                            borderLeft: `4px solid ${borderColor}`,
+                            borderBottom: '1px solid rgba(139, 92, 246, 0.2)',
+                            transition: 'all 0.2s ease',
+                            cursor: 'pointer'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#251f3a';
+                            e.currentTarget.style.transform = 'translateX(4px)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.15)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = darkRowBg;
+                            e.currentTarget.style.transform = 'translateX(0)';
+                            e.currentTarget.style.boxShadow = 'none';
+                          }}
+                          onClick={() => {
+                            // Click anywhere on row to view details (if has applications)
+                            if (status !== 'Not Applied') {
+                              const voterWithApps = {
+                                ...voter,
+                                _id: voter.epicNo,
+                                applications: voter.applications || []
+                              };
+                              setSelectedVoterTimeline(voterWithApps);
+                              setSubPage('applications');
+                            }
+                          }}
+                        >
+                          <td style={{ padding: '14px 12px', fontWeight: '600', color: '#9CA3AF', fontSize: '12px' }}>
+                            {rowNum}
+                          </td>
+
+                          <td style={{ padding: '14px 12px', fontFamily: 'monospace', fontWeight: '700', fontSize: '13px', color: '#E5E7EB' }}>
+                            {voter.epicNo}
+                          </td>
+
+                          <td style={{ padding: '14px 12px', fontWeight: '700', fontSize: '14px', color: '#F3F4F6' }}>
+                            {voter.voterName}
+                          </td>
+
+                          <td style={{ padding: '14px 12px', color: '#9CA3AF', fontSize: '13px' }}>
+                            {voter.age || '—'} / {voter.gender || '—'}
+                          </td>
+
+                          <td style={{ padding: '14px 12px', textAlign: 'center' }}>
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              padding: '6px 14px',
+                              borderRadius: '20px',
+                              fontSize: '13px',
+                              fontWeight: '700',
+                              backgroundColor: textColor,
+                              color: '#FFFFFF',
+                              border: `2px solid ${borderColor}`,
+                              boxShadow: `0 0 10px ${borderColor}40`
+                            }}>
+                              {icon} {status}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {!loadingAllVoters && allVoters.length > 0 && allVotersTotalPages > 1 && (
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between', 
+                padding: '16px 20px',
+                borderTop: '1px solid var(--color-linen)',
+                flexWrap: 'wrap',
+                gap: '12px'
+              }}>
+                <div style={{ fontSize: '13px', color: 'var(--color-slate)' }}>
+                  Showing <strong>{(allVotersPage - 1) * VOTERS_LIMIT + 1}</strong> – <strong>{Math.min(allVotersPage * VOTERS_LIMIT, allVotersStats.total)}</strong> of <strong>{allVotersStats.total}</strong> voters
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button
+                    onClick={() => fetchAllVoters(allVotersPage - 1)}
+                    disabled={allVotersPage === 1}
+                    className="btn btn-ghost"
+                    style={{ padding: '6px 12px', fontSize: '12px', opacity: allVotersPage === 1 ? 0.4 : 1 }}
+                  >
+                    ← Prev
+                  </button>
+
+                  <span style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '600', color: 'var(--color-midnight-ink)' }}>
+                    Page {allVotersPage} of {allVotersTotalPages}
+                  </span>
+
+                  <button
+                    onClick={() => fetchAllVoters(allVotersPage + 1)}
+                    disabled={allVotersPage === allVotersTotalPages}
+                    className="btn btn-ghost"
+                    style={{ padding: '6px 12px', fontSize: '12px', opacity: allVotersPage === allVotersTotalPages ? 0.4 : 1 }}
+                  >
+                    Next →
+                  </button>
+                </div>
+              </div>
+            )}
+
+          </div>
+
+        </div>
+      )}
+
       {subPage === 'reports' && (
         <ReportsView
           initialDistrict={admin?.district}
@@ -613,6 +1113,7 @@ const BoothAdminDashboard = () => {
           initialScheme={schemeFilter}
         />
       )}
+
       </main>
     </div>
   );

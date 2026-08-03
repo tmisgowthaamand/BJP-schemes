@@ -584,6 +584,632 @@ const getMemberReferrals = async (req, res) => {
   }
 };
 
+// @desc    Get All Voters in Booth with Application Status (for Booth Admin "All Voters Data" page)
+// @route   GET /api/admin/booth-all-voters
+// @access  Private (Booth Admin)
+const getBoothAllVoters = async (req, res) => {
+  try {
+    const admin = req.admin;
+    const { search, statusFilter, page = 1, limit = 50, assembly, booth, district } = req.query;
+    
+    // Only BOOTH_ADMIN can access this endpoint
+    if (admin.role !== 'BOOTH_ADMIN') {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'This endpoint is only accessible to Booth Admins' 
+      });
+    }
+
+    logger.info('[getBoothAllVoters] Request received', {
+      adminUsername: admin.username,
+      adminRole: admin.role,
+      requestedAssembly: assembly,
+      requestedBooth: booth,
+      requestedDistrict: district,
+      page,
+      search,
+      statusFilter
+    });
+
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.min(500, Math.max(1, parseInt(limit) || 50));
+    const skip = (pageNum - 1) * limitNum;
+
+    const voterDb = await getVoterDbClient();
+
+    // FEATURE: Query across ALL 234 assemblies
+    // Get all assembly collections
+    const allCollections = await voterDb.listCollections().toArray();
+    const assemblyCollections = allCollections.filter(c => c.name.startsWith('ass_')).map(c => c.name);
+
+    logger.info('[getBoothAllVoters] All assemblies available', {
+      totalAssemblies: assemblyCollections.length
+    });
+
+    // Filter by assembly if specified
+    let targetCollections = assemblyCollections;
+    if (assembly && assembly.trim()) {
+      const collections = await getCollectionForAssembly(assembly.trim());
+      if (collections && collections.length > 0) {
+        targetCollections = collections;
+      }
+    }
+
+    logger.info('[getBoothAllVoters] Target collections', {
+      count: targetCollections.length,
+      collections: targetCollections.slice(0, 5)
+    });
+
+    // Build voter query
+    let voterQuery = {};
+    
+    // Filter by booth if specified
+    if (booth && booth.trim()) {
+      const boothStr = String(booth.trim());
+      const boothNum = parseInt(booth.trim());
+      voterQuery.$or = [{ PART_NO: boothStr }, { PART_NO: boothNum }];
+    }
+
+    // Add search filter if provided
+    if (search && search.trim()) {
+      const searchRegex = new RegExp(search.trim(), 'i');
+      const searchCondition = {
+        $or: [
+          { EPIC_NO: searchRegex },
+          { NAME: searchRegex },
+          { NAME_V1: searchRegex }
+        ]
+      };
+      
+      if (voterQuery.$or) {
+        voterQuery.$and = [
+          { $or: voterQuery.$or },
+          searchCondition
+        ];
+        delete voterQuery.$or;
+      } else {
+        Object.assign(voterQuery, searchCondition);
+      }
+    }
+
+    logger.info('[getBoothAllVoters] Voter query', { voterQuery });
+
+    // Get ALL applications for status filtering
+    let appQuery = {};
+    if (assembly && assembly.trim()) {
+      appQuery.assemblyName = new RegExp('^' + assembly.trim() + '$', 'i');
+    }
+    if (booth && booth.trim()) {
+      appQuery.boothNo = String(booth.trim());
+    }
+
+    const allApplications = await SchemeApplication.find(appQuery).select('epicNo status assemblyName boothNo').lean();
+
+    // Build sets of EPICs by status
+    const allEpicNos = allApplications.map(a => a.epicNo).filter(Boolean);
+    const epicSet = new Set(allEpicNos);
+    
+    const deliveredEpics = new Set(
+      allApplications
+        .filter(a => a.status === 'Approved' || a.status === 'Completed' || a.status === 'Delivered')
+        .map(a => a.epicNo)
+        .filter(Boolean)
+    );
+    
+    const submittedEpics = new Set(
+      allApplications
+        .filter(a => {
+          const hasEpic = a.epicNo && a.epicNo.trim();
+          return hasEpic && !deliveredEpics.has(a.epicNo);
+        })
+        .map(a => a.epicNo)
+    );
+
+    logger.info('[getBoothAllVoters] Application stats', {
+      totalApps: allApplications.length,
+      deliveredEpics: deliveredEpics.size,
+      submittedEpics: submittedEpics.size,
+      totalEpicsWithApps: epicSet.size
+    });
+
+    // Apply status filter to voter query
+    if (statusFilter && statusFilter.trim()) {
+      const filter = statusFilter.toLowerCase();
+      if (filter === 'delivered') {
+        if (deliveredEpics.size > 0) {
+          voterQuery.EPIC_NO = { $in: Array.from(deliveredEpics) };
+        } else {
+          return res.status(200).json({
+            success: true,
+            voters: [],
+            stats: { total: 0, delivered: 0, submitted: submittedEpics.size, notApplied: 0 },
+            totalPages: 0,
+            currentPage: pageNum,
+            assemblies: targetCollections.length
+          });
+        }
+      } else if (filter === 'submitted') {
+        if (submittedEpics.size > 0) {
+          voterQuery.EPIC_NO = { $in: Array.from(submittedEpics) };
+        } else {
+          return res.status(200).json({
+            success: true,
+            voters: [],
+            stats: { total: 0, delivered: deliveredEpics.size, submitted: 0, notApplied: 0 },
+            totalPages: 0,
+            currentPage: pageNum,
+            assemblies: targetCollections.length
+          });
+        }
+      } else if (filter === 'notapplied') {
+        if (epicSet.size > 0) {
+          voterQuery.EPIC_NO = { $nin: Array.from(epicSet) };
+        }
+      }
+    }
+
+    logger.info('[getBoothAllVoters] Final voter query', { voterQuery, statusFilter });
+
+    // Query voters across all target collections
+    let allVotersFromRoll = [];
+    let totalVotersCount = 0;
+
+    for (const collectionName of targetCollections) {
+      try {
+        const votersInCollection = await voterDb.collection(collectionName)
+          .find(voterQuery)
+          .sort({ SLNO_INPART: 1, EPIC_NO: 1 })
+          .limit(limitNum - allVotersFromRoll.length)
+          .toArray();
+
+        // Add assembly info to each voter
+        votersInCollection.forEach(v => {
+          v._collectionName = collectionName;
+        });
+
+        allVotersFromRoll.push(...votersInCollection);
+
+        // Count total in this collection
+        const countInCollection = await voterDb.collection(collectionName).countDocuments(voterQuery);
+        totalVotersCount += countInCollection;
+
+        // Stop if we have enough voters for this page
+        if (allVotersFromRoll.length >= limitNum) {
+          break;
+        }
+      } catch (err) {
+        logger.error('[getBoothAllVoters] Error querying collection', {
+          collectionName,
+          error: err.message
+        });
+      }
+    }
+
+    // Apply pagination (skip already done in query, limit by taking slice)
+    const votersFromRoll = allVotersFromRoll.slice(skip, skip + limitNum);
+
+    logger.info('[getBoothAllVoters] Fetched voters from roll', { 
+      count: votersFromRoll.length,
+      totalCount: totalVotersCount,
+      skip,
+      limit: limitNum
+    });
+
+    // Extract EPICs from this page for application lookup
+    const epics = votersFromRoll.map(v => v.EPIC_NO).filter(Boolean);
+
+    // Fetch all applications for these voters from Write DB
+    const scopeQuery = {
+      epicNo: { $in: epics }
+    };
+
+    const applications = await SchemeApplication.find(scopeQuery).lean();
+
+    logger.info('[getBoothAllVoters] Fetched applications', { 
+      applicationCount: applications.length,
+      epicsCount: epics.length
+    });
+
+    // Group applications by EPIC
+    const appsByEpic = {};
+    applications.forEach(app => {
+      const epic = app.epicNo;
+      if (!appsByEpic[epic]) {
+        appsByEpic[epic] = [];
+      }
+      appsByEpic[epic].push(app);
+    });
+
+    // Merge voter roll data with application data
+    let voters = votersFromRoll.map((v, idx) => {
+      const epic = v.EPIC_NO || 'N/A';
+      const voterApps = appsByEpic[epic] || [];
+
+      // Log first voter to confirm data structure
+      if (idx === 0) {
+        logger.info('[getBoothAllVoters] Sample voter from DB', {
+          fields: Object.keys(v),
+          sampleFieldValues: {
+            VOTER_NAME: v.VOTER_NAME,
+            NAME: v.NAME,
+            NAME_V1: v.NAME_V1,
+            FM_NAME_EN: v.FM_NAME_EN,
+            FM_NAME_V1: v.FM_NAME_V1,
+            EPIC_NO: v.EPIC_NO,
+            GENDER: v.GENDER,
+            ASSEMBLY_NAME: v.ASSEMBLY_NAME,
+            PART_NO: v.PART_NO
+          }
+        });
+      }
+
+      // Try multiple possible name fields in order of preference
+      const voterName = v.NAME_V1 || v.NAME || v.FM_NAME_V1 || v.FM_NAME_EN || v.VOTER_NAME || 'N/A';
+
+      return {
+        epicNo: epic,
+        voterName: voterName,
+        age: v.AGE || 'N/A',
+        gender: v.GENDER || 'N/A',
+        partNo: v.PART_NO || 'N/A',
+        serialNo: v.SERIAL_NO || v.SLNO_INPART || v.ID || 'N/A',
+        assemblyName: v.ASSEMBLY_NAME || 'N/A',
+        assemblyNo: v.ASSEMBLY_NO || 'N/A',
+        district: v.DISTRICT || 'N/A',
+        applications: voterApps,
+        mobile: voterApps.length > 0 ? voterApps[0].mobile : (v.MOBILE_NUMBER || 'N/A')
+      };
+    });
+
+    // Calculate stats
+    const stats = {
+      total: totalVotersCount,
+      delivered: deliveredEpics.size,
+      submitted: submittedEpics.size,
+      notApplied: Math.max(0, totalVotersCount - epicSet.size)
+    };
+
+    const totalPagesCalculated = Math.ceil(totalVotersCount / limitNum) || 1;
+
+    logger.info('[getBoothAllVoters] Returning response', {
+      votersCount: voters.length,
+      stats,
+      totalPages: totalPagesCalculated,
+      currentPage: pageNum,
+      assemblies: targetCollections.length
+    });
+
+    return res.status(200).json({
+      success: true,
+      voters,
+      stats,
+      totalPages: totalPagesCalculated,
+      currentPage: pageNum,
+      totalVotersAcrossAssemblies: stats.total,
+      assembliesQueried: targetCollections.length
+    });
+
+  } catch (error) {
+    logger.error('[getBoothAllVoters Error]', { error: error.message, stack: error.stack });
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch booth voters data',
+      error: error.message
+    });
+  }
+};
+      collectionName,
+      boothNo: admin.boothNo
+    });
+
+    // Build query for electoral roll (Read DB)
+    const boothStr = String(admin.boothNo);
+    const boothNum = parseInt(admin.boothNo);
+    const voterQuery = {
+      $or: [{ PART_NO: boothStr }, { PART_NO: boothNum }]
+    };
+
+    // Add search filter if provided
+    if (search && search.trim()) {
+      const searchRegex = new RegExp(search.trim(), 'i');
+      voterQuery.$and = [
+        { $or: [{ PART_NO: boothStr }, { PART_NO: boothNum }] },
+        {
+          $or: [
+            { EPIC_NO: searchRegex },
+            { NAME: searchRegex },
+            { NAME_V1: searchRegex }
+          ]
+        }
+      ];
+      delete voterQuery.$or;
+    }
+
+    logger.info('[getBoothAllVoters] Voter query', { voterQuery });
+
+    // Get ALL applications first to determine which EPICs match the filter
+    const allApplications = await SchemeApplication.find({
+      assemblyName: new RegExp('^' + admin.assemblyName + '$', 'i'),
+      boothNo: String(admin.boothNo)
+    }).select('epicNo status assemblyName boothNo').lean();
+
+    logger.info('[getBoothAllVoters] Raw applications fetched', {
+      count: allApplications.length,
+      sampleStatuses: allApplications.slice(0, 10).map(a => ({ 
+        epic: a.epicNo, 
+        status: a.status,
+        assembly: a.assemblyName,
+        booth: a.boothNo
+      })),
+      assemblyQuery: admin.assemblyName,
+      boothQuery: admin.boothNo,
+      boothQueryType: typeof admin.boothNo
+    });
+
+    // Build sets of EPICs by status
+    // Keep ORIGINAL epic numbers for MongoDB query (case-sensitive)
+    const allEpicNos = allApplications.map(a => a.epicNo).filter(Boolean);
+    const epicSet = new Set(allEpicNos);
+    
+    const deliveredEpics = new Set(
+      allApplications
+        .filter(a => a.status === 'Approved' || a.status === 'Completed' || a.status === 'Delivered')
+        .map(a => a.epicNo)
+        .filter(Boolean)
+    );
+    
+    const submittedEpics = new Set(
+      allApplications
+        .filter(a => {
+          const hasEpic = a.epicNo && a.epicNo.trim();
+          return hasEpic && !deliveredEpics.has(a.epicNo);
+        })
+        .map(a => a.epicNo)
+    );
+
+    logger.info('[getBoothAllVoters] Application stats', {
+      totalApps: allApplications.length,
+      deliveredEpics: deliveredEpics.size,
+      deliveredEpicsArray: Array.from(deliveredEpics).slice(0, 5),
+      submittedEpics: submittedEpics.size,
+      submittedEpicsArray: Array.from(submittedEpics).slice(0, 5),
+      totalEpicsWithApps: epicSet.size
+    });
+
+    // Get total booth voters count first (for stats)
+    const totalBoothVoters = await voterDb.collection(collectionName).countDocuments({
+      $or: [{ PART_NO: boothStr }, { PART_NO: boothNum }]
+    });
+
+    // Modify voter query based on status filter
+    if (statusFilter && statusFilter.trim()) {
+      const filter = statusFilter.toLowerCase();
+      logger.info('[getBoothAllVoters] Applying status filter', { 
+        filter, 
+        deliveredCount: deliveredEpics.size,
+        submittedCount: submittedEpics.size,
+        totalEpics: epicSet.size
+      });
+
+      if (filter === 'delivered') {
+        // Only fetch voters with delivered applications
+        if (deliveredEpics.size > 0) {
+          // MongoDB $in with array of values - will match case-sensitively
+          // So we need to query all EPICs and match them
+          voterQuery.EPIC_NO = { $in: Array.from(deliveredEpics) };
+          logger.info('[getBoothAllVoters] Delivered filter query', { 
+            epicCount: deliveredEpics.size,
+            sampleEpics: Array.from(deliveredEpics).slice(0, 5)
+          });
+        } else {
+          // No delivered voters, return empty
+          logger.warn('[getBoothAllVoters] No delivered voters found for booth');
+          return res.status(200).json({
+            success: true,
+            voters: [],
+            stats: {
+              total: totalBoothVoters,
+              delivered: 0,
+              submitted: submittedEpics.size,
+              notApplied: totalBoothVoters - epicSet.size
+            },
+            totalPages: 0,
+            currentPage: pageNum,
+            totalVotersInBooth: totalBoothVoters
+          });
+        }
+      } else if (filter === 'submitted') {
+        // Only fetch voters with submitted (non-delivered) applications
+        if (submittedEpics.size > 0) {
+          voterQuery.EPIC_NO = { $in: Array.from(submittedEpics) };
+          logger.info('[getBoothAllVoters] Submitted filter query', { 
+            epicCount: submittedEpics.size,
+            sampleEpics: Array.from(submittedEpics).slice(0, 5)
+          });
+        } else {
+          // No submitted voters, return empty
+          logger.warn('[getBoothAllVoters] No submitted voters found for booth');
+          return res.status(200).json({
+            success: true,
+            voters: [],
+            stats: {
+              total: totalBoothVoters,
+              delivered: deliveredEpics.size,
+              submitted: 0,
+              notApplied: totalBoothVoters - epicSet.size
+            },
+            totalPages: 0,
+            currentPage: pageNum,
+            totalVotersInBooth: totalBoothVoters
+          });
+        }
+      } else if (filter === 'notapplied') {
+        // Only fetch voters WITHOUT any applications
+        if (epicSet.size > 0) {
+          voterQuery.EPIC_NO = { $nin: Array.from(epicSet) };
+          logger.info('[getBoothAllVoters] Not applied filter query', { 
+            excludingEpicCount: epicSet.size
+          });
+        }
+        // If no applications at all, all voters are "not applied" - keep original query
+      }
+    }
+
+    logger.info('[getBoothAllVoters] Final voter query', { voterQuery, statusFilter });
+
+    // Get total count for pagination (AFTER applying status filter)
+    const totalVoters = await voterDb.collection(collectionName).countDocuments(voterQuery);
+    
+    logger.info('[getBoothAllVoters] Total voters count after filter', { totalVoters, statusFilter });
+
+    if (totalVoters === 0) {
+      // Check if booth exists at all in the collection
+      const anyBoothVoter = await voterDb.collection(collectionName).findOne({
+        $or: [{ PART_NO: boothStr }, { PART_NO: boothNum }]
+      });
+      const sampleEpicFromVoter = anyBoothVoter ? anyBoothVoter.EPIC_NO : null;
+      
+      // Also check if filtered EPICs exist in DB at all
+      if (statusFilter === 'delivered' && deliveredEpics.size > 0) {
+        const sampleDeliveredEpic = Array.from(deliveredEpics)[0];
+        const matchingVoter = await voterDb.collection(collectionName).findOne({ EPIC_NO: sampleDeliveredEpic });
+        logger.warn('[getBoothAllVoters] Delivered filter - no match found', {
+          sampleDeliveredEpic,
+          foundInVoterDb: !!matchingVoter,
+          voterDbEpicSample: sampleEpicFromVoter,
+          filterQuery: voterQuery.EPIC_NO
+        });
+      }
+      
+      logger.warn('[getBoothAllVoters] No voters found for booth', {
+        boothNo: admin.boothNo,
+        sampleVoterPartNo: anyBoothVoter ? anyBoothVoter.PART_NO : 'no data in collection',
+        sampleVoterEpic: sampleEpicFromVoter,
+        query: voterQuery,
+        statusFilter
+      });
+    }
+
+    const totalPages = Math.ceil(totalVoters / limitNum) || 1;
+
+    // Fetch voters from electoral roll with pagination
+    const votersFromRoll = await voterDb.collection(collectionName)
+      .find(voterQuery)
+      .sort({ SLNO_INPART: 1, EPIC_NO: 1 })
+      .skip(skip)
+      .limit(limitNum)
+      .toArray();
+
+    logger.info('[getBoothAllVoters] Fetched voters from roll', { 
+      count: votersFromRoll.length,
+      skip,
+      limit: limitNum
+    });
+
+    // Extract EPICs from this page for application lookup
+    const epics = votersFromRoll.map(v => v.EPIC_NO).filter(Boolean);
+
+    // Fetch all applications for these voters from Write DB
+    const scopeQuery = {
+      assemblyName: new RegExp('^' + admin.assemblyName + '$', 'i'),
+      boothNo: String(admin.boothNo),
+      epicNo: { $in: epics }
+    };
+
+    const applications = await SchemeApplication.find(scopeQuery).lean();
+
+    logger.info('[getBoothAllVoters] Fetched applications', { 
+      applicationCount: applications.length,
+      epicsCount: epics.length
+    });
+
+    // Group applications by EPIC
+    const appsByEpic = {};
+    applications.forEach(app => {
+      const epic = app.epicNo;
+      if (!appsByEpic[epic]) {
+        appsByEpic[epic] = [];
+      }
+      appsByEpic[epic].push(app);
+    });
+
+    // Merge voter roll data with application data
+    let voters = votersFromRoll.map((v, idx) => {
+      const epic = v.EPIC_NO || 'N/A';
+      const voterApps = appsByEpic[epic] || [];
+
+      // Log first voter to confirm data structure
+      if (idx === 0) {
+        logger.info('[getBoothAllVoters] Sample voter from DB', {
+          fields: Object.keys(v),
+          sampleFieldValues: {
+            VOTER_NAME: v.VOTER_NAME,
+            NAME: v.NAME,
+            NAME_V1: v.NAME_V1,
+            FM_NAME_EN: v.FM_NAME_EN,
+            FM_NAME_V1: v.FM_NAME_V1,
+            EPIC_NO: v.EPIC_NO,
+            GENDER: v.GENDER
+          }
+        });
+      }
+
+      // Try multiple possible name fields in order of preference
+      const voterName = v.NAME_V1 || v.NAME || v.FM_NAME_V1 || v.FM_NAME_EN || v.VOTER_NAME || 'N/A';
+
+      return {
+        epicNo: epic,
+        voterName: voterName,
+        age: v.AGE || 'N/A', // Your DB doesn't have age field
+        gender: v.GENDER || 'N/A',
+        partNo: v.PART_NO || admin.boothNo,
+        serialNo: v.SERIAL_NO || v.SLNO_INPART || v.ID || 'N/A',
+        applications: voterApps,
+        // Add mobile from application if available
+        mobile: voterApps.length > 0 ? voterApps[0].mobile : (v.MOBILE_NUMBER || 'N/A')
+      };
+    });
+
+    // Stats were already calculated above
+    const stats = {
+      total: await voterDb.collection(collectionName).countDocuments({
+        $or: [{ PART_NO: boothStr }, { PART_NO: boothNum }]
+      }),
+      delivered: deliveredEpics.size,
+      submitted: submittedEpics.size,
+      notApplied: (await voterDb.collection(collectionName).countDocuments({
+        $or: [{ PART_NO: boothStr }, { PART_NO: boothNum }]
+      })) - epicSet.size
+    };
+
+    const totalPagesCalculated = Math.ceil(totalVoters / limitNum) || 1;
+
+    logger.info('[getBoothAllVoters] Returning response', {
+      votersCount: voters.length,
+      stats,
+      totalPages: totalPagesCalculated,
+      currentPage: pageNum
+    });
+
+    return res.status(200).json({
+      success: true,
+      voters,
+      stats,
+      totalPages: totalPagesCalculated,
+      currentPage: pageNum,
+      totalVotersInBooth: stats.total
+    });
+
+  } catch (error) {
+    logger.error('[getBoothAllVoters Error]', { error: error.message, stack: error.stack });
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch booth voters data',
+      error: error.message
+    });
+  }
+};
+
 // @desc    Get Scoped Applications List for Admin (Paginated by Voter)
 // @route   GET /api/admin/applications
 const getApplicationsList = async (req, res) => {
@@ -1900,6 +2526,7 @@ module.exports = {
   getDashboardStats,
   getMemberReferrals,
   getApplicationsList,
+  getBoothAllVoters,
   exportApplicationsCsv,
   exportApplicationsExcel,
   getFilterMeta,

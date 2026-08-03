@@ -118,6 +118,72 @@ select {
   font-family: inherit;
 }
 
+/* Dark theme form controls for admin portal */
+.theme-boothadmin input,
+.theme-boothadmin textarea,
+.theme-boothadmin select,
+.theme-superadmin input,
+.theme-superadmin textarea,
+.theme-superadmin select,
+.theme-stateadmin input,
+.theme-stateadmin textarea,
+.theme-stateadmin select,
+.theme-districtadmin input,
+.theme-districtadmin textarea,
+.theme-districtadmin select,
+.theme-assemblyadmin input,
+.theme-assemblyadmin textarea,
+.theme-assemblyadmin select {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #F3F4F6 !important;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.theme-boothadmin input::placeholder,
+.theme-boothadmin textarea::placeholder,
+.theme-superadmin input::placeholder,
+.theme-superadmin textarea::placeholder,
+.theme-stateadmin input::placeholder,
+.theme-stateadmin textarea::placeholder,
+.theme-districtadmin input::placeholder,
+.theme-districtadmin textarea::placeholder,
+.theme-assemblyadmin input::placeholder,
+.theme-assemblyadmin textarea::placeholder {
+  color: #9CA3AF !important;
+}
+
+.theme-boothadmin input:focus,
+.theme-boothadmin textarea:focus,
+.theme-boothadmin select:focus,
+.theme-superadmin input:focus,
+.theme-superadmin textarea:focus,
+.theme-superadmin select:focus,
+.theme-stateadmin input:focus,
+.theme-stateadmin textarea:focus,
+.theme-stateadmin select:focus,
+.theme-districtadmin input:focus,
+.theme-districtadmin textarea:focus,
+.theme-districtadmin select:focus,
+.theme-assemblyadmin input:focus,
+.theme-assemblyadmin textarea:focus,
+.theme-assemblyadmin select:focus {
+  outline: none;
+  border-color: rgba(139, 92, 246, 0.4) !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+/* Dark theme for select dropdown options */
+.theme-boothadmin select option,
+.theme-superadmin select option,
+.theme-stateadmin select option,
+.theme-districtadmin select option,
+.theme-assemblyadmin select option {
+  background: #1a1625;
+  color: #F3F4F6;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
