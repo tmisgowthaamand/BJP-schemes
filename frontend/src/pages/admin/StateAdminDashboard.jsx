@@ -5,7 +5,6 @@ import StatusBadge from '../../components/StatusBadge';
 import MemberProfileTimelineView, { formatSchemeName } from '../../components/MemberProfileTimelineView';
 import ReportsView from '../../components/ReportsView';
 import LiveTrackingPanel from '../../components/LiveTrackingPanel';
-import MobileMenuToggle from '../../components/MobileMenuToggle';
 import { BJP_SCHEMES } from '../../utils/constants';
 import {
   Shield, Users, Building, PhoneCall, RefreshCw, Search, Eye, Award, FileText, Share2,
@@ -329,9 +328,6 @@ const StateAdminDashboard = () => {
         .stateadmin-scroll::-webkit-scrollbar-thumb { background: #3b2e5a; border-radius: 8px; border: 2px solid #0d0a17; }
         .stateadmin-scroll::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
       `}</style>
-
-      {/* Mobile Menu Toggle Button */}
-      <MobileMenuToggle />
 
       {/* ══════════════════════════════════════════ */}
       {/* LEFT SIDEBAR NAVIGATION MENU               */}

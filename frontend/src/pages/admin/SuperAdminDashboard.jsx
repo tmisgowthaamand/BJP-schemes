@@ -5,7 +5,6 @@ import StatusBadge from '../../components/StatusBadge';
 import LiveTrackingPanel from '../../components/LiveTrackingPanel';
 import MemberProfileTimelineView, { formatSchemeName, getSchemeBgImage } from '../../components/MemberProfileTimelineView';
 import ReportsView from '../../components/ReportsView';
-import MobileMenuToggle from '../../components/MobileMenuToggle';
 import { BJP_SCHEMES } from '../../utils/constants';
 import {
   Shield, Users, Building, PhoneCall, RefreshCw, PlusCircle, Search, LogIn, Eye, Award, Share2, ChevronRight, FileText,
@@ -539,9 +538,6 @@ const SuperAdminDashboard = () => {
         .superadmin-scroll::-webkit-scrollbar-thumb { background: #3b2e5a; border-radius: 8px; border: 2px solid #0d0a17; }
         .superadmin-scroll::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
       `}</style>
-
-      {/* Mobile Menu Toggle Button */}
-      <MobileMenuToggle />
 
       {/* ══════════════════════════════════════════ */}
       {/* LEFT SIDEBAR NAVIGATION MENU               */}

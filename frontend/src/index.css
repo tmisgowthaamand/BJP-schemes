@@ -1,8 +1,5 @@
 /* Multi-Theme Dark Mode System - BJP Nalam Thittam Admin Portal */
 
-/* Import responsive admin styles */
-@import './styles/responsive-admin.css';
-
 :root {
   /* Default Base Variables (Dark Lavender - Super Admin) */
   --theme-bg-app: #090710;

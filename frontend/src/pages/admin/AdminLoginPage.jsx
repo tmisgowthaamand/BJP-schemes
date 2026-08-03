@@ -29,21 +29,8 @@ const AdminLoginPage = () => {
   };
 
   return (
-    <div style={{ 
-      minHeight: '80vh', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center', 
-      padding: '20px', 
-      width: '100%', 
-      boxSizing: 'border-box' 
-    }}>
-      <div className="campsite-card" style={{ 
-        maxWidth: '420px', 
-        width: '100%', 
-        padding: '36px', 
-        boxSizing: 'border-box' 
-      }}>
+    <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', width: '100%', boxSizing: 'border-box' }}>
+      <div className="campsite-card" style={{ maxWidth: '420px', width: '100%', padding: '36px', boxSizing: 'border-box' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <div style={{
@@ -104,24 +91,6 @@ const AdminLoginPage = () => {
         </form>
 
       </div>
-
-      <style>{`
-        /* Mobile responsive adjustments for Admin Login */
-        @media (max-width: 599px) {
-          .campsite-card {
-            padding: 24px 20px !important;
-            max-width: 100% !important;
-          }
-          
-          .text-heading {
-            font-size: 24px !important;
-          }
-          
-          .text-subheading {
-            font-size: 13px !important;
-          }
-        }
-      `}</style>
     </div>
   );
 };
