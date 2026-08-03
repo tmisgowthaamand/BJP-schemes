@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider } from './i18n/LanguageContext';
 import ChatbotPage from './pages/ChatbotPage';
 import ReferralPage from './pages/ReferralPage';
+import AssemblyBoothsPage from './pages/AssemblyBoothsPage';
 import Navbar from './components/Navbar';
 import AdminPortal from './pages/AdminPortal';
 
@@ -14,6 +15,7 @@ const MainAppContent = () => {
 
   const isAdminRoute = currentPath.startsWith('/admin') || !!admin;
   const isReferralRoute = currentPath.startsWith('/r/');
+  const isAssemblyBoothsRoute = currentPath === '/assembly-booths' || currentPath === '/assemblies';
 
   // 1. Render Admin Portal if URL starts with /admin or admin is logged in (UNTOUCHED)
   if (isAdminRoute) {
@@ -32,7 +34,12 @@ const MainAppContent = () => {
     return <ReferralPage />;
   }
 
-  // 3. Render New Conversational Automation User Portal
+  // 3. Render Assembly Booths Page if URL is /assembly-booths or /assemblies
+  if (isAssemblyBoothsRoute) {
+    return <AssemblyBoothsPage />;
+  }
+
+  // 4. Render New Conversational Automation User Portal
   return (
     <LanguageProvider>
       <ChatbotPage />

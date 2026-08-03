@@ -600,16 +600,31 @@ const getBoothAllVoters = async (req, res) => {
       });
     }
 
+    // Use admin's booth and assembly if not provided in query
+    const targetAssembly = assembly?.trim() || admin.assemblyName;
+    const targetBooth = booth?.trim() || admin.boothNo;
+    const targetDistrict = district?.trim() || admin.district;
+
     logger.info('[getBoothAllVoters] Request received', {
       adminUsername: admin.username,
       adminRole: admin.role,
-      requestedAssembly: assembly,
-      requestedBooth: booth,
-      requestedDistrict: district,
+      adminAssembly: admin.assemblyName,
+      adminBooth: admin.boothNo,
+      targetAssembly,
+      targetBooth,
+      targetDistrict,
       page,
       search,
       statusFilter
     });
+
+    // Validate booth admin has required data
+    if (!targetAssembly || !targetBooth) {
+      return res.status(400).json({
+        success: false,
+        message: 'Booth admin must have assembly and booth number configured'
+      });
+    }
 
     const pageNum = Math.max(1, parseInt(page) || 1);
     const limitNum = Math.min(500, Math.max(1, parseInt(limit) || 50));
@@ -617,38 +632,29 @@ const getBoothAllVoters = async (req, res) => {
 
     const voterDb = await getVoterDbClient();
 
-    // FEATURE: Query across ALL 234 assemblies
-    // Get all assembly collections
-    const allCollections = await voterDb.listCollections().toArray();
-    const assemblyCollections = allCollections.filter(c => c.name.startsWith('ass_')).map(c => c.name);
-
-    logger.info('[getBoothAllVoters] All assemblies available', {
-      totalAssemblies: assemblyCollections.length
-    });
-
-    // Filter by assembly if specified
-    let targetCollections = assemblyCollections;
-    if (assembly && assembly.trim()) {
-      const collections = await getCollectionForAssembly(assembly.trim());
-      if (collections && collections.length > 0) {
-        targetCollections = collections;
-      }
+    // Get the specific assembly collection for this booth admin
+    const collections = await getCollectionForAssembly(targetAssembly);
+    if (!collections || collections.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `Assembly '${targetAssembly}' not found in voter database`
+      });
     }
 
-    logger.info('[getBoothAllVoters] Target collections', {
-      count: targetCollections.length,
-      collections: targetCollections.slice(0, 5)
+    const targetCollection = collections[0];
+
+    logger.info('[getBoothAllVoters] Target collection', {
+      collection: targetCollection,
+      assembly: targetAssembly,
+      booth: targetBooth
     });
 
-    // Build voter query
-    let voterQuery = {};
-    
-    // Filter by booth if specified
-    if (booth && booth.trim()) {
-      const boothStr = String(booth.trim());
-      const boothNum = parseInt(booth.trim());
-      voterQuery.$or = [{ PART_NO: boothStr }, { PART_NO: boothNum }];
-    }
+    // Build voter query - MUST filter by booth
+    const boothStr = String(targetBooth);
+    const boothNum = parseInt(targetBooth);
+    let voterQuery = {
+      $or: [{ PART_NO: boothStr }, { PART_NO: boothNum }]
+    };
 
     // Add search filter if provided
     if (search && search.trim()) {
@@ -656,32 +662,26 @@ const getBoothAllVoters = async (req, res) => {
       const searchCondition = {
         $or: [
           { EPIC_NO: searchRegex },
+          { VOTER_NAME: searchRegex },
           { NAME: searchRegex },
           { NAME_V1: searchRegex }
         ]
       };
       
-      if (voterQuery.$or) {
-        voterQuery.$and = [
-          { $or: voterQuery.$or },
-          searchCondition
-        ];
-        delete voterQuery.$or;
-      } else {
-        Object.assign(voterQuery, searchCondition);
-      }
+      voterQuery.$and = [
+        { $or: [{ PART_NO: boothStr }, { PART_NO: boothNum }] },
+        searchCondition
+      ];
+      delete voterQuery.$or;
     }
 
     logger.info('[getBoothAllVoters] Voter query', { voterQuery });
 
-    // Get ALL applications for status filtering
-    let appQuery = {};
-    if (assembly && assembly.trim()) {
-      appQuery.assemblyName = new RegExp('^' + assembly.trim() + '$', 'i');
-    }
-    if (booth && booth.trim()) {
-      appQuery.boothNo = String(booth.trim());
-    }
+    // Get ALL applications for this specific booth
+    const appQuery = {
+      assemblyName: new RegExp('^' + targetAssembly + '$', 'i'),
+      boothNo: targetBooth
+    };
 
     const allApplications = await SchemeApplication.find(appQuery).select('epicNo status assemblyName boothNo').lean();
 
@@ -717,7 +717,15 @@ const getBoothAllVoters = async (req, res) => {
       const filter = statusFilter.toLowerCase();
       if (filter === 'delivered') {
         if (deliveredEpics.size > 0) {
-          voterQuery.EPIC_NO = { $in: Array.from(deliveredEpics) };
+          if (voterQuery.$and) {
+            voterQuery.$and.push({ EPIC_NO: { $in: Array.from(deliveredEpics) } });
+          } else {
+            voterQuery.$and = [
+              { $or: [{ PART_NO: boothStr }, { PART_NO: boothNum }] },
+              { EPIC_NO: { $in: Array.from(deliveredEpics) } }
+            ];
+            delete voterQuery.$or;
+          }
         } else {
           return res.status(200).json({
             success: true,
@@ -725,12 +733,21 @@ const getBoothAllVoters = async (req, res) => {
             stats: { total: 0, delivered: 0, submitted: submittedEpics.size, notApplied: 0 },
             totalPages: 0,
             currentPage: pageNum,
-            assemblies: targetCollections.length
+            assembly: targetAssembly,
+            booth: targetBooth
           });
         }
       } else if (filter === 'submitted') {
         if (submittedEpics.size > 0) {
-          voterQuery.EPIC_NO = { $in: Array.from(submittedEpics) };
+          if (voterQuery.$and) {
+            voterQuery.$and.push({ EPIC_NO: { $in: Array.from(submittedEpics) } });
+          } else {
+            voterQuery.$and = [
+              { $or: [{ PART_NO: boothStr }, { PART_NO: boothNum }] },
+              { EPIC_NO: { $in: Array.from(submittedEpics) } }
+            ];
+            delete voterQuery.$or;
+          }
         } else {
           return res.status(200).json({
             success: true,
@@ -738,61 +755,44 @@ const getBoothAllVoters = async (req, res) => {
             stats: { total: 0, delivered: deliveredEpics.size, submitted: 0, notApplied: 0 },
             totalPages: 0,
             currentPage: pageNum,
-            assemblies: targetCollections.length
+            assembly: targetAssembly,
+            booth: targetBooth
           });
         }
       } else if (filter === 'notapplied') {
         if (epicSet.size > 0) {
-          voterQuery.EPIC_NO = { $nin: Array.from(epicSet) };
+          if (voterQuery.$and) {
+            voterQuery.$and.push({ EPIC_NO: { $nin: Array.from(epicSet) } });
+          } else {
+            voterQuery.$and = [
+              { $or: [{ PART_NO: boothStr }, { PART_NO: boothNum }] },
+              { EPIC_NO: { $nin: Array.from(epicSet) } }
+            ];
+            delete voterQuery.$or;
+          }
         }
       }
     }
 
     logger.info('[getBoothAllVoters] Final voter query', { voterQuery, statusFilter });
 
-    // Query voters across all target collections
-    let allVotersFromRoll = [];
-    let totalVotersCount = 0;
+    // Query voters from the specific booth in the specific assembly
+    const totalVotersCount = await voterDb.collection(targetCollection).countDocuments(voterQuery);
 
-    for (const collectionName of targetCollections) {
-      try {
-        const votersInCollection = await voterDb.collection(collectionName)
-          .find(voterQuery)
-          .sort({ SLNO_INPART: 1, EPIC_NO: 1 })
-          .limit(limitNum - allVotersFromRoll.length)
-          .toArray();
-
-        // Add assembly info to each voter
-        votersInCollection.forEach(v => {
-          v._collectionName = collectionName;
-        });
-
-        allVotersFromRoll.push(...votersInCollection);
-
-        // Count total in this collection
-        const countInCollection = await voterDb.collection(collectionName).countDocuments(voterQuery);
-        totalVotersCount += countInCollection;
-
-        // Stop if we have enough voters for this page
-        if (allVotersFromRoll.length >= limitNum) {
-          break;
-        }
-      } catch (err) {
-        logger.error('[getBoothAllVoters] Error querying collection', {
-          collectionName,
-          error: err.message
-        });
-      }
-    }
-
-    // Apply pagination (skip already done in query, limit by taking slice)
-    const votersFromRoll = allVotersFromRoll.slice(skip, skip + limitNum);
+    const votersFromRoll = await voterDb.collection(targetCollection)
+      .find(voterQuery)
+      .sort({ SLNO_INPART: 1, EPIC_NO: 1 })
+      .skip(skip)
+      .limit(limitNum)
+      .toArray();
 
     logger.info('[getBoothAllVoters] Fetched voters from roll', { 
       count: votersFromRoll.length,
       totalCount: totalVotersCount,
       skip,
-      limit: limitNum
+      limit: limitNum,
+      collection: targetCollection,
+      booth: targetBooth
     });
 
     // Extract EPICs from this page for application lookup
@@ -833,71 +833,86 @@ const getBoothAllVoters = async (req, res) => {
             VOTER_NAME: v.VOTER_NAME,
             NAME: v.NAME,
             NAME_V1: v.NAME_V1,
-            FM_NAME_EN: v.FM_NAME_EN,
-            FM_NAME_V1: v.FM_NAME_V1,
-            EPIC_NO: v.EPIC_NO,
-            GENDER: v.GENDER,
-            ASSEMBLY_NAME: v.ASSEMBLY_NAME,
-            PART_NO: v.PART_NO
+            PART_NO: v.PART_NO,
+            ASSEMBLY_NO: v.ASSEMBLY_NO,
+            ASSEMBLY_NAME: v.ASSEMBLY_NAME
           }
         });
       }
 
-      // Try multiple possible name fields in order of preference
-      const voterName = v.NAME_V1 || v.NAME || v.FM_NAME_V1 || v.FM_NAME_EN || v.VOTER_NAME || 'N/A';
+      // Determine application status
+      let hasApplication = voterApps.length > 0;
+      let isDelivered = voterApps.some(app => 
+        app.status === 'Approved' || app.status === 'Completed' || app.status === 'Delivered'
+      );
 
       return {
         epicNo: epic,
-        voterName: voterName,
-        age: v.AGE || 'N/A',
+        voterName: v.VOTER_NAME || v.NAME || v.NAME_V1 || 'N/A',
         gender: v.GENDER || 'N/A',
-        partNo: v.PART_NO || 'N/A',
-        serialNo: v.SERIAL_NO || v.SLNO_INPART || v.ID || 'N/A',
-        assemblyName: v.ASSEMBLY_NAME || 'N/A',
-        assemblyNo: v.ASSEMBLY_NO || 'N/A',
-        district: v.DISTRICT || 'N/A',
-        applications: voterApps,
-        mobile: voterApps.length > 0 ? voterApps[0].mobile : (v.MOBILE_NUMBER || 'N/A')
+        age: v.AGE || 'N/A',
+        mobile: v.MOBILE_NUMBER || 'N/A',
+        boothNo: v.PART_NO || targetBooth,
+        assemblyNo: v.ASSEMBLY_NO || targetCollection.replace('ass_', ''),
+        assemblyName: v.ASSEMBLY_NAME || targetAssembly,
+        district: v.DISTRICT || targetDistrict,
+        hasApplication,
+        isDelivered,
+        applicationCount: voterApps.length,
+        applications: voterApps.map(app => ({
+          id: app._id,
+          schemeName: app.schemeName,
+          status: app.status,
+          submittedAt: app.createdAt
+        }))
       };
     });
 
     // Calculate stats
-    const stats = {
-      total: totalVotersCount,
-      delivered: deliveredEpics.size,
-      submitted: submittedEpics.size,
-      notApplied: Math.max(0, totalVotersCount - epicSet.size)
-    };
+    const totalVoters = totalVotersCount;
+    const deliveredCount = voters.filter(v => v.isDelivered).length;
+    const submittedCount = voters.filter(v => v.hasApplication && !v.isDelivered).length;
+    const notAppliedCount = voters.filter(v => !v.hasApplication).length;
 
-    const totalPagesCalculated = Math.ceil(totalVotersCount / limitNum) || 1;
+    const totalPages = Math.ceil(totalVotersCount / limitNum);
 
-    logger.info('[getBoothAllVoters] Returning response', {
-      votersCount: voters.length,
-      stats,
-      totalPages: totalPagesCalculated,
+    logger.info('[getBoothAllVoters] Response stats', {
+      totalVoters,
+      deliveredCount,
+      submittedCount,
+      notAppliedCount,
+      totalPages,
       currentPage: pageNum,
-      assemblies: targetCollections.length
+      votersInThisPage: voters.length
     });
 
     return res.status(200).json({
       success: true,
       voters,
-      stats,
-      totalPages: totalPagesCalculated,
+      stats: {
+        total: totalVoters,
+        delivered: deliveredEpics.size,
+        submitted: submittedEpics.size,
+        notApplied: totalVoters - epicSet.size
+      },
+      totalPages,
       currentPage: pageNum,
-      totalVotersAcrossAssemblies: stats.total,
-      assembliesQueried: targetCollections.length
+      assembly: targetAssembly,
+      assemblyNo: targetCollection.replace('ass_', ''),
+      booth: targetBooth,
+      district: targetDistrict
     });
 
   } catch (error) {
     logger.error('[getBoothAllVoters Error]', { error: error.message, stack: error.stack });
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to fetch booth voters data',
-      error: error.message
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch booth voters', 
+      error: error.message 
     });
   }
 };
+
 // @desc    Get Scoped Applications List for Admin (Paginated by Voter)
 // @route   GET /api/admin/applications
 const getApplicationsList = async (req, res) => {

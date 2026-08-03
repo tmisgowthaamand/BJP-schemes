@@ -1,0 +1,1639 @@
+{
+  "totalAssemblies": 233,
+  "totalBooths": 72928,
+  "totalVoters": 56496752,
+  "lastUpdated": "2026-08-03T12:39:25.180Z",
+  "assemblies": [
+    {
+      "assemblyNo": 1,
+      "assemblyName": "Gummidipoondi",
+      "district": "THIRUVALLUR",
+      "totalBooths": 344,
+      "totalVoters": 251606
+    },
+    {
+      "assemblyNo": 2,
+      "assemblyName": "Ponneri",
+      "district": "THIRUVALLUR",
+      "totalBooths": 327,
+      "totalVoters": 248923
+    },
+    {
+      "assemblyNo": 3,
+      "assemblyName": "Tiruttani",
+      "district": "THIRUVALLUR",
+      "totalBooths": 337,
+      "totalVoters": 260084
+    },
+    {
+      "assemblyNo": 4,
+      "assemblyName": "Thiruvallur",
+      "district": "THIRUVALLUR",
+      "totalBooths": 335,
+      "totalVoters": 248651
+    },
+    {
+      "assemblyNo": 5,
+      "assemblyName": "Poonamallee",
+      "district": "THIRUVALLUR",
+      "totalBooths": 452,
+      "totalVoters": 363695
+    },
+    {
+      "assemblyNo": 6,
+      "assemblyName": "Avadi",
+      "district": "THIRUVALLUR",
+      "totalBooths": 499,
+      "totalVoters": 428773
+    },
+    {
+      "assemblyNo": 7,
+      "assemblyName": "Maduravoyal",
+      "district": "THIRUVALLUR",
+      "totalBooths": 482,
+      "totalVoters": 364024
+    },
+    {
+      "assemblyNo": 8,
+      "assemblyName": "Ambattur",
+      "district": "CHENNAI",
+      "totalBooths": 364,
+      "totalVoters": 330476
+    },
+    {
+      "assemblyNo": 9,
+      "assemblyName": "Madavaram",
+      "district": "CHENNAI",
+      "totalBooths": 521,
+      "totalVoters": 420599
+    },
+    {
+      "assemblyNo": 10,
+      "assemblyName": "Thiruvottiyur",
+      "district": "CHENNAI",
+      "totalBooths": 344,
+      "totalVoters": 240586
+    },
+    {
+      "assemblyNo": 11,
+      "assemblyName": "Dr.Radhakrishnan Nagar",
+      "district": "CHENNAI",
+      "totalBooths": 246,
+      "totalVoters": 195856
+    },
+    {
+      "assemblyNo": 12,
+      "assemblyName": "Perambur",
+      "district": "CHENNAI",
+      "totalBooths": 298,
+      "totalVoters": 222784
+    },
+    {
+      "assemblyNo": 13,
+      "assemblyName": "Kolathur",
+      "district": "CHENNAI",
+      "totalBooths": 286,
+      "totalVoters": 207242
+    },
+    {
+      "assemblyNo": 14,
+      "assemblyName": "Villivakkam",
+      "district": "CHENNAI",
+      "totalBooths": 255,
+      "totalVoters": 159758
+    },
+    {
+      "assemblyNo": 15,
+      "assemblyName": "Thiru-Vi-Ka-Nagar",
+      "district": "CHENNAI",
+      "totalBooths": 223,
+      "totalVoters": 178794
+    },
+    {
+      "assemblyNo": 16,
+      "assemblyName": "Egmore",
+      "district": "CHENNAI",
+      "totalBooths": 200,
+      "totalVoters": 134875
+    },
+    {
+      "assemblyNo": 17,
+      "assemblyName": "Royapuram",
+      "district": "CHENNAI",
+      "totalBooths": 194,
+      "totalVoters": 156930
+    },
+    {
+      "assemblyNo": 18,
+      "assemblyName": "Harbour",
+      "district": "CHENNAI",
+      "totalBooths": 192,
+      "totalVoters": 116897
+    },
+    {
+      "assemblyNo": 19,
+      "assemblyName": "Chepauk-Thiruvallikeni",
+      "district": "CHENNAI",
+      "totalBooths": 235,
+      "totalVoters": 163865
+    },
+    {
+      "assemblyNo": 20,
+      "assemblyName": "Thousand Lights",
+      "district": "CHENNAI",
+      "totalBooths": 247,
+      "totalVoters": 153898
+    },
+    {
+      "assemblyNo": 21,
+      "assemblyName": "Anna Nagar",
+      "district": "CHENNAI",
+      "totalBooths": 273,
+      "totalVoters": 181392
+    },
+    {
+      "assemblyNo": 22,
+      "assemblyName": "Virugampakkam",
+      "district": "CHENNAI",
+      "totalBooths": 311,
+      "totalVoters": 196526
+    },
+    {
+      "assemblyNo": 23,
+      "assemblyName": "Saidapet",
+      "district": "CHENNAI",
+      "totalBooths": 282,
+      "totalVoters": 200687
+    },
+    {
+      "assemblyNo": 24,
+      "assemblyName": "Thiyagarayanagar",
+      "district": "CHENNAI",
+      "totalBooths": 252,
+      "totalVoters": 154917
+    },
+    {
+      "assemblyNo": 25,
+      "assemblyName": "Mylapore",
+      "district": "CHENNAI",
+      "totalBooths": 272,
+      "totalVoters": 194709
+    },
+    {
+      "assemblyNo": 26,
+      "assemblyName": "Velachery",
+      "district": "CHENNAI",
+      "totalBooths": 314,
+      "totalVoters": 211653
+    },
+    {
+      "assemblyNo": 27,
+      "assemblyName": "Shozhinganallur",
+      "district": "CHENNAI",
+      "totalBooths": 700,
+      "totalVoters": 536943
+    },
+    {
+      "assemblyNo": 28,
+      "assemblyName": "Alandur",
+      "district": "KANCHEEPURAM",
+      "totalBooths": 431,
+      "totalVoters": 295996
+    },
+    {
+      "assemblyNo": 29,
+      "assemblyName": "Sriperumbudur",
+      "district": "KANCHEEPURAM",
+      "totalBooths": 435,
+      "totalVoters": 375929
+    },
+    {
+      "assemblyNo": 30,
+      "assemblyName": "Pallavaram",
+      "district": "CHENGALPATTU",
+      "totalBooths": 468,
+      "totalVoters": 330188
+    },
+    {
+      "assemblyNo": 31,
+      "assemblyName": "Tambaram",
+      "district": "CHENGALPATTU",
+      "totalBooths": 465,
+      "totalVoters": 323656
+    },
+    {
+      "assemblyNo": 32,
+      "assemblyName": "Chengalpattu",
+      "district": "CHENGALPATTU",
+      "totalBooths": 496,
+      "totalVoters": 366399
+    },
+    {
+      "assemblyNo": 33,
+      "assemblyName": "Thiruporur",
+      "district": "CHENGALPATTU",
+      "totalBooths": 369,
+      "totalVoters": 289389
+    },
+    {
+      "assemblyNo": 34,
+      "assemblyName": "Cheyyur",
+      "district": "CHENGALPATTU",
+      "totalBooths": 287,
+      "totalVoters": 202053
+    },
+    {
+      "assemblyNo": 35,
+      "assemblyName": "Madurantakam",
+      "district": "CHENGALPATTU",
+      "totalBooths": 285,
+      "totalVoters": 211295
+    },
+    {
+      "assemblyNo": 36,
+      "assemblyName": "Uthiramerur",
+      "district": "KANCHEEPURAM",
+      "totalBooths": 321,
+      "totalVoters": 243924
+    },
+    {
+      "assemblyNo": 37,
+      "assemblyName": "Kancheepuram",
+      "district": "KANCHEEPURAM",
+      "totalBooths": 358,
+      "totalVoters": 276306
+    },
+    {
+      "assemblyNo": 38,
+      "assemblyName": "Arakkonam",
+      "district": "RANIPET",
+      "totalBooths": 284,
+      "totalVoters": 199164
+    },
+    {
+      "assemblyNo": 39,
+      "assemblyName": "Sholinghur",
+      "district": "RANIPET",
+      "totalBooths": 341,
+      "totalVoters": 256118
+    },
+    {
+      "assemblyNo": 40,
+      "assemblyName": "Katpadi",
+      "district": "VELLORE",
+      "totalBooths": 280,
+      "totalVoters": 225809
+    },
+    {
+      "assemblyNo": 41,
+      "assemblyName": "Ranipet",
+      "district": "RANIPET",
+      "totalBooths": 304,
+      "totalVoters": 245852
+    },
+    {
+      "assemblyNo": 42,
+      "assemblyName": "Arcot",
+      "district": "VELLORE",
+      "totalBooths": 318,
+      "totalVoters": 243565
+    },
+    {
+      "assemblyNo": 43,
+      "assemblyName": "Vellore",
+      "district": "VELLORE",
+      "totalBooths": 268,
+      "totalVoters": 211062
+    },
+    {
+      "assemblyNo": 44,
+      "assemblyName": "Anaikattu",
+      "district": "VELLORE",
+      "totalBooths": 295,
+      "totalVoters": 234738
+    },
+    {
+      "assemblyNo": 45,
+      "assemblyName": "Kilvaithinankuppam",
+      "district": "VELLORE",
+      "totalBooths": 265,
+      "totalVoters": 213451
+    },
+    {
+      "assemblyNo": 46,
+      "assemblyName": "Gudiyattam",
+      "district": "VELLORE",
+      "totalBooths": 319,
+      "totalVoters": 248526
+    },
+    {
+      "assemblyNo": 47,
+      "assemblyName": "Vaniyambadi",
+      "district": "TIRUPATHUR",
+      "totalBooths": 312,
+      "totalVoters": 240220
+    },
+    {
+      "assemblyNo": 48,
+      "assemblyName": "Ambur",
+      "district": "TIRUPATHUR",
+      "totalBooths": 300,
+      "totalVoters": 212631
+    },
+    {
+      "assemblyNo": 49,
+      "assemblyName": "Jolarpet",
+      "district": "TIRUPATHUR",
+      "totalBooths": 287,
+      "totalVoters": 233828
+    },
+    {
+      "assemblyNo": 50,
+      "assemblyName": "Tirupattur",
+      "district": "TIRUPATHUR",
+      "totalBooths": 303,
+      "totalVoters": 224917
+    },
+    {
+      "assemblyNo": 51,
+      "assemblyName": "Uthangarai",
+      "district": "KRISHNAGIRI",
+      "totalBooths": 319,
+      "totalVoters": 233500
+    },
+    {
+      "assemblyNo": 52,
+      "assemblyName": "Bargur",
+      "district": "KRISHNAGIRI",
+      "totalBooths": 324,
+      "totalVoters": 237349
+    },
+    {
+      "assemblyNo": 53,
+      "assemblyName": "Krishnagiri",
+      "district": "KRISHNAGIRI",
+      "totalBooths": 340,
+      "totalVoters": 265037
+    },
+    {
+      "assemblyNo": 54,
+      "assemblyName": "Veppanahalli",
+      "district": "KRISHNAGIRI",
+      "totalBooths": 343,
+      "totalVoters": 243875
+    },
+    {
+      "assemblyNo": 55,
+      "assemblyName": "Hosur",
+      "district": "KRISHNAGIRI",
+      "totalBooths": 445,
+      "totalVoters": 338289
+    },
+    {
+      "assemblyNo": 56,
+      "assemblyName": "Thalli",
+      "district": "KRISHNAGIRI",
+      "totalBooths": 321,
+      "totalVoters": 235984
+    },
+    {
+      "assemblyNo": 57,
+      "assemblyName": "Palacodu",
+      "district": "DHARMAPURI",
+      "totalBooths": 312,
+      "totalVoters": 237476
+    },
+    {
+      "assemblyNo": 58,
+      "assemblyName": "Pennagaram",
+      "district": "DHARMAPURI",
+      "totalBooths": 320,
+      "totalVoters": 246293
+    },
+    {
+      "assemblyNo": 59,
+      "assemblyName": "Dharmapuri",
+      "district": "DHARMAPURI",
+      "totalBooths": 320,
+      "totalVoters": 257936
+    },
+    {
+      "assemblyNo": 60,
+      "assemblyName": "Pappireddipatti",
+      "district": "DHARMAPURI",
+      "totalBooths": 322,
+      "totalVoters": 254658
+    },
+    {
+      "assemblyNo": 61,
+      "assemblyName": "Harur",
+      "district": "DHARMAPURI",
+      "totalBooths": 322,
+      "totalVoters": 243742
+    },
+    {
+      "assemblyNo": 62,
+      "assemblyName": "Chengam",
+      "district": "TIRUVANNAMALAI",
+      "totalBooths": 341,
+      "totalVoters": 266629
+    },
+    {
+      "assemblyNo": 63,
+      "assemblyName": "Tiruvannamalai",
+      "district": "TIRUVANNAMALAI",
+      "totalBooths": 318,
+      "totalVoters": 247310
+    },
+    {
+      "assemblyNo": 64,
+      "assemblyName": "Kilpennathur",
+      "district": "TIRUVANNAMALAI",
+      "totalBooths": 307,
+      "totalVoters": 238913
+    },
+    {
+      "assemblyNo": 65,
+      "assemblyName": "Kalasapakkam",
+      "district": "TIRUVANNAMALAI",
+      "totalBooths": 301,
+      "totalVoters": 230766
+    },
+    {
+      "assemblyNo": 66,
+      "assemblyName": "Polur",
+      "district": "TIRUVANNAMALAI",
+      "totalBooths": 299,
+      "totalVoters": 232426
+    },
+    {
+      "assemblyNo": 67,
+      "assemblyName": "Arani",
+      "district": "TIRUVANNAMALAI",
+      "totalBooths": 323,
+      "totalVoters": 253022
+    },
+    {
+      "assemblyNo": 68,
+      "assemblyName": "Cheyyar",
+      "district": "TIRUVANNAMALAI",
+      "totalBooths": 334,
+      "totalVoters": 238283
+    },
+    {
+      "assemblyNo": 69,
+      "assemblyName": "Vandavasi",
+      "district": "TIRUVANNAMALAI",
+      "totalBooths": 293,
+      "totalVoters": 211811
+    },
+    {
+      "assemblyNo": 70,
+      "assemblyName": "Gingee",
+      "district": "VILUPPURAM",
+      "totalBooths": 320,
+      "totalVoters": 240957
+    },
+    {
+      "assemblyNo": 71,
+      "assemblyName": "Mailam",
+      "district": "VILUPPURAM",
+      "totalBooths": 277,
+      "totalVoters": 207665
+    },
+    {
+      "assemblyNo": 72,
+      "assemblyName": "Tindivanam",
+      "district": "VILUPPURAM",
+      "totalBooths": 293,
+      "totalVoters": 217609
+    },
+    {
+      "assemblyNo": 73,
+      "assemblyName": "Vanur",
+      "district": "VILUPPURAM",
+      "totalBooths": 299,
+      "totalVoters": 207984
+    },
+    {
+      "assemblyNo": 74,
+      "assemblyName": "Viluppuram",
+      "district": "VILUPPURAM",
+      "totalBooths": 337,
+      "totalVoters": 244080
+    },
+    {
+      "assemblyNo": 75,
+      "assemblyName": "Vikravandi",
+      "district": "VILUPPURAM",
+      "totalBooths": 310,
+      "totalVoters": 227355
+    },
+    {
+      "assemblyNo": 76,
+      "assemblyName": "Tirukkoyilur",
+      "district": "VILUPPURAM",
+      "totalBooths": 330,
+      "totalVoters": 241003
+    },
+    {
+      "assemblyNo": 77,
+      "assemblyName": "Ulundurpettai",
+      "district": "KALLAKURICHI",
+      "totalBooths": 375,
+      "totalVoters": 297471
+    },
+    {
+      "assemblyNo": 78,
+      "assemblyName": "Rishivandiyam",
+      "district": "KALLAKURICHI",
+      "totalBooths": 350,
+      "totalVoters": 270541
+    },
+    {
+      "assemblyNo": 79,
+      "assemblyName": "Sankarapuram",
+      "district": "KALLAKURICHI",
+      "totalBooths": 340,
+      "totalVoters": 263136
+    },
+    {
+      "assemblyNo": 80,
+      "assemblyName": "Kallakurichi",
+      "district": "KALLAKURICHI",
+      "totalBooths": 370,
+      "totalVoters": 278762
+    },
+    {
+      "assemblyNo": 81,
+      "assemblyName": "Gangavalli",
+      "district": "SALEM",
+      "totalBooths": 280,
+      "totalVoters": 216793
+    },
+    {
+      "assemblyNo": 82,
+      "assemblyName": "Attur",
+      "district": "SALEM",
+      "totalBooths": 306,
+      "totalVoters": 226481
+    },
+    {
+      "assemblyNo": 83,
+      "assemblyName": "Yercaud",
+      "district": "SALEM",
+      "totalBooths": 336,
+      "totalVoters": 270529
+    },
+    {
+      "assemblyNo": 84,
+      "assemblyName": "Omalur",
+      "district": "SALEM",
+      "totalBooths": 362,
+      "totalVoters": 291865
+    },
+    {
+      "assemblyNo": 85,
+      "assemblyName": "Mettur",
+      "district": "SALEM",
+      "totalBooths": 327,
+      "totalVoters": 253445
+    },
+    {
+      "assemblyNo": 86,
+      "assemblyName": "Edappadi",
+      "district": "SALEM",
+      "totalBooths": 0,
+      "totalVoters": 274047
+    },
+    {
+      "assemblyNo": 87,
+      "assemblyName": "Sankari",
+      "district": "SALEM",
+      "totalBooths": 339,
+      "totalVoters": 258678
+    },
+    {
+      "assemblyNo": 88,
+      "assemblyName": "Salem (West)",
+      "district": "SALEM",
+      "totalBooths": 310,
+      "totalVoters": 255319
+    },
+    {
+      "assemblyNo": 89,
+      "assemblyName": "Salem (North)",
+      "district": "SALEM",
+      "totalBooths": 286,
+      "totalVoters": 236087
+    },
+    {
+      "assemblyNo": 90,
+      "assemblyName": "Salem (South)",
+      "district": "SALEM",
+      "totalBooths": 268,
+      "totalVoters": 224096
+    },
+    {
+      "assemblyNo": 91,
+      "assemblyName": "Veerapandi",
+      "district": "SALEM",
+      "totalBooths": 312,
+      "totalVoters": 248477
+    },
+    {
+      "assemblyNo": 92,
+      "assemblyName": "Rasipuram",
+      "district": "NAMAKKAL",
+      "totalBooths": 285,
+      "totalVoters": 220554
+    },
+    {
+      "assemblyNo": 93,
+      "assemblyName": "Senthamangalam",
+      "district": "NAMAKKAL",
+      "totalBooths": 304,
+      "totalVoters": 227327
+    },
+    {
+      "assemblyNo": 94,
+      "assemblyName": "Namakkal",
+      "district": "NAMAKKAL",
+      "totalBooths": 290,
+      "totalVoters": 261541
+    },
+    {
+      "assemblyNo": 95,
+      "assemblyName": "Paramathi-Velur",
+      "district": "NAMAKKAL",
+      "totalBooths": 268,
+      "totalVoters": 203567
+    },
+    {
+      "assemblyNo": 96,
+      "assemblyName": "Tiruchengodu",
+      "district": "NAMAKKAL",
+      "totalBooths": 289,
+      "totalVoters": 206928
+    },
+    {
+      "assemblyNo": 97,
+      "assemblyName": "Kumarapalayam",
+      "district": "NAMAKKAL",
+      "totalBooths": 324,
+      "totalVoters": 217224
+    },
+    {
+      "assemblyNo": 98,
+      "assemblyName": "Erode (East)",
+      "district": "ERODE",
+      "totalBooths": 259,
+      "totalVoters": 176228
+    },
+    {
+      "assemblyNo": 99,
+      "assemblyName": "Erode (West)",
+      "district": "ERODE",
+      "totalBooths": 325,
+      "totalVoters": 245492
+    },
+    {
+      "assemblyNo": 100,
+      "assemblyName": "Modakkurichi",
+      "district": "ERODE",
+      "totalBooths": 290,
+      "totalVoters": 206120
+    },
+    {
+      "assemblyNo": 101,
+      "assemblyName": "Dharapuram",
+      "district": "TIRUPPUR",
+      "totalBooths": 320,
+      "totalVoters": 220743
+    },
+    {
+      "assemblyNo": 102,
+      "assemblyName": "Kangayam",
+      "district": "ERODE",
+      "totalBooths": 0,
+      "totalVoters": 216644
+    },
+    {
+      "assemblyNo": 103,
+      "assemblyName": "Perundurai",
+      "district": "TIRUPPUR",
+      "totalBooths": 292,
+      "totalVoters": 212083
+    },
+    {
+      "assemblyNo": 104,
+      "assemblyName": "Bhavani",
+      "district": "ERODE",
+      "totalBooths": 306,
+      "totalVoters": 221383
+    },
+    {
+      "assemblyNo": 105,
+      "assemblyName": "Anthiyur",
+      "district": "ERODE",
+      "totalBooths": 271,
+      "totalVoters": 205737
+    },
+    {
+      "assemblyNo": 106,
+      "assemblyName": "Gobichettipalayam",
+      "district": "ERODE",
+      "totalBooths": 309,
+      "totalVoters": 237581
+    },
+    {
+      "assemblyNo": 107,
+      "assemblyName": "Bhavanisagar",
+      "district": "ERODE",
+      "totalBooths": 327,
+      "totalVoters": 235584
+    },
+    {
+      "assemblyNo": 108,
+      "assemblyName": "Udhagamandalam",
+      "district": "THE NILGIRIS",
+      "totalBooths": 254,
+      "totalVoters": 187425
+    },
+    {
+      "assemblyNo": 109,
+      "assemblyName": "Gudalur",
+      "district": "THE NILGIRIS",
+      "totalBooths": 238,
+      "totalVoters": 183887
+    },
+    {
+      "assemblyNo": 110,
+      "assemblyName": "Coonoor",
+      "district": "THE NILGIRIS",
+      "totalBooths": 244,
+      "totalVoters": 175820
+    },
+    {
+      "assemblyNo": 111,
+      "assemblyName": "Mettuppalayam",
+      "district": "COIMBATORE",
+      "totalBooths": 360,
+      "totalVoters": 279438
+    },
+    {
+      "assemblyNo": 112,
+      "assemblyName": "Avanashi",
+      "district": "TIRUPPUR",
+      "totalBooths": 372,
+      "totalVoters": 250346
+    },
+    {
+      "assemblyNo": 113,
+      "assemblyName": "Tiruppur (North)",
+      "district": "TIRUPPUR",
+      "totalBooths": 442,
+      "totalVoters": 310118
+    },
+    {
+      "assemblyNo": 114,
+      "assemblyName": "Tiruppur (South)",
+      "district": "TIRUPPUR",
+      "totalBooths": 289,
+      "totalVoters": 193614
+    },
+    {
+      "assemblyNo": 115,
+      "assemblyName": "Palladam",
+      "district": "TIRUPPUR",
+      "totalBooths": 0,
+      "totalVoters": 322530
+    },
+    {
+      "assemblyNo": 116,
+      "assemblyName": "Sulur",
+      "district": "COIMBATORE",
+      "totalBooths": 385,
+      "totalVoters": 303540
+    },
+    {
+      "assemblyNo": 117,
+      "assemblyName": "Kavundampalayam",
+      "district": "COIMBATORE",
+      "totalBooths": 547,
+      "totalVoters": 407506
+    },
+    {
+      "assemblyNo": 118,
+      "assemblyName": "Coimbatore (North)",
+      "district": "COIMBATORE",
+      "totalBooths": 339,
+      "totalVoters": 291521
+    },
+    {
+      "assemblyNo": 119,
+      "assemblyName": "Thondamuthur",
+      "district": "COIMBATORE",
+      "totalBooths": 0,
+      "totalVoters": 287442
+    },
+    {
+      "assemblyNo": 120,
+      "assemblyName": "Coimbatore (South)",
+      "district": "COIMBATORE",
+      "totalBooths": 283,
+      "totalVoters": 186509
+    },
+    {
+      "assemblyNo": 121,
+      "assemblyName": "Singanallur",
+      "district": "COIMBATORE",
+      "totalBooths": 358,
+      "totalVoters": 266058
+    },
+    {
+      "assemblyNo": 122,
+      "assemblyName": "Kinathukadavu",
+      "district": "COIMBATORE",
+      "totalBooths": 377,
+      "totalVoters": 300485
+    },
+    {
+      "assemblyNo": 123,
+      "assemblyName": "Pollachi",
+      "district": "COIMBATORE",
+      "totalBooths": 281,
+      "totalVoters": 202014
+    },
+    {
+      "assemblyNo": 124,
+      "assemblyName": "Valparai",
+      "district": "COIMBATORE",
+      "totalBooths": 262,
+      "totalVoters": 172284
+    },
+    {
+      "assemblyNo": 125,
+      "assemblyName": "Udumalaipettai",
+      "district": "TIRUPPUR",
+      "totalBooths": 307,
+      "totalVoters": 228523
+    },
+    {
+      "assemblyNo": 126,
+      "assemblyName": "Madathukulam",
+      "district": "TIRUPPUR",
+      "totalBooths": 294,
+      "totalVoters": 212742
+    },
+    {
+      "assemblyNo": 127,
+      "assemblyName": "Palani",
+      "district": "DINDIGUL",
+      "totalBooths": 339,
+      "totalVoters": 237359
+    },
+    {
+      "assemblyNo": 128,
+      "assemblyName": "Oddanchatram",
+      "district": "DINDIGUL",
+      "totalBooths": 314,
+      "totalVoters": 217681
+    },
+    {
+      "assemblyNo": 129,
+      "assemblyName": "Athoor",
+      "district": "DINDIGUL",
+      "totalBooths": 341,
+      "totalVoters": 259845
+    },
+    {
+      "assemblyNo": 130,
+      "assemblyName": "Nilakkottai",
+      "district": "DINDIGUL",
+      "totalBooths": 305,
+      "totalVoters": 219076
+    },
+    {
+      "assemblyNo": 131,
+      "assemblyName": "Natham",
+      "district": "DINDIGUL",
+      "totalBooths": 359,
+      "totalVoters": 258603
+    },
+    {
+      "assemblyNo": 132,
+      "assemblyName": "Dindigul",
+      "district": "DINDIGUL",
+      "totalBooths": 316,
+      "totalVoters": 237677
+    },
+    {
+      "assemblyNo": 133,
+      "assemblyName": "Vedasandur",
+      "district": "DINDIGUL",
+      "totalBooths": 327,
+      "totalVoters": 241813
+    },
+    {
+      "assemblyNo": 134,
+      "assemblyName": "Aravakurichi",
+      "district": "KARUR",
+      "totalBooths": 267,
+      "totalVoters": 194514
+    },
+    {
+      "assemblyNo": 135,
+      "assemblyName": "Karur",
+      "district": "KARUR",
+      "totalBooths": 283,
+      "totalVoters": 226584
+    },
+    {
+      "assemblyNo": 136,
+      "assemblyName": "Krishnarayapuram",
+      "district": "KARUR",
+      "totalBooths": 275,
+      "totalVoters": 202087
+    },
+    {
+      "assemblyNo": 137,
+      "assemblyName": "Kulithalai",
+      "district": "KARUR",
+      "totalBooths": 286,
+      "totalVoters": 221988
+    },
+    {
+      "assemblyNo": 138,
+      "assemblyName": "Manapparai",
+      "district": "TIRUCHIRAPPALLI",
+      "totalBooths": 346,
+      "totalVoters": 266019
+    },
+    {
+      "assemblyNo": 139,
+      "assemblyName": "Srirangam",
+      "district": "TIRUCHIRAPPALLI",
+      "totalBooths": 366,
+      "totalVoters": 283862
+    },
+    {
+      "assemblyNo": 140,
+      "assemblyName": "Tiruchirappalli (West)",
+      "district": "TIRUCHIRAPPALLI",
+      "totalBooths": 305,
+      "totalVoters": 235903
+    },
+    {
+      "assemblyNo": 141,
+      "assemblyName": "Tiruchirappalli (East)",
+      "district": "TIRUCHIRAPPALLI",
+      "totalBooths": 304,
+      "totalVoters": 217397
+    },
+    {
+      "assemblyNo": 142,
+      "assemblyName": "Thiruverumbur",
+      "district": "TIRUCHIRAPPALLI",
+      "totalBooths": 312,
+      "totalVoters": 256239
+    },
+    {
+      "assemblyNo": 143,
+      "assemblyName": "Lalgudi",
+      "district": "TIRUCHIRAPPALLI",
+      "totalBooths": 276,
+      "totalVoters": 211041
+    },
+    {
+      "assemblyNo": 144,
+      "assemblyName": "Manachanallur",
+      "district": "TIRUCHIRAPPALLI",
+      "totalBooths": 0,
+      "totalVoters": 234217
+    },
+    {
+      "assemblyNo": 145,
+      "assemblyName": "Musiri",
+      "district": "TIRUCHIRAPPALLI",
+      "totalBooths": 283,
+      "totalVoters": 212612
+    },
+    {
+      "assemblyNo": 146,
+      "assemblyName": "Thuraiyur",
+      "district": "TIRUCHIRAPPALLI",
+      "totalBooths": 297,
+      "totalVoters": 209011
+    },
+    {
+      "assemblyNo": 147,
+      "assemblyName": "Perambalur",
+      "district": "PERAMBALUR",
+      "totalBooths": 387,
+      "totalVoters": 288449
+    },
+    {
+      "assemblyNo": 148,
+      "assemblyName": "Kunnam",
+      "district": "PERAMBALUR",
+      "totalBooths": 345,
+      "totalVoters": 266682
+    },
+    {
+      "assemblyNo": 149,
+      "assemblyName": "Ariyalur",
+      "district": "ARIYALUR",
+      "totalBooths": 330,
+      "totalVoters": 261161
+    },
+    {
+      "assemblyNo": 150,
+      "assemblyName": "Jayankondam",
+      "district": "ARIYALUR",
+      "totalBooths": 320,
+      "totalVoters": 261793
+    },
+    {
+      "assemblyNo": 151,
+      "assemblyName": "Tittakudi",
+      "district": "CUDDALORE",
+      "totalBooths": 279,
+      "totalVoters": 206770
+    },
+    {
+      "assemblyNo": 152,
+      "assemblyName": "Vriddhachalam",
+      "district": "CUDDALORE",
+      "totalBooths": 317,
+      "totalVoters": 237836
+    },
+    {
+      "assemblyNo": 153,
+      "assemblyName": "Neyveli",
+      "district": "CUDDALORE",
+      "totalBooths": 256,
+      "totalVoters": 189024
+    },
+    {
+      "assemblyNo": 154,
+      "assemblyName": "Panruti",
+      "district": "CUDDALORE",
+      "totalBooths": 309,
+      "totalVoters": 240048
+    },
+    {
+      "assemblyNo": 155,
+      "assemblyName": "Cuddalore",
+      "district": "CUDDALORE",
+      "totalBooths": 258,
+      "totalVoters": 221150
+    },
+    {
+      "assemblyNo": 157,
+      "assemblyName": "Bhuvanagiri",
+      "district": "CUDDALORE",
+      "totalBooths": 304,
+      "totalVoters": 230968
+    },
+    {
+      "assemblyNo": 158,
+      "assemblyName": "Chidambaram",
+      "district": "CUDDALORE",
+      "totalBooths": 298,
+      "totalVoters": 229136
+    },
+    {
+      "assemblyNo": 159,
+      "assemblyName": "Kattumannarkoil",
+      "district": "CUDDALORE",
+      "totalBooths": 291,
+      "totalVoters": 224565
+    },
+    {
+      "assemblyNo": 160,
+      "assemblyName": "Sirkazhi",
+      "district": "MAYILADUTHURAI",
+      "totalBooths": 305,
+      "totalVoters": 239468
+    },
+    {
+      "assemblyNo": 161,
+      "assemblyName": "Mayiladuthurai",
+      "district": "MAYILADUTHURAI",
+      "totalBooths": 303,
+      "totalVoters": 232617
+    },
+    {
+      "assemblyNo": 162,
+      "assemblyName": "Poompuhar",
+      "district": "MAYILADUTHURAI",
+      "totalBooths": 342,
+      "totalVoters": 257129
+    },
+    {
+      "assemblyNo": 163,
+      "assemblyName": "Nagapattinam",
+      "district": "NAGAPATTINAM",
+      "totalBooths": 240,
+      "totalVoters": 172970
+    },
+    {
+      "assemblyNo": 164,
+      "assemblyName": "Kilvelur",
+      "district": "NAGAPATTINAM",
+      "totalBooths": 220,
+      "totalVoters": 168930
+    },
+    {
+      "assemblyNo": 165,
+      "assemblyName": "Vedaranyam",
+      "district": "NAGAPATTINAM",
+      "totalBooths": 240,
+      "totalVoters": 186034
+    },
+    {
+      "assemblyNo": 166,
+      "assemblyName": "Thiruthuraipoondi",
+      "district": "THIRUVARUR",
+      "totalBooths": 293,
+      "totalVoters": 225363
+    },
+    {
+      "assemblyNo": 167,
+      "assemblyName": "Mannargudi",
+      "district": "THIRUVARUR",
+      "totalBooths": 307,
+      "totalVoters": 231933
+    },
+    {
+      "assemblyNo": 168,
+      "assemblyName": "Thiruvarur",
+      "district": "THIRUVARUR",
+      "totalBooths": 327,
+      "totalVoters": 257891
+    },
+    {
+      "assemblyNo": 169,
+      "assemblyName": "Nannilam",
+      "district": "THIRUVARUR",
+      "totalBooths": 344,
+      "totalVoters": 264462
+    },
+    {
+      "assemblyNo": 170,
+      "assemblyName": "Thiruvidaimarudur",
+      "district": "THANJAVUR",
+      "totalBooths": 326,
+      "totalVoters": 254453
+    },
+    {
+      "assemblyNo": 171,
+      "assemblyName": "Kumbakonam",
+      "district": "THANJAVUR",
+      "totalBooths": 300,
+      "totalVoters": 251868
+    },
+    {
+      "assemblyNo": 172,
+      "assemblyName": "Papanasam",
+      "district": "THANJAVUR",
+      "totalBooths": 315,
+      "totalVoters": 254652
+    },
+    {
+      "assemblyNo": 173,
+      "assemblyName": "Thiruvaiyaru",
+      "district": "THANJAVUR",
+      "totalBooths": 338,
+      "totalVoters": 256377
+    },
+    {
+      "assemblyNo": 174,
+      "assemblyName": "Thanjavur",
+      "district": "THANJAVUR",
+      "totalBooths": 309,
+      "totalVoters": 249062
+    },
+    {
+      "assemblyNo": 175,
+      "assemblyName": "Orathanadu",
+      "district": "THANJAVUR",
+      "totalBooths": 314,
+      "totalVoters": 231250
+    },
+    {
+      "assemblyNo": 176,
+      "assemblyName": "Pattukkottai",
+      "district": "THANJAVUR",
+      "totalBooths": 310,
+      "totalVoters": 240952
+    },
+    {
+      "assemblyNo": 177,
+      "assemblyName": "Peravurani",
+      "district": "THANJAVUR",
+      "totalBooths": 284,
+      "totalVoters": 212792
+    },
+    {
+      "assemblyNo": 178,
+      "assemblyName": "Gandarvakkottai",
+      "district": "PUDUKKOTTAI",
+      "totalBooths": 250,
+      "totalVoters": 194732
+    },
+    {
+      "assemblyNo": 179,
+      "assemblyName": "Viralimalai",
+      "district": "PUDUKKOTTAI",
+      "totalBooths": 276,
+      "totalVoters": 223084
+    },
+    {
+      "assemblyNo": 180,
+      "assemblyName": "Pudukkottai",
+      "district": "PUDUKKOTTAI",
+      "totalBooths": 295,
+      "totalVoters": 223926
+    },
+    {
+      "assemblyNo": 181,
+      "assemblyName": "Thirumayam",
+      "district": "PUDUKKOTTAI",
+      "totalBooths": 300,
+      "totalVoters": 219279
+    },
+    {
+      "assemblyNo": 182,
+      "assemblyName": "Alangudi",
+      "district": "PUDUKKOTTAI",
+      "totalBooths": 258,
+      "totalVoters": 210294
+    },
+    {
+      "assemblyNo": 183,
+      "assemblyName": "Aranthangi",
+      "district": "PUDUKKOTTAI",
+      "totalBooths": 302,
+      "totalVoters": 227588
+    },
+    {
+      "assemblyNo": 184,
+      "assemblyName": "Karaikudi",
+      "district": "SIVAGANGA",
+      "totalBooths": 388,
+      "totalVoters": 303364
+    },
+    {
+      "assemblyNo": 185,
+      "assemblyName": "Tiruppattur",
+      "district": "SIVAGANGA",
+      "totalBooths": 368,
+      "totalVoters": 273455
+    },
+    {
+      "assemblyNo": 186,
+      "assemblyName": "Sivaganga",
+      "district": "SIVAGANGA",
+      "totalBooths": 393,
+      "totalVoters": 276155
+    },
+    {
+      "assemblyNo": 187,
+      "assemblyName": "Manamadurai",
+      "district": "SIVAGANGA",
+      "totalBooths": 369,
+      "totalVoters": 257617
+    },
+    {
+      "assemblyNo": 188,
+      "assemblyName": "Melur",
+      "district": "MADURAI",
+      "totalBooths": 291,
+      "totalVoters": 227789
+    },
+    {
+      "assemblyNo": 189,
+      "assemblyName": "Madurai East",
+      "district": "MADURAI",
+      "totalBooths": 398,
+      "totalVoters": 330993
+    },
+    {
+      "assemblyNo": 190,
+      "assemblyName": "Sholavandan",
+      "district": "MADURAI",
+      "totalBooths": 261,
+      "totalVoters": 212502
+    },
+    {
+      "assemblyNo": 191,
+      "assemblyName": "Madurai North",
+      "district": "MADURAI",
+      "totalBooths": 266,
+      "totalVoters": 218718
+    },
+    {
+      "assemblyNo": 192,
+      "assemblyName": "Madurai South",
+      "district": "MADURAI",
+      "totalBooths": 236,
+      "totalVoters": 177605
+    },
+    {
+      "assemblyNo": 193,
+      "assemblyName": "Madurai Central",
+      "district": "MADURAI",
+      "totalBooths": 253,
+      "totalVoters": 196854
+    },
+    {
+      "assemblyNo": 194,
+      "assemblyName": "Madurai West",
+      "district": "MADURAI",
+      "totalBooths": 327,
+      "totalVoters": 271338
+    },
+    {
+      "assemblyNo": 195,
+      "assemblyName": "Thiruparankundram",
+      "district": "MADURAI",
+      "totalBooths": 352,
+      "totalVoters": 307783
+    },
+    {
+      "assemblyNo": 196,
+      "assemblyName": "Thirumangalam",
+      "district": "MADURAI",
+      "totalBooths": 350,
+      "totalVoters": 259224
+    },
+    {
+      "assemblyNo": 197,
+      "assemblyName": "Usilampatti",
+      "district": "MADURAI",
+      "totalBooths": 342,
+      "totalVoters": 264140
+    },
+    {
+      "assemblyNo": 198,
+      "assemblyName": "Andipatti",
+      "district": "THENI",
+      "totalBooths": 344,
+      "totalVoters": 254549
+    },
+    {
+      "assemblyNo": 199,
+      "assemblyName": "Periyakulam",
+      "district": "THENI",
+      "totalBooths": 359,
+      "totalVoters": 263547
+    },
+    {
+      "assemblyNo": 200,
+      "assemblyName": "Bodinayakanur",
+      "district": "THENI",
+      "totalBooths": 346,
+      "totalVoters": 261630
+    },
+    {
+      "assemblyNo": 201,
+      "assemblyName": "Cumbum",
+      "district": "THENI",
+      "totalBooths": 345,
+      "totalVoters": 253645
+    },
+    {
+      "assemblyNo": 202,
+      "assemblyName": "Rajapalayam",
+      "district": "VIRUDHUNAGAR",
+      "totalBooths": 269,
+      "totalVoters": 212222
+    },
+    {
+      "assemblyNo": 203,
+      "assemblyName": "Srivilliputhur",
+      "district": "VIRUDHUNAGAR",
+      "totalBooths": 308,
+      "totalVoters": 222364
+    },
+    {
+      "assemblyNo": 204,
+      "assemblyName": "Sattur",
+      "district": "VIRUDHUNAGAR",
+      "totalBooths": 291,
+      "totalVoters": 227962
+    },
+    {
+      "assemblyNo": 205,
+      "assemblyName": "Sivakasi",
+      "district": "VIRUDHUNAGAR",
+      "totalBooths": 288,
+      "totalVoters": 225454
+    },
+    {
+      "assemblyNo": 206,
+      "assemblyName": "Virudhunagar",
+      "district": "VIRUDHUNAGAR",
+      "totalBooths": 281,
+      "totalVoters": 198617
+    },
+    {
+      "assemblyNo": 207,
+      "assemblyName": "Aruppukkottai",
+      "district": "VIRUDHUNAGAR",
+      "totalBooths": 270,
+      "totalVoters": 206496
+    },
+    {
+      "assemblyNo": 208,
+      "assemblyName": "Tiruchuli",
+      "district": "VIRUDHUNAGAR",
+      "totalBooths": 292,
+      "totalVoters": 204292
+    },
+    {
+      "assemblyNo": 209,
+      "assemblyName": "Paramakudi",
+      "district": "RAMANATHAPURAM",
+      "totalBooths": 323,
+      "totalVoters": 233433
+    },
+    {
+      "assemblyNo": 210,
+      "assemblyName": "Tiruvadanai",
+      "district": "RAMANATHAPURAM",
+      "totalBooths": 378,
+      "totalVoters": 282121
+    },
+    {
+      "assemblyNo": 211,
+      "assemblyName": "Ramanathapuram",
+      "district": "RAMANATHAPURAM",
+      "totalBooths": 399,
+      "totalVoters": 310165
+    },
+    {
+      "assemblyNo": 212,
+      "assemblyName": "Mudhukulathur",
+      "district": "RAMANATHAPURAM",
+      "totalBooths": 414,
+      "totalVoters": 297308
+    },
+    {
+      "assemblyNo": 213,
+      "assemblyName": "Vilathikulam",
+      "district": "THOOTHUKUDI",
+      "totalBooths": 274,
+      "totalVoters": 203731
+    },
+    {
+      "assemblyNo": 214,
+      "assemblyName": "Thoothukkudi",
+      "district": "THOOTHUKUDI",
+      "totalBooths": 360,
+      "totalVoters": 248296
+    },
+    {
+      "assemblyNo": 215,
+      "assemblyName": "Tiruchendur",
+      "district": "THOOTHUKUDI",
+      "totalBooths": 307,
+      "totalVoters": 230701
+    },
+    {
+      "assemblyNo": 216,
+      "assemblyName": "Srivaikuntam",
+      "district": "THOOTHUKUDI",
+      "totalBooths": 293,
+      "totalVoters": 212885
+    },
+    {
+      "assemblyNo": 217,
+      "assemblyName": "Ottapidaram",
+      "district": "THOOTHUKUDI",
+      "totalBooths": 315,
+      "totalVoters": 240986
+    },
+    {
+      "assemblyNo": 218,
+      "assemblyName": "Kovilpatti",
+      "district": "THOOTHUKUDI",
+      "totalBooths": 315,
+      "totalVoters": 240016
+    },
+    {
+      "assemblyNo": 219,
+      "assemblyName": "Sankarankovil",
+      "district": "TENKASI",
+      "totalBooths": 315,
+      "totalVoters": 236532
+    },
+    {
+      "assemblyNo": 220,
+      "assemblyName": "Vasudevanallur",
+      "district": "TENKASI",
+      "totalBooths": 310,
+      "totalVoters": 227369
+    },
+    {
+      "assemblyNo": 221,
+      "assemblyName": "Kadayanallur",
+      "district": "TENKASI",
+      "totalBooths": 364,
+      "totalVoters": 267514
+    },
+    {
+      "assemblyNo": 222,
+      "assemblyName": "Tenkasi",
+      "district": "TENKASI",
+      "totalBooths": 359,
+      "totalVoters": 279584
+    },
+    {
+      "assemblyNo": 223,
+      "assemblyName": "Alangulam",
+      "district": "TENKASI",
+      "totalBooths": 332,
+      "totalVoters": 253406
+    },
+    {
+      "assemblyNo": 224,
+      "assemblyName": "Tirunelveli",
+      "district": "TIRUNELVELI",
+      "totalBooths": 386,
+      "totalVoters": 273514
+    },
+    {
+      "assemblyNo": 225,
+      "assemblyName": "Ambasamudram",
+      "district": "TIRUNELVELI",
+      "totalBooths": 321,
+      "totalVoters": 225709
+    },
+    {
+      "assemblyNo": 226,
+      "assemblyName": "Palayamkottai",
+      "district": "TIRUNELVELI",
+      "totalBooths": 296,
+      "totalVoters": 255129
+    },
+    {
+      "assemblyNo": 227,
+      "assemblyName": "Nanguneri",
+      "district": "TIRUNELVELI",
+      "totalBooths": 349,
+      "totalVoters": 254419
+    },
+    {
+      "assemblyNo": 228,
+      "assemblyName": "Radhapuram",
+      "district": "TIRUNELVELI",
+      "totalBooths": 326,
+      "totalVoters": 244479
+    },
+    {
+      "assemblyNo": 229,
+      "assemblyName": "Kanniyakumari",
+      "district": "KANNIYAKUMARI",
+      "totalBooths": 363,
+      "totalVoters": 286968
+    },
+    {
+      "assemblyNo": 230,
+      "assemblyName": "Nagercoil",
+      "district": "KANNIYAKUMARI",
+      "totalBooths": 322,
+      "totalVoters": 257021
+    },
+    {
+      "assemblyNo": 231,
+      "assemblyName": "Colachal",
+      "district": "KANNIYAKUMARI",
+      "totalBooths": 316,
+      "totalVoters": 263448
+    },
+    {
+      "assemblyNo": 232,
+      "assemblyName": "Padmanabhapuram",
+      "district": "KANNIYAKUMARI",
+      "totalBooths": 312,
+      "totalVoters": 234056
+    },
+    {
+      "assemblyNo": 233,
+      "assemblyName": "Vilavancode",
+      "district": "KANNIYAKUMARI",
+      "totalBooths": 300,
+      "totalVoters": 225218
+    },
+    {
+      "assemblyNo": 234,
+      "assemblyName": "Killiyoor",
+      "district": "KANNIYAKUMARI",
+      "totalBooths": 301,
+      "totalVoters": 243837
+    }
+  ]
+}
