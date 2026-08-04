@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import API from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import StatusBadge from '../../components/StatusBadge';
+import VoterSchemesView from '../../components/VoterSchemesView';
 import MemberProfileTimelineView, { formatSchemeName } from '../../components/MemberProfileTimelineView';
 import ReportsView from '../../components/ReportsView';
 import LiveTrackingPanel from '../../components/LiveTrackingPanel';
@@ -523,12 +524,10 @@ const DistrictAdminDashboard = () => {
       {/* PAGE 2: APPLICATIONS LIST */}
       {subPage === 'applications' && (
         selectedVoterTimeline ? (
-          <MemberProfileTimelineView
-            voterData={selectedVoterTimeline}
-            onBack={() => setSelectedVoterTimeline(null)}
-            onUpdateAppStatus={handleUpdateAppStatus}
-            onSelectVoter={(voter) => setSelectedVoterTimeline(voter)}
-            targetSchemeName={schemeFilter}
+          <VoterSchemesView
+            voter={selectedVoterTimeline}
+            onUpdateStatus={handleUpdateAppStatus}
+            onClose={() => setSelectedVoterTimeline(null)}
           />
         ) : (
           <div className="campsite-card" style={{ width: '100%', padding: '24px', boxSizing: 'border-box' }}>

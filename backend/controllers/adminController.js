@@ -1258,7 +1258,15 @@ const getApplicationsList = async (req, res) => {
 const updateApplicationStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, remarks, notes, isCallAction } = req.body;
+    const { 
+      status, 
+      remarks, 
+      notes, 
+      isCallAction,
+      deliveryMethod,
+      deliveryLocation,
+      deliveryRemarks
+    } = req.body;
     const finalRemarks = remarks !== undefined ? remarks : notes;
 
     const app = await SchemeApplication.findById(id);
@@ -1268,7 +1276,20 @@ const updateApplicationStatus = async (req, res) => {
 
     if (status) {
       app.status = status;
+      
+      // If marking as delivered, capture delivery details
+      if (status === 'Physically Delivered' || status === 'Approved' || status === 'Completed') {
+        app.deliveryDetails = {
+          deliveredBy: req.admin?.username || 'admin',
+          deliveredByName: req.admin?.fullName || req.admin?.username || 'Admin',
+          deliveredAt: new Date(),
+          deliveryMethod: deliveryMethod || 'Hand Delivery',
+          deliveryLocation: deliveryLocation || 'Voter Home',
+          remarks: deliveryRemarks || finalRemarks || 'Scheme delivered to voter'
+        };
+      }
     }
+    
     if (finalRemarks !== undefined) {
       app.adminRemarks = finalRemarks;
     }
@@ -1279,7 +1300,7 @@ const updateApplicationStatus = async (req, res) => {
 
     app.statusHistory.push({
       status: app.status,
-      remarks: finalRemarks || (isCallAction ? 'Call logged by admin' : 'Status updated'),
+      remarks: finalRemarks || deliveryRemarks || (isCallAction ? 'Call logged by admin' : 'Status updated'),
       updatedBy: `${req.admin?.role || 'ADMIN'} (${req.admin?.username || 'admin'})`,
       updatedAt: new Date()
     });
@@ -1293,6 +1314,7 @@ const updateApplicationStatus = async (req, res) => {
       application: app
     });
   } catch (error) {
+    logger.error('[updateApplicationStatus Error]', { error: error.message, stack: error.stack });
     return res.status(500).json({ success: false, message: error.message });
   }
 };
