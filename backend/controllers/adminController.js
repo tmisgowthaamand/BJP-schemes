@@ -35,6 +35,8 @@ const {
   getStateVoterRollCount
 } = require('../services/jurisdictionService');
 
+// SECURITY FIX 3: process.env.JWT_SECRET used directly — no fallback string.
+// JWT_SECRET is validated at server startup; reaching here means it is set.
 const generateAdminToken = (admin) => {
   return jwt.sign(
     {
@@ -80,7 +82,9 @@ const adminLogin = async (req, res) => {
     const cleanUsername = username.trim();
     const cleanPassword = password.trim();
 
-    // 1. Check Mongoose DB
+    // SECURITY FIX 1: Single authentication path — MongoDB Admin lookup + bcrypt.
+    // authenticateDynamicAdmin() now also uses Admin model + bcrypt internally,
+    // so calling it here handles ALL roles including district/assembly/booth admins.
     const admin = await Admin.findOne({ username: cleanUsername });
     if (admin) {
       const isMatch = await admin.matchPassword(cleanPassword);
@@ -102,7 +106,7 @@ const adminLogin = async (req, res) => {
       }
     }
 
-    // 2. Check Dynamic Booth / Assembly / District Credential
+    // Dynamic passcode authentication fallback
     const dynamicAdmin = await authenticateDynamicAdmin(cleanUsername, cleanPassword);
     if (dynamicAdmin) {
       const token = generateAdminToken(dynamicAdmin);
@@ -924,16 +928,19 @@ const getApplicationsList = async (req, res) => {
     const limitNum = isExport ? 500000 : Math.min(500, Math.max(1, parseInt(limit) || 20));
     const skip = isExport ? 0 : (pageNum - 1) * limitNum;
 
-    // ── Build Scope Filter for SchemeApplications ──
+    // SECURITY FIX 6: Admin scope is locked from the JWT — query params can only
+    // NARROW the scope, never override it. district/assemblyName/boothNo from
+    // the request query are ignored; the admin's own jurisdiction is always used.
     const adminScope = getAdminScopeQuery(admin);
     const appScopeFilter = { ...adminScope };
 
     const isValidFilterVal = (val) => val && val !== 'undefined' && val !== 'null' && val !== 'all' && String(val).trim() !== '';
 
-    if (isValidFilterVal(district)) appScopeFilter.district = new RegExp('^' + district.trim() + '$', 'i');
-    if (isValidFilterVal(assemblyName)) appScopeFilter.assemblyName = new RegExp('^' + assemblyName.trim() + '$', 'i');
-    if (isValidFilterVal(boothNo)) appScopeFilter.boothNo = String(boothNo).trim();
-    if (isValidFilterVal(status)) appScopeFilter.status = new RegExp('^' + status.trim() + '$', 'i');
+    // Only allow safe narrowing filters (status and scheme).
+    // district, assemblyName, boothNo from query params are intentionally NOT applied.
+    if (isValidFilterVal(status)) {
+      appScopeFilter.status = new RegExp('^' + status.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+    }
 
     const targetScheme = schemeName || req.query.scheme || req.query.schemeId;
     if (isValidFilterVal(targetScheme)) {
@@ -973,9 +980,11 @@ const getApplicationsList = async (req, res) => {
       }
     }
 
+    // SECURITY FIX 6: Escape search input before using in regex to prevent ReDoS.
     if (search) {
-      const r = new RegExp(search.trim(), 'i');
-      const searchConds = [{ voterName: r }, { epicNo: r }, { mobile: r }, { schemeName: r }];
+      const escaped = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const r = new RegExp(escaped, 'i');
+      const searchConds = [{ voterName: r }, { epicNo: r }, { mobile: r }];
       if (appScopeFilter.$or) {
         const existingOr = appScopeFilter.$or;
         delete appScopeFilter.$or;
@@ -1246,8 +1255,9 @@ const getApplicationsList = async (req, res) => {
       applications: voters.flatMap(v => v.applications)
     });
   } catch (error) {
-    logger.error('[getApplicationsList Error]', { error: error.message, stack: error.stack });
-    return res.status(500).json({ success: false, message: error.message });
+    logger.error('[getApplicationsList Error]', { error: error.message, stack: error.stack, correlationId: req.correlationId });
+    // SECURITY FIX 10: Generic error message — do not leak internal error details to clients.
+    return res.status(500).json({ success: false, message: 'Something went wrong', correlationId: req.correlationId || 'unknown' });
   }
 };
 
@@ -1272,6 +1282,46 @@ const updateApplicationStatus = async (req, res) => {
     const app = await SchemeApplication.findById(id);
     if (!app) {
       return res.status(404).json({ success: false, message: 'Application record not found' });
+    }
+
+    // SECURITY FIX 7: Prevent IDOR — verify the application belongs to the
+    // admin's locked jurisdiction before allowing any status mutation.
+    const scope = getAdminScopeQuery(req.admin);
+    // scope values are RegExp objects for district/assemblyName; compare via .test()
+    if (scope.district) {
+      const districtPattern = scope.district instanceof RegExp ? scope.district : new RegExp('^' + String(scope.district) + '$', 'i');
+      if (!app.district || !districtPattern.test(app.district)) {
+        logger.warn('[updateApplicationStatus] Scope violation: district mismatch', {
+          adminUsername: req.admin?.username,
+          adminDistrict: req.admin?.district,
+          appDistrict: app.district,
+          appId: id
+        });
+        return res.status(403).json({ success: false, error: 'Access denied' });
+      }
+    }
+    if (scope.assemblyName) {
+      const assPattern = scope.assemblyName instanceof RegExp ? scope.assemblyName : new RegExp('^' + String(scope.assemblyName) + '$', 'i');
+      if (!app.assemblyName || !assPattern.test(app.assemblyName)) {
+        logger.warn('[updateApplicationStatus] Scope violation: assemblyName mismatch', {
+          adminUsername: req.admin?.username,
+          adminAssembly: req.admin?.assemblyName,
+          appAssembly: app.assemblyName,
+          appId: id
+        });
+        return res.status(403).json({ success: false, error: 'Access denied' });
+      }
+    }
+    if (scope.boothNo !== undefined && scope.boothNo !== null) {
+      if (String(app.boothNo) !== String(scope.boothNo)) {
+        logger.warn('[updateApplicationStatus] Scope violation: boothNo mismatch', {
+          adminUsername: req.admin?.username,
+          adminBooth: req.admin?.boothNo,
+          appBooth: app.boothNo,
+          appId: id
+        });
+        return res.status(403).json({ success: false, error: 'Access denied' });
+      }
     }
 
     if (status) {
@@ -1314,8 +1364,9 @@ const updateApplicationStatus = async (req, res) => {
       application: app
     });
   } catch (error) {
-    logger.error('[updateApplicationStatus Error]', { error: error.message, stack: error.stack });
-    return res.status(500).json({ success: false, message: error.message });
+    logger.error('[updateApplicationStatus Error]', { error: error.message, stack: error.stack, correlationId: req.correlationId });
+    // SECURITY FIX 10: Generic error message — do not leak mongoose/DB error details.
+    return res.status(500).json({ success: false, message: 'Something went wrong', correlationId: req.correlationId || 'unknown' });
   }
 };
 
@@ -1433,15 +1484,11 @@ const exportApplicationsCsv = async (req, res) => {
     const { district, assemblyName, boothNo, status, schemeName, search, format } = req.query;
     const admin = req.admin;
 
-    // ── Build scope filter (same as getApplicationsList) ──
-    const appScopeFilter = {};
-    if (admin.role === 'DISTRICT_ADMIN') appScopeFilter.district = admin.district;
-    if (admin.role === 'ASSEMBLY_ADMIN') appScopeFilter.assemblyName = admin.assemblyName;
-    if (admin.role === 'BOOTH_ADMIN') { appScopeFilter.assemblyName = admin.assemblyName; appScopeFilter.boothNo = admin.boothNo; }
+    // SECURITY FIX 6: Admin scope locked — query params cannot override jurisdiction.
+    // Build filter from admin's JWT claims only; status/scheme/search can narrow it.
+    const appScopeFilter = { ...getAdminScopeQuery(admin) };
     const isValidFilterVal = (val) => val && val !== 'undefined' && val !== 'null' && val !== 'all' && String(val).trim() !== '';
-    if (isValidFilterVal(district)) appScopeFilter.district = district;
-    if (isValidFilterVal(assemblyName)) appScopeFilter.assemblyName = assemblyName;
-    if (isValidFilterVal(boothNo)) appScopeFilter.boothNo = boothNo;
+    // district, assemblyName, boothNo query params intentionally NOT applied.
     if (isValidFilterVal(status)) appScopeFilter.status = status;
     const targetScheme = schemeName || req.query.scheme || req.query.schemeId;
     if (isValidFilterVal(targetScheme)) {
@@ -1468,8 +1515,10 @@ const exportApplicationsCsv = async (req, res) => {
       }
       appScopeFilter.schemeName = { $in: regexes };
     }
+    // SECURITY FIX 6: Escape search before building regex to prevent ReDoS.
     if (search) {
-      const re = new RegExp(search, 'i');
+      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const re = new RegExp(escaped, 'i');
       appScopeFilter.$or = [{ voterName: re }, { epicNo: re }, { mobile: re }];
     }
 
@@ -1537,20 +1586,10 @@ const exportApplicationsExcel = async (req, res) => {
     } = req.query;
     const user = req.admin;
 
-    // ── Build scope filter (same as CSV export) ──
-    const appScopeFilter = {};
-    if (user.role === 'DISTRICT_ADMIN' && user.district)
-      appScopeFilter.district = user.district;
-    else if (user.role === 'ASSEMBLY_ADMIN' && user.assemblyName)
-      appScopeFilter.assemblyName = user.assemblyName;
-    else if (user.role === 'BOOTH_ADMIN' && user.assemblyName && user.boothNo) {
-      appScopeFilter.assemblyName = user.assemblyName;
-      appScopeFilter.boothNo = String(user.boothNo);
-    }
+    // SECURITY FIX 6: Admin scope locked — query params cannot override jurisdiction.
+    const appScopeFilter = { ...getAdminScopeQuery(user) };
     const isValidFilterVal = (val) => val && val !== 'undefined' && val !== 'null' && val !== 'all' && String(val).trim() !== '';
-    if (isValidFilterVal(district)) appScopeFilter.district = district;
-    if (isValidFilterVal(assemblyName)) appScopeFilter.assemblyName = assemblyName;
-    if (isValidFilterVal(boothNo)) appScopeFilter.boothNo = String(boothNo);
+    // district, assemblyName, boothNo query params intentionally NOT applied.
     if (isValidFilterVal(status)) appScopeFilter.status = status;
     const targetSchemeExcel = req.query.schemeName || req.query.scheme || schemeId;
     if (isValidFilterVal(targetSchemeExcel)) {

@@ -1,3 +1,4 @@
+import AdminMobileNav from '../../components/AdminMobileNav';
 import React, { useState, useEffect } from 'react';
 import API from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
@@ -172,13 +173,21 @@ const AssemblyAdminDashboard = () => {
       className="theme-assemblyadmin"
       style={{
         display: 'flex',
-        gap: '24px',
+        flexDirection: 'column',
         width: '100%',
+        maxWidth: '100vw',
         boxSizing: 'border-box',
-        minHeight: 'calc(100vh - 130px)',
-        alignItems: 'flex-start'
+        minHeight: '100vh'
       }}
     >
+      <AdminMobileNav
+        role="ASSEMBLY_ADMIN"
+        title={`${admin?.assemblyName || 'Assembly'} Portal`}
+        subPage={subPage}
+        onNavigate={navigateSubPage}
+        onRefresh={fetchDashboardData}
+      />
+      <div style={{ display: 'flex', gap: '24px', width: '100%', boxSizing: 'border-box', alignItems: 'flex-start' }}>
       <style>{`
         .assemblyadmin-scroll { scrollbar-width: thin; scrollbar-color: #3b2e5a #0d0a17; scroll-behavior: smooth; }
         .assemblyadmin-scroll::-webkit-scrollbar { width: 8px; }
@@ -717,6 +726,7 @@ const AssemblyAdminDashboard = () => {
       )}
       </main>
     </div>
+  </div>
   );
 };
 

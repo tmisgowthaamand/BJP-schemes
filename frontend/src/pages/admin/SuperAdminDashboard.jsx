@@ -1,3 +1,4 @@
+import AdminMobileNav from '../../components/AdminMobileNav';
 import React, { useState, useEffect, useRef } from 'react';
 import API from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
@@ -525,13 +526,21 @@ const SuperAdminDashboard = () => {
       className="theme-superadmin"
       style={{
         display: 'flex',
-        gap: '24px',
+        flexDirection: 'column',
         width: '100%',
+        maxWidth: '100vw',
         boxSizing: 'border-box',
-        minHeight: 'calc(100vh - 130px)',
-        alignItems: 'flex-start'
+        minHeight: '100vh'
       }}
     >
+      <AdminMobileNav
+        role="SUPER_ADMIN"
+        title="Super Admin Portal"
+        subPage={subPage}
+        onNavigate={navigateSubPage}
+        onRefresh={fetchDashboardData}
+      />
+      <div style={{ display: 'flex', gap: '24px', width: '100%', boxSizing: 'border-box', alignItems: 'flex-start' }}>
       <style>{`
         .superadmin-scroll { scrollbar-width: thin; scrollbar-color: #3b2e5a #0d0a17; scroll-behavior: smooth; }
         .superadmin-scroll::-webkit-scrollbar { width: 8px; }
@@ -1570,6 +1579,7 @@ const SuperAdminDashboard = () => {
       )}
       </main>
     </div>
+  </div>
   );
 };
 

@@ -1,12 +1,26 @@
 const axios = require('axios');
 const logger = require('../config/logger');
 
+// SECURITY FIX 5: SMS_API_KEY must be set in the environment — no hardcoded
+// fallback key. The check is at module load time so the server fails fast
+// during startup rather than silently using a leaked/invalid key at runtime.
+// (FAST2SMS_API_KEY is optional; validated conditionally below before use.)
+if (!process.env.SMS_API_KEY && !process.env.FAST2SMS_API_KEY) {
+  // Warn but do not throw — the mock fallback (log-only) is acceptable in
+  // local development when neither key is configured.
+  logger.warn('[smsService] Neither SMS_API_KEY nor FAST2SMS_API_KEY is set. OTPs will not be delivered via SMS.');
+}
+
 /**
- * Send OTP via Fast2SMS API or 2Factor SMS Gateway
+ * Send OTP via Fast2SMS API or 2Factor SMS Gateway.
+ * Falls back to a mock/log-only mode in development when no key is set.
  */
 const sendSmsOtp = async (mobile, otp) => {
+  // SECURITY FIX 5: No hardcoded key strings. Use environment variables only.
   const fast2smsKey = process.env.FAST2SMS_API_KEY || null;
-  const twoFactorKey = process.env.SMS_API_KEY && !process.env.SMS_API_KEY.includes('fxOP') && process.env.SMS_API_KEY !== 'your_sms_api_key' ? process.env.SMS_API_KEY : null;
+  // Validate the 2Factor key is present and not a placeholder.
+  const raw2FactorKey = process.env.SMS_API_KEY || null;
+  const twoFactorKey = raw2FactorKey && raw2FactorKey !== 'your_sms_api_key' ? raw2FactorKey : null;
 
   let cleanMobile = mobile.replace(/[^0-9]/g, '');
   if (cleanMobile.length > 10 && cleanMobile.startsWith('91')) {

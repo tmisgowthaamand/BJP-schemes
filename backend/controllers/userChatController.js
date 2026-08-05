@@ -7,6 +7,7 @@ const { findVoterByEpic } = require('../services/voterSearchService');
 const jwt = require('jsonwebtoken');
 const logger = require('../config/logger');
 
+// SECURITY FIX 3: process.env.JWT_SECRET used directly — no fallback string.
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d'
@@ -41,15 +42,13 @@ const sendOtp = async (req, res) => {
       expiresAt
     });
 
-    // Respond right away — the SMS gateway call is the slow part, so we
-    // dispatch it in the background instead of making the user wait for the
-    // 2Factor round-trip. The OTP already works the moment this returns.
+    // SECURITY FIX 4: devOtp removed from all environments — returning the OTP
+    // in the API response defeats the purpose of OTP authentication entirely.
     res.status(200).json({
       success: true,
       message: 'OTP sent successfully',
       mobile: cleanMobile,
-      isExistingUser: !!existingUser,
-      ...(process.env.NODE_ENV !== 'production' && { devOtp: otp })
+      isExistingUser: !!existingUser
     });
 
     // Fire-and-forget SMS dispatch (does not block the response).
@@ -80,21 +79,20 @@ const verifyOtp = async (req, res) => {
     const cleanMobile = mobile.trim();
     const cleanOtp = otp.trim();
 
-    // Allow dev bypass 123456 or match session
+    // SECURITY FIX 4: OTP universal bypass (cleanOtp === '123456') removed entirely.
+    // Only accept the OTP stored in the OtpSession document from MongoDB.
     const session = await OtpSession.findOne({ mobile: cleanMobile, verified: false });
 
-    if (!session && cleanOtp !== '123456') {
+    if (!session) {
       return res.status(400).json({ success: false, message: 'OTP session expired. Please request a new OTP.' });
     }
 
-    if (session && session.otp !== cleanOtp && cleanOtp !== '123456') {
+    if (session.otp !== cleanOtp) {
       return res.status(400).json({ success: false, message: 'Invalid OTP entered. Please try again.' });
     }
 
-    if (session) {
-      session.verified = true;
-      await session.save();
-    }
+    session.verified = true;
+    await session.save();
 
     const existingUser = await User.findOne({ mobile: cleanMobile });
 
@@ -123,8 +121,9 @@ const verifyOtp = async (req, res) => {
       });
     }
   } catch (error) {
-    logger.error('[verifyOtp Error]', { error: error.message, stack: error.stack });
-    return res.status(500).json({ success: false, message: 'Failed to verify OTP', error: error.message });
+    logger.error('[verifyOtp Error]', { error: error.message, stack: error.stack, correlationId: req.correlationId });
+    // SECURITY FIX 10: Generic error — do not expose internal error details.
+    return res.status(500).json({ success: false, message: 'Something went wrong', correlationId: req.correlationId || 'unknown' });
   }
 };
 

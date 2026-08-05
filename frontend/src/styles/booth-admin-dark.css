@@ -9,14 +9,14 @@
 
 /* === CSS VARIABLES === */
 .theme-boothadmin {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #13131a;
-  --bg-card: #1a1a24;
-  --bg-hover: #22222e;
-  --border-color: #2a2a38;
+  --bg-primary: #12101a;
+  --bg-secondary: #1a1726;
+  --bg-card: #201c2e;
+  --bg-hover: #2b253c;
+  --border-color: #332b47;
   --text-primary: #ffffff;
-  --text-secondary: #a8a8b8;
-  --text-muted: #6b6b7b;
+  --text-secondary: #ad9fc7;
+  --text-muted: #796e95;
   --accent-primary: #FF6B35;
   --accent-secondary: #FF9933;
   --accent-success: #10b981;
@@ -101,14 +101,19 @@
 }
 
 .sidebar-nav-btn.active {
-  background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(255, 153, 51, 0.15) 100%);
-  border-color: var(--accent-primary);
-  color: var(--accent-secondary);
-  font-weight: 600;
+  background: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 18px rgba(225, 29, 72, 0.45) !important;
+  border-radius: 12px !important;
 }
 
-.sidebar-nav-btn.active svg {
-  color: var(--accent-secondary);
+.sidebar-nav-btn.active svg,
+.sidebar-nav-btn.active span,
+.sidebar-nav-btn.active div,
+.sidebar-nav-btn.active div span {
+  color: #ffffff !important;
 }
 
 /* === STAT CARDS === */

@@ -1,0 +1,1586 @@
+/* ==========================================================================
+   responsive-theme.css
+   BJP Nalam Thittam Admin Portal — Shared Responsive Design System
+   --------------------------------------------------------------------------
+   Import this file in every admin dashboard:
+     import '../../styles/responsive-theme.css';
+
+   Naming convention: all classes use the `rt-` prefix so they coexist
+   safely alongside index.css (.theme-*), admin.css (.admin-*), and
+   booth-admin-dark.css without specificity conflicts.
+
+   Sections
+   ────────
+    1. CSS Custom Properties (design tokens)
+    2. Breakpoint display-utility classes
+    3. Responsive card grid system
+    4. Stat chip / metric cards
+    5. Status badge pills
+    6. Action buttons
+    7. Table responsive wrapper
+    8. Mobile nav panel (three-dot slide-in)
+    9. Bottom navigation bar (Booth Admin)
+   10. Safe-area inset utilities
+   11. Form inputs (iOS-zoom prevention)
+   12. Skeleton loading cards
+   ========================================================================== */
+
+/* ==========================================================================
+   SECTION 1 — CSS CUSTOM PROPERTIES
+   ========================================================================== */
+
+:root {
+  /* ── BJP brand palette ── */
+  --bjp-saffron:          #FF6B00;
+  --bjp-saffron-hover:    #e05e00;
+  --bjp-saffron-light:    rgba(255, 107, 0, 0.10);
+  --bjp-saffron-mid:      rgba(255, 107, 0, 0.18);
+  --bjp-green:            #138808;
+  --bjp-green-light:      rgba(19, 136, 8, 0.10);
+  --bjp-navy:             #1a2f6e;
+  --bjp-white:            #ffffff;
+
+  /* ── Per-role accent colours ── */
+  --admin-super:          #7F77DD;   /* SUPER_ADMIN    — lavender indigo   */
+  --admin-state:          #378ADD;   /* STATE_ADMIN    — sapphire blue     */
+  --admin-district:       #1D9E75;   /* DISTRICT_ADMIN — emerald teal      */
+  --admin-assembly:       #BA7517;   /* ASSEMBLY_ADMIN — amber gold        */
+  --admin-booth:          #D85A30;   /* BOOTH_ADMIN    — burnt saffron     */
+
+  /* ── Border-radii ── */
+  --rt-radius-xs:         4px;
+  --rt-radius-sm:         6px;
+  --rt-radius-md:         10px;
+  --rt-radius-lg:         16px;
+  --rt-radius-xl:         20px;
+  --rt-radius-full:       9999px;
+
+  /* Legacy aliases so existing dashboards that reference --radius-* still work */
+  --radius-sm:            6px;
+  --radius-md:            10px;
+  --radius-lg:            16px;
+
+  /* ── Shadows ── */
+  --rt-shadow-card:       0 1px 4px rgba(0, 0, 0, 0.08);
+  --rt-shadow-panel:      -8px 0 32px rgba(0, 0, 0, 0.18);
+  --rt-shadow-float:      0 4px 20px rgba(255, 107, 0, 0.30);
+
+  /* Legacy alias */
+  --shadow-card:          0 1px 4px rgba(0, 0, 0, 0.08);
+
+  /* ── Minimum tap/touch target (WCAG 2.5.5) ── */
+  --tap-min:              44px;
+  --tap-action:           48px;   /* action buttons like Approve / Reject */
+
+  /* ── Status badge token set ── */
+  --badge-pending-bg:     #FAEEDA;
+  --badge-pending-fg:     #854F0B;
+  --badge-approved-bg:    #EAF3DE;
+  --badge-approved-fg:    #3B6D11;
+  --badge-rejected-bg:    #FCEBEB;
+  --badge-rejected-fg:    #A32D2D;
+  --badge-verified-bg:    #E6F1FB;
+  --badge-verified-fg:    #185FA5;
+  --badge-called-bg:      #EEEDFE;
+  --badge-called-fg:      #534AB7;
+  --badge-processing-bg:  #F1EFE8;
+  --badge-processing-fg:  #5F5E5A;
+
+  /* ── Skeleton shimmer colours ── */
+  --skeleton-base:        #f0f0f0;
+  --skeleton-shine:       #e0e0e0;
+
+  /* ── Breakpoint references (documentation only — use @media in rules) ── */
+  /* --bp-xs: 320px  / --bp-sm: 375px  / --bp-mobile: 480px  */
+  /* --bp-tablet: 768px  / --bp-desktop: 1024px / --bp-wide: 1366px */
+}
+
+/* ==========================================================================
+   SECTION 2 — BREAKPOINT DISPLAY UTILITY CLASSES
+   --------------------------------------------------------------------------
+   These classes control visibility by viewport width only. They do not
+   affect flex/grid layout — use them to show/hide whole elements.
+
+   Breakpoints:
+     mobile:  < 768px
+     tablet:  768px – 1024px
+     desktop: > 1024px
+   ========================================================================== */
+
+/* Visible only on mobile (< 768px) */
+.rt-show-mobile-only {
+  display: block !important;
+}
+@media (min-width: 768px) {
+  .rt-show-mobile-only { display: none !important; }
+}
+
+/* Visible only on tablet and above (≥ 768px) */
+.rt-show-tablet-up {
+  display: none !important;
+}
+@media (min-width: 768px) {
+  .rt-show-tablet-up { display: block !important; }
+}
+
+/* Visible only on desktop (> 1024px) */
+.rt-show-desktop-only {
+  display: none !important;
+}
+@media (min-width: 1025px) {
+  .rt-show-desktop-only { display: block !important; }
+}
+
+/* Hidden on mobile (< 768px) */
+@media (max-width: 767px) {
+  .rt-hide-mobile { display: none !important; }
+}
+
+/* Hidden on desktop (> 1024px) */
+@media (min-width: 1025px) {
+  .rt-hide-desktop { display: none !important; }
+}
+
+/* Flex variants of the utilities (for flex containers) */
+@media (min-width: 768px) {
+  .rt-flex-tablet-up { display: flex !important; }
+}
+@media (max-width: 767px) {
+  .rt-flex-mobile { display: flex !important; }
+}
+
+/* ==========================================================================
+   SECTION 3 — RESPONSIVE CARD GRID SYSTEM
+   --------------------------------------------------------------------------
+   Base class: .rt-admin-grid
+   Modifier classes:
+     .rt-grid-auto   — auto-fit columns, min 200px each
+     .rt-grid-2      — max 2 columns
+     .rt-grid-3      — max 3 columns  (default)
+     .rt-grid-4      — max 4 columns
+
+   All collapse to 1 column at ≤ 480px.
+   Collapse to 2 columns at 481px – 767px.
+   ========================================================================== */
+
+.rt-admin-grid {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  /* Default: 3-column layout on desktop */
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Auto-fit: columns size themselves, wrapping freely */
+.rt-grid-auto {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+/* Fixed 2-column max */
+.rt-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Fixed 3-column max */
+.rt-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Fixed 4-column max */
+.rt-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* ── Tablet: 768px – 1023px ── */
+@media (max-width: 1023px) {
+  .rt-admin-grid,
+  .rt-grid-3,
+  .rt-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rt-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rt-grid-auto {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+
+/* ── Mobile: ≤ 480px — everything collapses to 1 column ── */
+@media (max-width: 480px) {
+  .rt-admin-grid,
+  .rt-grid-auto,
+  .rt-grid-2,
+  .rt-grid-3,
+  .rt-grid-4 {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+/* ==========================================================================
+   SECTION 4 — STAT CHIP / METRIC CARDS
+   --------------------------------------------------------------------------
+   .rt-stat-chip        — individual metric tile
+   .rt-stat-strip       — horizontal scroll container (mobile stat bar)
+   .rt-stat-chip .value — large number / count
+   .rt-stat-chip .label — short uppercase description
+   ========================================================================== */
+
+/* ── Individual chip ── */
+.rt-stat-chip {
+  min-width: 80px;
+  padding: 12px 16px;
+  border-radius: var(--rt-radius-md);
+  background: var(--bjp-white, #ffffff);
+  border: 1px solid #eeeeee;
+  box-shadow: var(--rt-shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rt-stat-chip:hover {
+  border-color: var(--bjp-saffron);
+  box-shadow: 0 2px 10px rgba(255, 107, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+.rt-stat-chip:active {
+  transform: scale(0.97);
+}
+
+/* Large metric number */
+.rt-stat-chip .value {
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
+  font-weight: 600;
+  line-height: 1.1;
+  color: inherit;       /* let the parent set colour via inline style or a modifier */
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Short label below the number */
+.rt-stat-chip .label {
+  font-size: 11px;
+  color: #666666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+/* Colour-variant modifiers for the chip value */
+.rt-stat-chip.accent-blue   .value { color: var(--admin-state,    #378ADD); }
+.rt-stat-chip.accent-green  .value { color: var(--admin-district, #1D9E75); }
+.rt-stat-chip.accent-amber  .value { color: var(--admin-assembly, #BA7517); }
+.rt-stat-chip.accent-red    .value { color: var(--badge-rejected-fg, #A32D2D); }
+.rt-stat-chip.accent-orange .value { color: var(--bjp-saffron); }
+
+/* ── Strip: horizontal scrolling row of chips (mobile stat bar) ── */
+.rt-stat-strip {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px 0 8px;         /* bottom padding shows the box-shadow */
+  -webkit-overflow-scrolling: touch;
+
+  /* Hide scrollbar across browsers */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.rt-stat-strip::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ensure chips in a strip don't shrink */
+.rt-stat-strip > .rt-stat-chip {
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   SECTION 5 — STATUS BADGE PILLS
+   --------------------------------------------------------------------------
+   Base: .rt-badge
+   Modifier: .rt-badge-<status>
+   Statuses: pending, approved, rejected, verified, called, processing
+
+   Minimum width 70px keeps badges readable in table cells.
+   High-contrast fill + text colours meet WCAG AA at body text size.
+   ========================================================================== */
+
+.rt-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 70px;
+  padding: 4px 10px;
+  border-radius: var(--rt-radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+}
+
+/* Pending — warm amber */
+.rt-badge-pending {
+  background: var(--badge-pending-bg,     #FAEEDA);
+  color:      var(--badge-pending-fg,     #854F0B);
+  border-color: rgba(133, 79, 11, 0.20);
+}
+
+/* Approved — muted green */
+.rt-badge-approved,
+.rt-badge-completed {
+  background: var(--badge-approved-bg,    #EAF3DE);
+  color:      var(--badge-approved-fg,    #3B6D11);
+  border-color: rgba(59, 109, 17, 0.20);
+}
+
+/* Rejected — soft red */
+.rt-badge-rejected {
+  background: var(--badge-rejected-bg,    #FCEBEB);
+  color:      var(--badge-rejected-fg,    #A32D2D);
+  border-color: rgba(163, 45, 45, 0.20);
+}
+
+/* Verified — pale blue */
+.rt-badge-verified {
+  background: var(--badge-verified-bg,    #E6F1FB);
+  color:      var(--badge-verified-fg,    #185FA5);
+  border-color: rgba(24, 95, 165, 0.20);
+}
+
+/* Called — soft violet */
+.rt-badge-called {
+  background: var(--badge-called-bg,      #EEEDFE);
+  color:      var(--badge-called-fg,      #534AB7);
+  border-color: rgba(83, 74, 183, 0.20);
+}
+
+/* Processing / In-progress — warm grey */
+.rt-badge-processing,
+.rt-badge-submitted {
+  background: var(--badge-processing-bg,  #F1EFE8);
+  color:      var(--badge-processing-fg,  #5F5E5A);
+  border-color: rgba(95, 94, 90, 0.20);
+}
+
+/* ── Ensure readable size on very small screens ── */
+@media (max-width: 375px) {
+  .rt-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+    min-width: 60px;
+  }
+}
+
+/* ==========================================================================
+   SECTION 6 — ACTION BUTTONS
+   --------------------------------------------------------------------------
+   Base:   .rt-btn-action
+   Variants: .rt-btn-approve  .rt-btn-reject  .rt-btn-verify
+             .rt-btn-call     .rt-btn-primary  .rt-btn-ghost
+
+   All buttons enforce a minimum 44px height (WCAG tap target).
+   On mobile, action buttons expand to fill available width when wrapped
+   inside .rt-action-bar.
+   ========================================================================== */
+
+/* ── Base ── */
+.rt-btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 16px;
+  min-height: var(--tap-min, 44px);
+  min-width: 80px;
+  border-radius: var(--rt-radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 150ms ease, transform 100ms ease, box-shadow 150ms ease;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.rt-btn-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.rt-btn-action:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+/* ── Approve — green ── */
+.rt-btn-approve {
+  background: var(--badge-approved-bg,  #EAF3DE);
+  color:      var(--badge-approved-fg,  #3B6D11);
+}
+.rt-btn-approve:hover:not(:disabled) {
+  background: #C0DD97;
+  box-shadow: 0 2px 8px rgba(59, 109, 17, 0.20);
+}
+
+/* ── Reject — red ── */
+.rt-btn-reject {
+  background: var(--badge-rejected-bg,  #FCEBEB);
+  color:      var(--badge-rejected-fg,  #A32D2D);
+}
+.rt-btn-reject:hover:not(:disabled) {
+  background: #F7C1C1;
+  box-shadow: 0 2px 8px rgba(163, 45, 45, 0.20);
+}
+
+/* ── Verify — blue ── */
+.rt-btn-verify {
+  background: var(--badge-verified-bg,  #E6F1FB);
+  color:      var(--badge-verified-fg,  #185FA5);
+}
+.rt-btn-verify:hover:not(:disabled) {
+  background: #B5D4F4;
+  box-shadow: 0 2px 8px rgba(24, 95, 165, 0.20);
+}
+
+/* ── Call — amber ── */
+.rt-btn-call {
+  background: var(--badge-pending-bg,   #FAEEDA);
+  color:      var(--badge-pending-fg,   #854F0B);
+}
+.rt-btn-call:hover:not(:disabled) {
+  background: #FAC775;
+  box-shadow: 0 2px 8px rgba(133, 79, 11, 0.20);
+}
+
+/* ── Primary — BJP saffron solid ── */
+.rt-btn-primary {
+  background: var(--bjp-saffron, #FF6B00);
+  color: #ffffff;
+  font-weight: 600;
+}
+.rt-btn-primary:hover:not(:disabled) {
+  background: var(--bjp-saffron-hover, #e05e00);
+  box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35);
+}
+
+/* ── Ghost — outlined ── */
+.rt-btn-ghost {
+  background: transparent;
+  color: #555555;
+  border: 1px solid #dddddd;
+  font-weight: 500;
+}
+.rt-btn-ghost:hover:not(:disabled) {
+  background: #f5f5f5;
+  border-color: #aaaaaa;
+}
+
+/* ── Action bar: flex row of action buttons ── */
+.rt-action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* On mobile: action buttons stack full-width for glove-friendly tapping */
+@media (max-width: 480px) {
+  .rt-action-bar {
+    flex-direction: column;
+  }
+  .rt-action-bar .rt-btn-action {
+    width: 100%;
+    min-height: var(--tap-action, 48px);
+    font-size: 14px;
+  }
+}
+
+/* ==========================================================================
+   SECTION 7 — TABLE RESPONSIVE WRAPPER
+   --------------------------------------------------------------------------
+   Wraps any <table> in a horizontally-scrollable container.
+   The table itself always has a minimum width so columns don't crush.
+
+   Usage:
+     <div class="rt-table-responsive">
+       <table>…</table>
+     </div>
+   ========================================================================== */
+
+.rt-table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--rt-radius-md);
+  border: 1px solid #eeeeee;
+  box-sizing: border-box;
+
+  /* Subtle scrollbar so users can tell it's scrollable */
+  scrollbar-width: thin;
+  scrollbar-color: #cccccc #f5f5f5;
+}
+
+.rt-table-responsive::-webkit-scrollbar {
+  height: 6px;
+}
+.rt-table-responsive::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 0 0 var(--rt-radius-md) var(--rt-radius-md);
+}
+.rt-table-responsive::-webkit-scrollbar-thumb {
+  background: #cccccc;
+  border-radius: 4px;
+}
+.rt-table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #aaaaaa;
+}
+
+/* ── Table base ── */
+.rt-table-responsive table {
+  min-width: 600px;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: #333333;
+}
+
+/* ── Header ── */
+.rt-table-responsive th {
+  background: #f8f8f8;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+  color: #555555;
+  border-bottom: 2px solid #eeeeee;
+  /* Sticky header inside the scroll container */
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* ── Cells ── */
+.rt-table-responsive td {
+  padding: 10px 14px;
+  font-size: 13px;
+  border-top: 1px solid #f0f0f0;
+  vertical-align: middle;
+  color: #444444;
+}
+
+/* ── Hover row ── */
+.rt-table-responsive tr:hover td {
+  background: #fafafa;
+}
+
+/* ── Last row: remove extra border ── */
+.rt-table-responsive tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Sticky first column (district / voter name) on mobile ── */
+@media (max-width: 768px) {
+  .rt-table-responsive th:first-child,
+  .rt-table-responsive td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: inherit;
+  }
+
+  .rt-table-responsive th:first-child {
+    background: #f8f8f8;
+    z-index: 3;
+  }
+
+  .rt-table-responsive tbody tr:hover td:first-child {
+    background: #fafafa;
+  }
+}
+
+/* ==========================================================================
+   SECTION 8 — MOBILE NAV PANEL (THREE-DOT SLIDE-IN)
+   --------------------------------------------------------------------------
+   Overlay + panel pair. Toggle the .open class on both with JS.
+
+   Structure:
+     <div class="rt-mobile-nav-overlay [open]"  />
+     <nav  class="rt-mobile-nav-panel   [open]">
+       <div class="rt-nav-header">
+         …
+         <button class="rt-nav-close">✕</button>
+       </div>
+       <div class="rt-nav-body">
+         <a  class="rt-nav-item [active]">…</a>
+         <hr class="rt-nav-divider" />
+         <a  class="rt-nav-item logout">…</a>
+       </div>
+     </nav>
+
+   Animates: translateX(100%) → translateX(0) in 300ms.
+   Body scroll is locked externally when panel is open.
+   ========================================================================== */
+
+/* ── Backdrop overlay ── */
+.rt-mobile-nav-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.50);
+  z-index: 1100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease;
+}
+
+.rt-mobile-nav-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── Slide-in panel ── */
+.rt-mobile-nav-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 280px;
+  height: 100dvh;          /* dvh accounts for mobile browser chrome changes */
+  height: 100vh;           /* fallback for browsers without dvh support */
+  background: #ffffff;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  /* Respect notch / home indicator */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-shadow: var(--rt-shadow-panel);
+  transform: translateX(100%);
+  transition: transform 300ms ease;
+  overflow: hidden;
+}
+
+.rt-mobile-nav-panel.open {
+  transform: translateX(0);
+}
+
+/* ── Panel header ── */
+.rt-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eeeeee;
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.rt-nav-header-info {
+  min-width: 0;
+}
+
+.rt-nav-header-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #222222;
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rt-nav-header-sub {
+  font-size: 11px;
+  color: #888888;
+  margin: 0;
+}
+
+/* Close button — 44px tap target */
+.rt-nav-close {
+  width: var(--tap-min, 44px);
+  height: var(--tap-min, 44px);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border: 1px solid #e8e8e8;
+  border-radius: var(--rt-radius-sm);
+  cursor: pointer;
+  color: #444444;
+  font-size: 16px;
+  transition: background 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rt-nav-close:hover {
+  background: #ebebeb;
+}
+
+/* ── Scrollable nav body ── */
+.rt-nav-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+/* ── Individual nav item — 52px tall ── */
+.rt-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 24px;
+  height: 52px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #333333;
+  text-decoration: none;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  transition: background 150ms ease, color 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.rt-nav-item:hover {
+  background: #f5f5f5;
+  color: #111111;
+}
+
+/* Active item — saffron accent */
+.rt-nav-item.active {
+  color: var(--bjp-saffron, #FF6B00);
+  background: rgba(255, 107, 0, 0.06);
+  font-weight: 600;
+}
+
+/* Active item left border accent */
+.rt-nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--bjp-saffron, #FF6B00);
+  border-radius: 0 2px 2px 0;
+}
+.rt-nav-item {
+  position: relative;
+}
+
+/* Logout item — red text */
+.rt-nav-item.rt-nav-logout {
+  color: var(--badge-rejected-fg, #A32D2D);
+}
+
+.rt-nav-item.rt-nav-logout:hover {
+  background: rgba(163, 45, 45, 0.06);
+}
+
+/* Arrow icon on the right of regular items */
+.rt-nav-item-arrow {
+  margin-left: auto;
+  opacity: 0.35;
+  flex-shrink: 0;
+}
+
+/* ── Divider (placed above Logout) ── */
+.rt-nav-divider {
+  height: 1px;
+  background: #eeeeee;
+  border: none;
+  margin: 8px 0;
+}
+
+/* ── Narrower panel on very small screens ── */
+@media (max-width: 375px) {
+  .rt-mobile-nav-panel {
+    width: min(280px, 90vw);
+  }
+}
+
+/* ==========================================================================
+   SECTION 9 — BOTTOM NAVIGATION BAR (BOOTH ADMIN ONLY)
+   --------------------------------------------------------------------------
+   Fixed 60px bar pinned to the viewport bottom.
+   4 equal tabs: Home, Voters, Activity, Profile.
+   Active tab colour: BJP saffron #FF6B00.
+
+   Add .rt-body-with-bottom-nav to <body> (or the page root) to push
+   content above the bar.
+
+   iPhone home indicator support via env(safe-area-inset-bottom).
+   ========================================================================== */
+
+.rt-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  /* Total visual height stays 60px; home-indicator space is added below it */
+  height: calc(60px + env(safe-area-inset-bottom, 0px));
+  background: #ffffff;
+  border-top: 1px solid #eeeeee;
+  display: flex;
+  align-items: stretch;
+  /* Push content above home indicator without adding visual height to tabs */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 900;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.07);
+}
+
+/* Individual tab — equal flex columns */
+.rt-bottom-nav .rt-nav-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #999999;
+  transition: color 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+  min-height: var(--tap-min, 44px); /* actual touch target height */
+  padding: 0 4px;
+}
+
+.rt-bottom-nav .rt-nav-tab:active {
+  opacity: 0.7;
+}
+
+/* Active tab — saffron orange */
+.rt-bottom-nav .rt-nav-tab.active {
+  color: var(--bjp-saffron, #FF6B00);
+}
+
+/* Icon size */
+.rt-bottom-nav .rt-nav-tab svg,
+.rt-bottom-nav .rt-nav-tab i {
+  width: 22px;
+  height: 22px;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+/* Active indicator dot above icon */
+.rt-bottom-nav .rt-nav-tab.active::before {
+  display: none; /* rely on colour only; add if desired */
+}
+
+/* ── Body padding to prevent content sitting behind the bar ── */
+.rt-body-with-bottom-nav {
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Dark-mode variant (Booth Admin uses a dark theme) */
+.theme-boothadmin .rt-bottom-nav {
+  background: var(--bg-card, #1a1a24);
+  border-top-color: var(--border-color, #2a2a38);
+}
+
+.theme-boothadmin .rt-bottom-nav .rt-nav-tab {
+  color: #777777;
+}
+
+.theme-boothadmin .rt-bottom-nav .rt-nav-tab.active {
+  color: var(--admin-booth, #D85A30);
+}
+
+/* ==========================================================================
+   SECTION 10 — SAFE AREA INSET UTILITIES
+   --------------------------------------------------------------------------
+   Convenience classes for env(safe-area-inset-*) padding on notched devices.
+   Apply directly to any element that needs to respect the iPhone notch or
+   home-indicator bar.
+   ========================================================================== */
+
+/* Individual sides */
+.rt-safe-top    { padding-top:    env(safe-area-inset-top,    0px); }
+.rt-safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.rt-safe-left   { padding-left:   env(safe-area-inset-left,   0px); }
+.rt-safe-right  { padding-right:  env(safe-area-inset-right,  0px); }
+
+/* All four sides at once */
+.rt-safe-all {
+  padding:
+    env(safe-area-inset-top,    0px)
+    env(safe-area-inset-right,  0px)
+    env(safe-area-inset-bottom, 0px)
+    env(safe-area-inset-left,   0px);
+}
+
+/* Horizontal safe areas only (for sidebars/panels) */
+.rt-safe-x {
+  padding-left:  env(safe-area-inset-left,  0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Vertical safe areas only */
+.rt-safe-y {
+  padding-top:    env(safe-area-inset-top,    0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Margin variants (when padding isn't applicable) */
+.rt-safe-top-margin    { margin-top:    env(safe-area-inset-top,    0px); }
+.rt-safe-bottom-margin { margin-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* ── Utility: full viewport height accounting for mobile browser chrome ── */
+.rt-full-height {
+  /* dvh falls back to vh in unsupporting browsers */
+  min-height: 100dvh;
+  min-height: 100vh; /* fallback */
+}
+
+/* ==========================================================================
+   SECTION 11 — FORM INPUTS (iOS ZOOM PREVENTION)
+   --------------------------------------------------------------------------
+   iOS Safari zooms in when an input has font-size < 16px.
+   All inputs here are forced to 16px to prevent that behaviour.
+
+   Classes:
+     .rt-input     — single-line input / select
+     .rt-textarea  — multi-line textarea
+     .rt-input-group — label + input wrapper
+   ========================================================================== */
+
+/* ── Text input & select ── */
+.rt-input {
+  width: 100%;
+  height: 48px;
+  /* ↓ 16px MINIMUM — prevents iOS Safari auto-zoom */
+  font-size: 16px;
+  font-family: inherit;
+  font-weight: 400;
+  padding: 0 14px;
+  border: 1.5px solid #dddddd;
+  border-radius: var(--rt-radius-sm);
+  background: #ffffff;
+  color: #222222;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  box-sizing: border-box;
+  -webkit-appearance: none;   /* remove iOS default styling */
+  appearance: none;
+}
+
+.rt-input::placeholder {
+  color: #aaaaaa;
+  font-weight: 400;
+}
+
+.rt-input:focus {
+  border-color: var(--bjp-saffron, #FF6B00);
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.10);
+}
+
+.rt-input:disabled {
+  background: #f5f5f5;
+  color: #aaaaaa;
+  cursor: not-allowed;
+}
+
+/* Select gets a caret via background-image */
+select.rt-input {
+  cursor: pointer;
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px 8px;
+}
+
+/* ── Textarea ── */
+.rt-textarea {
+  width: 100%;
+  /* ↓ 16px MINIMUM — prevents iOS zoom */
+  font-size: 16px;
+  font-family: inherit;
+  font-weight: 400;
+  padding: 12px 14px;
+  min-height: 100px;
+  border: 1.5px solid #dddddd;
+  border-radius: var(--rt-radius-sm);
+  background: #ffffff;
+  color: #222222;
+  outline: none;
+  resize: vertical;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  line-height: 1.5;
+}
+
+.rt-textarea::placeholder {
+  color: #aaaaaa;
+}
+
+.rt-textarea:focus {
+  border-color: var(--bjp-saffron, #FF6B00);
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.10);
+}
+
+/* ── Input group (label + field) ── */
+.rt-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.rt-input-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #555555;
+}
+
+/* ── Input with icon prefix ── */
+.rt-input-icon-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.rt-input-icon-wrap .rt-input {
+  padding-left: 38px;
+}
+
+.rt-input-icon-wrap .rt-input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaaaaa;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Dark-mode variant ── */
+.theme-boothadmin .rt-input,
+.theme-boothadmin .rt-textarea {
+  background: var(--bg-secondary, #13131a);
+  border-color: var(--border-color, #2a2a38);
+  color: #ffffff;
+}
+
+.theme-boothadmin .rt-input::placeholder,
+.theme-boothadmin .rt-textarea::placeholder {
+  color: var(--text-muted, #6b6b7b);
+}
+
+.theme-boothadmin .rt-input:focus,
+.theme-boothadmin .rt-textarea:focus {
+  border-color: var(--accent-primary, #FF6B35);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.12);
+}
+
+/* ==========================================================================
+   SECTION 12 — SKELETON LOADING CARDS
+   --------------------------------------------------------------------------
+   Offline-friendly loading states using animated shimmer, not spinners.
+   Shimmer runs entirely in CSS — no JS required.
+
+   Classes:
+     .rt-skeleton            — apply to any placeholder element
+     .rt-skeleton-card       — full card placeholder (80px height)
+     .rt-skeleton-text       — line of text placeholder (14px height)
+     .rt-skeleton-text.short — shorter text line (60% width)
+     .rt-skeleton-avatar     — circular avatar placeholder
+     .rt-skeleton-btn        — button-shaped placeholder
+     .rt-skeleton-badge      — badge-shaped placeholder
+
+   Usage in React/JSX:
+     {loading && (
+       <div className="rt-skeleton rt-skeleton-card" />
+     )}
+   ========================================================================== */
+
+/* ── Shimmer animation ── */
+@keyframes rt-skeleton-shimmer {
+  from { background-position:  200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+/* ── Base skeleton ── */
+.rt-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-base,  #f0f0f0) 25%,
+    var(--skeleton-shine, #e0e0e0) 50%,
+    var(--skeleton-base,  #f0f0f0) 75%
+  );
+  background-size: 200% 100%;
+  animation: rt-skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--rt-radius-sm);
+  /* Prevents text content from showing through if accidentally applied to a
+     non-empty element */
+  color: transparent !important;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Skeleton variants ── */
+
+/* Full card placeholder */
+.rt-skeleton-card {
+  height: 80px;
+  border-radius: var(--rt-radius-md);
+  width: 100%;
+  display: block;
+}
+
+/* Text line placeholder */
+.rt-skeleton-text {
+  height: 14px;
+  border-radius: 4px;
+  width: 100%;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* Shorter text line */
+.rt-skeleton-text.short {
+  width: 60%;
+}
+
+.rt-skeleton-text.narrow {
+  width: 40%;
+}
+
+/* Circular avatar */
+.rt-skeleton-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* Button-shaped */
+.rt-skeleton-btn {
+  height: 36px;
+  width: 90px;
+  border-radius: var(--rt-radius-sm);
+  display: inline-block;
+}
+
+/* Badge-shaped */
+.rt-skeleton-badge {
+  height: 24px;
+  width: 70px;
+  border-radius: var(--rt-radius-full);
+  display: inline-block;
+}
+
+/* ── Multi-line paragraph skeleton ── */
+.rt-skeleton-para > .rt-skeleton-text:last-child {
+  width: 75%; /* last line shorter — mimics real text */
+}
+
+/* ── Skeleton grid: shows the right number of placeholder cards ── */
+.rt-skeleton-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+/* ── Table row skeleton ── */
+.rt-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.rt-skeleton-row .rt-skeleton-text {
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.rt-skeleton-row .rt-skeleton-text:first-child { flex: 0 0 24px; }
+.rt-skeleton-row .rt-skeleton-text:last-child  { flex: 0 0 80px; }
+
+/* ── Dark-mode overrides ── */
+.theme-boothadmin .rt-skeleton,
+.theme-superadmin .rt-skeleton,
+.theme-stateadmin .rt-skeleton,
+.theme-districtadmin .rt-skeleton,
+.theme-assemblyadmin .rt-skeleton {
+  --skeleton-base:  #2a2a38;
+  --skeleton-shine: #3a3a4c;
+}
+
+/* ── Reduced-motion: respect user preference ── */
+@media (prefers-reduced-motion: reduce) {
+  .rt-skeleton {
+    animation: none;
+    background: var(--skeleton-shine, #e0e0e0);
+  }
+}
+
+/* ==========================================================================
+   APPENDIX — MISCELLANEOUS SHARED UTILITIES
+   --------------------------------------------------------------------------
+   Small helpers that don't belong to a specific section but are used
+   across multiple dashboards.
+   ========================================================================== */
+
+/* ── Horizontal-scroll strip (generic, reusable) ── */
+.rt-hscroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.rt-hscroll::-webkit-scrollbar { display: none; }
+.rt-hscroll > * { flex-shrink: 0; }
+
+/* ── Truncate text to a single line with ellipsis ── */
+.rt-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Visually hidden (accessible hide) ── */
+.rt-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Divider ── */
+.rt-divider {
+  height: 1px;
+  background: #eeeeee;
+  border: none;
+  margin: 8px 0;
+}
+
+/* ── Role colour dots ── */
+.rt-role-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.rt-role-dot-super    { background: var(--admin-super,    #7F77DD); }
+.rt-role-dot-state    { background: var(--admin-state,    #378ADD); }
+.rt-role-dot-district { background: var(--admin-district, #1D9E75); }
+.rt-role-dot-assembly { background: var(--admin-assembly, #BA7517); }
+.rt-role-dot-booth    { background: var(--admin-booth,    #D85A30); }
+
+/* ── Prevent content from sitting behind a fixed bottom nav ──
+   Applied to the page root when the bottom nav is active.          ── */
+.rt-page-with-bottom-nav {
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+}
+/* ==========================================================================
+   END OF responsive-theme.css
+   ========================================================================== */
+
+/* ==========================================================================
+   SCHEME CARD — MOBILE COMPACT MODE
+   --------------------------------------------------------------------------
+   On mobile (≤ 767px) scheme cards hide their hero image and reduce padding
+   so 2-column layout fits comfortably on 320–480px screens.
+   The class .scheme-card-img is expected on the image wrapper inside the card.
+   ========================================================================== */
+
+/* Scheme card compact baseline */
+@media (max-width: 767px) {
+  /* Any scheme card grid item — tighter padding */
+  .sa-scheme-grid > div,
+  .st-scheme-grid > div,
+  .da-scheme-grid > div,
+  .aa-scheme-grid > div,
+  .ba-scheme-grid > div {
+    padding: 10px !important;
+  }
+
+  /* Hide the hero / banner image inside scheme cards on mobile */
+  .sa-scheme-grid .scheme-card-img,
+  .st-scheme-grid .scheme-card-img,
+  .da-scheme-grid .scheme-card-img,
+  .aa-scheme-grid .scheme-card-img,
+  .ba-scheme-grid .scheme-card-img {
+    display: none !important;
+  }
+
+  /* Reduce count font size so it fits in half-width card */
+  .sa-scheme-grid .scheme-card-count,
+  .st-scheme-grid .scheme-card-count,
+  .da-scheme-grid .scheme-card-count,
+  .aa-scheme-grid .scheme-card-count,
+  .ba-scheme-grid .scheme-card-count {
+    font-size: 16px !important;
+  }
+}
+
+/* ==========================================================================
+   GLOBAL SMOOTH SCROLL + TOUCH FEEL
+   --------------------------------------------------------------------------
+   Applies to every scrollable container in admin dashboards.
+   ========================================================================== */
+
+/* Momentum scrolling on iOS for all overflow-y:auto containers */
+.sa-main,
+.st-main,
+.da-main,
+.aa-main,
+.ba-main,
+.boothadmin-scroll,
+.superadmin-scroll,
+.stateadmin-scroll,
+.districtadmin-scroll,
+.assemblyadmin-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  /* Prevent rubber-band overscroll from causing layout shift */
+  overscroll-behavior-y: contain;
+}
+
+/* Horizontal scroll containers — stat strips, tabs */
+.sa-stat-strip, .da-stat-strip, .ba-stat-strip,
+.rt-stat-strip, .rt-hscroll,
+.tabs-header {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  /* Snap to items for a native feel */
+  scroll-snap-type: x mandatory;
+}
+
+.rt-stat-chip,
+.ba-stat-chip,
+.da-stat-chip,
+.aa-stat-chip {
+  scroll-snap-align: start;
+}
+
+/* Prevent the body from scrolling under fixed elements on mobile */
+@media (max-width: 1023px) {
+  body {
+    overscroll-behavior: none;
+  }
+}
+
+/* ==========================================================================
+   CAMPSITE-CARD / STAT-CARD INNER OVERFLOW GUARD
+   --------------------------------------------------------------------------
+   Prevents any inner content (long scheme names, large numbers, filter rows)
+   from causing a horizontal scrollbar on the page.
+   ========================================================================== */
+
+.campsite-card,
+.admin-card,
+.stat-card {
+  overflow-x: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Table section headers wrap instead of overflow */
+.campsite-card h3,
+.admin-card h3 {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* ==========================================================================
+   MOBILE NAV DRAWER — GLOBAL Z-INDEX + BODY LOCK
+   --------------------------------------------------------------------------
+   Ensures all 5 admin dashboard drawers sit above every other element,
+   and locks the page from scrolling underneath when a drawer is open.
+   ========================================================================== */
+
+/* Body scroll lock — applied by JS when drawer opens via mobileNavOpen state.
+   Each dashboard sets document.body.style.overflow = 'hidden' on open.
+   This reinforces it via a utility class as fallback. */
+body.nav-open,
+body.drawer-open {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100%;
+}
+
+/* Any fixed overlay across all dashboards */
+.sa-nav-overlay,
+.st-nav-overlay,
+.da-overlay,
+.aa-overlay,
+.ba-overlay {
+  z-index: 1300 !important;
+}
+
+/* Any slide-in drawer across all dashboards */
+.sa-nav-drawer,
+.st-nav-drawer,
+.da-nav-drawer,
+.aa-nav-drawer,
+.ba-nav-drawer {
+  z-index: 1400 !important;
+  width: 72vw !important;
+  max-width: 300px !important;
+  min-width: 240px !important;
+}
+
+/* Filter bottom sheets */
+.da-filter-sheet,
+.aa-filter-sheet,
+.ba-filter-sheet {
+  z-index: 1400 !important;
+}
+
+/* Voter detail full-screen sheet (BoothAdmin) */
+.ba-voter-sheet {
+  z-index: 1500 !important;
+}
+
+/* ==========================================================================
+   MAIN CONTENT AREA — VIEWPORT-SAFE HEIGHT ON ALL DEVICES
+   --------------------------------------------------------------------------
+   sa-main / st-main etc. use calc(100vh - Npx) which breaks on mobile
+   browser chrome (address bar eating space). Use dvh with vh fallback.
+   ========================================================================== */
+@media (max-width: 1023px) {
+  .sa-main,
+  .st-main,
+  .da-main,
+  .aa-main,
+  .ba-main {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow-y: visible !important;
+  }
+}
+
+/* ==========================================================================
+   SIDEBAR NAV BUTTONS — COMPACT ON NARROW DRAWERS
+   ========================================================================== */
+@media (max-width: 480px) {
+  .sidebar-nav-btn {
+    padding: 10px 10px !important;
+    font-size: 13px !important;
+    gap: 10px !important;
+  }
+  .sidebar-nav-btn svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+}
+
+/* ==========================================================================
+   STAT CARD — CLAMP NUMBERS ON SMALL SCREENS
+   ========================================================================== */
+@media (max-width: 480px) {
+  .stat-number {
+    font-size: clamp(1.1rem, 5vw, 1.5rem) !important;
+  }
+  .stat-label {
+    font-size: 11px !important;
+  }
+}
+
+/* ==========================================================================
+   FILTER BARS / FORM ROWS — STACK ON MOBILE
+   ========================================================================== */
+@media (max-width: 600px) {
+  .sa-filter-bar,
+  .st-filter-bar,
+  .da-filter-bar,
+  .aa-filter-bar {
+    flex-direction: column !important;
+  }
+  .sa-filter-bar select,
+  .sa-filter-bar .form-control,
+  .st-filter-bar select,
+  .st-filter-bar .form-control,
+  .da-filter-bar select,
+  .da-filter-bar .form-control,
+  .aa-filter-bar select,
+  .aa-filter-bar .form-control {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: unset !important;
+  }
+}
+
+/* ==========================================================================
+   TABS HEADER — HORIZONTAL SCROLL ON MOBILE
+   ========================================================================== */
+@media (max-width: 1023px) {
+  .tabs-header {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+  .tabs-header::-webkit-scrollbar {
+    display: none !important;
+  }
+  .tab-btn {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* ==========================================================================
+   GLOBAL — PREVENT CONTENT FROM CAUSING PAGE-LEVEL HORIZONTAL SCROLL
+   ========================================================================== */
+.sa-root,
+.st-root,
+.da-root,
+.aa-root,
+.ba-root {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+}

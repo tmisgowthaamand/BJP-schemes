@@ -1,9 +1,11 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, User as UserIcon, Shield, ChevronRight, Home } from 'lucide-react';
+import { useLang } from '../i18n/LanguageContext';
+import { LogOut, User as UserIcon, Shield, ChevronRight, Home, Award } from 'lucide-react';
 
 const Navbar = ({ activeTab, setActiveTab }) => {
   const { user, logoutUser, admin, logoutAdmin } = useAuth();
+  const { t } = useLang();
 
   const role = admin?.role || 'SUPER_ADMIN';
 
@@ -32,13 +34,26 @@ const Navbar = ({ activeTab, setActiveTab }) => {
 
   const breadcrumb = getBreadcrumb();
 
+  const handleBoothPresidentNav = () => {
+    if (window.location.pathname !== '/') {
+      window.location.href = '/?action=booth_president';
+    } else if (window.dispatchBoothPresidentAction) {
+      window.dispatchBoothPresidentAction();
+    } else {
+      const url = new URL(window.location.href);
+      url.searchParams.set('action', 'booth_president');
+      window.history.pushState({}, '', url);
+      window.dispatchEvent(new Event('popstate'));
+    }
+  };
+
   return (
     <header
       className={currentTheme.class}
       style={{
-        background: admin ? 'var(--bg-primary)' : 'var(--theme-bg-app)',
+        background: admin ? 'var(--bg-primary, #12101a)' : 'var(--theme-bg-app)',
         backdropFilter: 'blur(12px)',
-        borderBottom: admin ? '1px solid var(--border-color)' : '1px solid var(--theme-border)',
+        borderBottom: admin ? '1px solid var(--border-color, #332b47)' : '1px solid var(--theme-border)',
         position: 'sticky',
         top: 0,
         zIndex: 1000,
@@ -118,8 +133,19 @@ const Navbar = ({ activeTab, setActiveTab }) => {
           </div>
         </div>
 
-        {/* RIGHT: User/Admin Info + Logout */}
+        {/* RIGHT: User/Admin Info + Booth President Button + Logout */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: '0 0 auto' }}>
+          {!admin && !window.location.pathname.startsWith('/admin') && (
+            <button
+              onClick={handleBoothPresidentNav}
+              className="nav-booth-president-btn"
+              title={t('Apply to lead your electoral booth')}
+            >
+              <Award size={14} style={{ color: '#f26522', flexShrink: 0 }} />
+              <span>{t('Be a Booth President')}</span>
+            </button>
+          )}
+
           {user ? (
             <>
               <div className="tag-pill tag-sunlit" style={{ padding: '6px 14px', fontSize: '13px', whiteSpace: 'nowrap' }}>

@@ -80,53 +80,115 @@ const LiveTrackingPanel = () => {
       className="admin-card"
       style={{
         width: '100%',
-        padding: '24px',
-        marginBottom: '24px',
+        padding: '20px',
+        marginBottom: '20px',
         background: 'var(--theme-bg-card)',
         border: '1px solid var(--theme-border)',
         borderRadius: '16px',
         boxShadow: '0 6px 30px rgba(0,0,0,0.4)',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        overflowX: 'hidden'
       }}
     >
+      <style>{`
+        .ltp-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+          gap: 14px;
+          width: 100%;
+        }
+        /* status 2×2 sub-grid */
+        .ltp-sub-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
+        /* demog bottom metrics */
+        .ltp-demog-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          border-top: 1px solid var(--theme-border);
+          padding-top: 12px;
+          margin-top: 4px;
+        }
+        /* gender label row */
+        .ltp-gender-row {
+          display: flex;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 4px;
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--theme-text-muted);
+          margin-bottom: 16px;
+        }
+        /* header "100% Verified DB" badge */
+        .ltp-verified-badge {
+          font-size: 10px;
+          background: rgba(34,197,94,0.15);
+          color: #4ade80;
+          border: 1px solid rgba(34,197,94,0.3);
+          padding: 2px 8px;
+          border-radius: 9999px;
+          font-weight: 700;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        /* ── Tablet: 2-col ltp-grid ── */
+        @media (max-width: 1023px) {
+          .ltp-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        }
+        /* ── Mobile ≤ 767px: stack to 1 col ── */
+        @media (max-width: 767px) {
+          .ltp-grid { grid-template-columns: 1fr; gap: 10px; }
+          .ltp-header-title { font-size: 14px !important; }
+          .ltp-sub-grid { gap: 6px; }
+          .ltp-sub-card { padding: 10px !important; }
+          .ltp-stat-val { font-size: 16px !important; }
+          .ltp-pipeline-header { flex-direction: column; align-items: flex-start !important; gap: 4px; }
+        }
+        /* ── Mobile ≤ 480px ── */
+        @media (max-width: 480px) {
+          .ltp-stat-val { font-size: 14px !important; }
+          .ltp-sub-card { padding: 8px 10px !important; }
+          .ltp-demog-grid { grid-template-columns: 1fr; gap: 6px; }
+          .ltp-gender-row { flex-direction: column; gap: 2px; }
+        }
+      `}</style>
       {/* ── Top Header Row ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: minimized ? 0 : '20px' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <TrendingUp size={22} color="var(--theme-accent)" />
-            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'var(--theme-text-main)', letterSpacing: '-0.3px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginBottom: minimized ? 0 : '16px' }}>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <TrendingUp size={20} color="var(--theme-accent)" style={{ flexShrink: 0 }} />
+            <h3 className="ltp-header-title" style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--theme-text-main)', letterSpacing: '-0.3px', lineHeight: 1.3 }}>
               Performance &amp; Electoral Visualizer
             </h3>
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--theme-text-muted)', marginTop: '2px', marginLeft: '32px' }}>
-            Live MongoDB application pipeline &amp; voter demographic metrics
+          <div style={{ fontSize: '12px', color: 'var(--theme-text-muted)', marginTop: '2px', marginLeft: '28px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            Live MongoDB pipeline &amp; voter metrics
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
           <div style={{
-            fontSize: '11px',
-            fontWeight: 700,
-            background: 'var(--theme-badge-bg)',
-            color: 'var(--theme-accent)',
+            fontSize: '11px', fontWeight: 700,
+            background: 'var(--theme-badge-bg)', color: 'var(--theme-accent)',
             border: '1px solid var(--theme-badge-border)',
-            padding: '4px 12px',
-            borderRadius: '9999px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
+            padding: '4px 10px', borderRadius: '9999px',
+            display: 'flex', alignItems: 'center', gap: '5px',
+            whiteSpace: 'nowrap'
           }}>
-            <Zap size={12} color="var(--theme-accent)" />
+            <Zap size={11} color="var(--theme-accent)" />
             Live Metrics
           </div>
-
           <button
             type="button"
             onClick={() => setMinimized(!minimized)}
             className="btn btn-ghost"
-            style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}
+            style={{ padding: '5px 10px', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}
           >
-            {minimized ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+            {minimized ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
             {minimized ? 'Expand' : 'Minimize'}
           </button>
         </div>
@@ -141,21 +203,22 @@ const LiveTrackingPanel = () => {
           )}
 
           {/* ── 3-Column Grid Visualizer ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', width: '100%' }}>
+          <div className="ltp-grid">
 
             {/* 1. Status Pipeline Distribution Card */}
-            <div style={{ background: 'var(--theme-bg-subcard)', border: '1px solid var(--theme-border)', borderRadius: '14px', padding: '18px', boxSizing: 'border-box' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--theme-text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Clock size={14} color="var(--theme-accent)" /> Status Pipeline Distribution
+            <div style={{ background: 'var(--theme-bg-subcard)', border: '1px solid var(--theme-border)', borderRadius: '14px', padding: '16px', boxSizing: 'border-box' }}>
+              <div className="ltp-pipeline-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', gap: '8px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--theme-text-main)', display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                  <Clock size={14} color="var(--theme-accent)" style={{ flexShrink: 0 }} />
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Status Pipeline</span>
                 </div>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--theme-accent)' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--theme-accent)', flexShrink: 0 }}>
                   {total.toLocaleString()} Total
                 </span>
               </div>
 
               {/* Segmented Pipeline Bar */}
-              <div style={{ width: '100%', height: '8px', borderRadius: '9999px', background: 'var(--theme-border)', display: 'flex', overflow: 'hidden', marginBottom: '16px' }}>
+              <div style={{ width: '100%', height: '7px', borderRadius: '9999px', background: 'var(--theme-border)', display: 'flex', overflow: 'hidden', marginBottom: '12px' }}>
                 <div style={{ width: `${Math.max(appPct, 4)}%`, background: '#22c55e', transition: 'width 0.5s ease' }} title={`Approved: ${approved}`} />
                 <div style={{ width: `${Math.max(procPct, 2)}%`, background: '#3b82f6', transition: 'width 0.5s ease' }} title={`In Processing: ${inProcessing}`} />
                 <div style={{ width: `${Math.max(pendPct, 4)}%`, background: '#f59e0b', transition: 'width 0.5s ease' }} title={`Pending Review: ${pending}`} />
@@ -163,45 +226,49 @@ const LiveTrackingPanel = () => {
               </div>
 
               {/* 4 Status Metric Cards (2x2 Grid) */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div className="ltp-sub-grid">
                 
                 {/* Approved */}
-                <div style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '10px', padding: '12px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#4ade80', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <CheckCircle2 size={13} /> Approved
+                <div className="ltp-sub-card" style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '10px', padding: '11px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#4ade80', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                    <CheckCircle2 size={12} /> Approved
                   </div>
-                  <div style={{ fontSize: '18px', fontWeight: 800, color: '#ffffff', marginTop: '4px' }}>
-                    {approved.toLocaleString()} <span style={{ fontSize: '12px', color: '#4ade80', fontWeight: 600 }}>({appPct}%)</span>
+                  <div className="ltp-stat-val" style={{ fontSize: '17px', fontWeight: 800, color: '#ffffff', lineHeight: 1.1 }}>
+                    {approved.toLocaleString()}
+                    <span style={{ fontSize: '10px', color: '#4ade80', fontWeight: 600, marginLeft: '3px' }}>({appPct}%)</span>
                   </div>
                 </div>
 
                 {/* In Processing */}
-                <div style={{ background: 'rgba(59, 130, 246, 0.12)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '10px', padding: '12px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#60a5fa', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Clock size={13} /> In Processing
+                <div className="ltp-sub-card" style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '10px', padding: '11px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#60a5fa', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                    <Clock size={12} /> In Process
                   </div>
-                  <div style={{ fontSize: '18px', fontWeight: 800, color: '#ffffff', marginTop: '4px' }}>
-                    {inProcessing.toLocaleString()} <span style={{ fontSize: '12px', color: '#60a5fa', fontWeight: 600 }}>({procPct}%)</span>
+                  <div className="ltp-stat-val" style={{ fontSize: '17px', fontWeight: 800, color: '#ffffff', lineHeight: 1.1 }}>
+                    {inProcessing.toLocaleString()}
+                    <span style={{ fontSize: '10px', color: '#60a5fa', fontWeight: 600, marginLeft: '3px' }}>({procPct}%)</span>
                   </div>
                 </div>
 
                 {/* Pending Review */}
-                <div style={{ background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '10px', padding: '12px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <AlertCircle size={13} /> Pending Review
+                <div className="ltp-sub-card" style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '10px', padding: '11px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                    <AlertCircle size={12} /> Pending
                   </div>
-                  <div style={{ fontSize: '18px', fontWeight: 800, color: '#ffffff', marginTop: '4px' }}>
-                    {pending.toLocaleString()} <span style={{ fontSize: '12px', color: '#fbbf24', fontWeight: 600 }}>({pendPct}%)</span>
+                  <div className="ltp-stat-val" style={{ fontSize: '17px', fontWeight: 800, color: '#ffffff', lineHeight: 1.1 }}>
+                    {pending.toLocaleString()}
+                    <span style={{ fontSize: '10px', color: '#fbbf24', fontWeight: 600, marginLeft: '3px' }}>({pendPct}%)</span>
                   </div>
                 </div>
 
                 {/* Rejected */}
-                <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '10px', padding: '12px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#f87171', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <XCircle size={13} /> Rejected
+                <div className="ltp-sub-card" style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', padding: '11px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#f87171', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                    <XCircle size={12} /> Rejected
                   </div>
-                  <div style={{ fontSize: '18px', fontWeight: 800, color: '#ffffff', marginTop: '4px' }}>
-                    {rejected.toLocaleString()} <span style={{ fontSize: '12px', color: '#f87171', fontWeight: 600 }}>({rejPct}%)</span>
+                  <div className="ltp-stat-val" style={{ fontSize: '17px', fontWeight: 800, color: '#ffffff', lineHeight: 1.1 }}>
+                    {rejected.toLocaleString()}
+                    <span style={{ fontSize: '10px', color: '#f87171', fontWeight: 600, marginLeft: '3px' }}>({rejPct}%)</span>
                   </div>
                 </div>
 
@@ -209,7 +276,7 @@ const LiveTrackingPanel = () => {
             </div>
 
             {/* 2. Top Scheme Demand Intensity Card */}
-            <div style={{ background: 'var(--theme-bg-subcard)', border: '1px solid var(--theme-border)', borderRadius: '14px', padding: '18px', boxSizing: 'border-box' }}>
+            <div style={{ background: 'var(--theme-bg-subcard)', border: '1px solid var(--theme-border)', borderRadius: '14px', padding: '16px', boxSizing: 'border-box' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                 <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--theme-text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <TrendingUp size={14} color="var(--theme-accent)" /> Top Scheme Demand Intensity
@@ -244,46 +311,41 @@ const LiveTrackingPanel = () => {
             </div>
 
             {/* 3. Voter Demographics & Coverage Card */}
-            <div style={{ background: 'var(--theme-bg-subcard)', border: '1px solid var(--theme-border)', borderRadius: '14px', padding: '18px', boxSizing: 'border-box' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--theme-text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Users size={14} color="var(--theme-accent)" /> Voter Demographics &amp; Coverage
+            <div style={{ background: 'var(--theme-bg-subcard)', border: '1px solid var(--theme-border)', borderRadius: '14px', padding: '16px', boxSizing: 'border-box' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px', gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--theme-text-main)', display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                  <Users size={14} color="var(--theme-accent)" style={{ flexShrink: 0 }} />
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Voter Demographics</span>
                 </div>
-                <span style={{ fontSize: '10px', background: 'rgba(34, 197, 94, 0.15)', color: '#4ade80', border: '1px solid rgba(34, 197, 94, 0.3)', padding: '2px 8px', borderRadius: '9999px', fontWeight: 700 }}>
-                  100% Verified DB
-                </span>
+                <span className="ltp-verified-badge">✓ Verified DB</span>
               </div>
 
               <div style={{ fontSize: '11px', color: 'var(--theme-text-muted)', marginBottom: '6px', fontWeight: 600 }}>
-                Gender Distribution in Electoral Roll
+                Gender Distribution
               </div>
 
               {/* Dual Gender Bar */}
-              <div style={{ width: '100%', height: '8px', borderRadius: '9999px', background: 'var(--theme-border)', display: 'flex', overflow: 'hidden', marginBottom: '10px' }}>
+              <div style={{ width: '100%', height: '7px', borderRadius: '9999px', background: 'var(--theme-border)', display: 'flex', overflow: 'hidden', marginBottom: '8px' }}>
                 <div style={{ width: '52%', background: '#ec4899' }} title="Female: 52%" />
                 <div style={{ width: '47%', background: '#06b6d4' }} title="Male: 47%" />
                 <div style={{ width: '1%', background: 'var(--theme-accent)' }} title="Other: 1%" />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, color: 'var(--theme-text-muted)', marginBottom: '16px' }}>
-                <span style={{ color: '#f472b6' }}>♀ Female (52%)</span>
-                <span style={{ color: '#38bdf8' }}>♂ Male (47%)</span>
-                <span style={{ color: 'var(--theme-accent)' }}>⚥ Other (1%)</span>
+              <div className="ltp-gender-row">
+                <span style={{ color: '#f472b6' }}>♀ Female 52%</span>
+                <span style={{ color: '#38bdf8' }}>♂ Male 47%</span>
+                <span style={{ color: 'var(--theme-accent)' }}>⚥ Other 1%</span>
               </div>
 
-              {/* Bottom 2 Metrics Badges */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', borderTop: '1px solid var(--theme-border)', paddingTop: '12px' }}>
+              {/* Bottom 2 Metrics */}
+              <div className="ltp-demog-grid">
                 <div>
-                  <div style={{ fontSize: '11px', color: 'var(--theme-text-muted)' }}>Avg Apps / Voter</div>
-                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff', marginTop: '2px' }}>
-                    1.00 Directives
-                  </div>
+                  <div style={{ fontSize: '10px', color: 'var(--theme-text-muted)', marginBottom: '2px' }}>Avg Apps / Voter</div>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#ffffff', lineHeight: 1.2 }}>1.00 Directives</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '11px', color: 'var(--theme-text-muted)' }}>Active Referral Rate</div>
-                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#4ade80', marginTop: '2px' }}>
-                    94.0% Enrolled
-                  </div>
+                  <div style={{ fontSize: '10px', color: 'var(--theme-text-muted)', marginBottom: '2px' }}>Active Referral</div>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#4ade80', lineHeight: 1.2 }}>94.0% Enrolled</div>
                 </div>
               </div>
 

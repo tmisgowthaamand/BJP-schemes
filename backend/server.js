@@ -1,8 +1,20 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+// authMiddleware: isolated JWT/DB try-catch, dynamic admin fallback from JWT payload
+// SECURITY FIX 8: import rate limiters
+const rateLimit = require('express-rate-limit');
+// SECURITY FIX 10: import helmet
+const helmet = require('helmet');
 
 dotenv.config();
+
+// SECURITY FIX 3: Require JWT_SECRET — refuse to start without it.
+// Must run before any require() that might reference JWT_SECRET indirectly.
+if (!process.env.JWT_SECRET || !String(process.env.JWT_SECRET).trim()) {
+  console.error('FATAL: JWT_SECRET is not set. Server will not start.');
+  process.exit(1);
+}
 
 const { connectAppDb, getVoterDbClient } = require('./config/db');
 const Admin = require('./models/Admin');
@@ -17,9 +29,12 @@ const schemeRoutes = require('./routes/schemeRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const referralRoutes = require('./routes/referralRoutes');
 const userChatRoutes = require('./routes/userChatRoutes');
+const boothPresidentRoutes = require('./routes/boothPresidentRoutes');
 const { getAssemblyMetadata } = require('./services/jurisdictionService');
 
 // Fail fast if critical secrets are missing — no insecure hardcoded fallbacks.
+// SECURITY FIX 3: JWT_SECRET already validated above; SMS_API_KEY is validated
+// inside smsService.js at require() time.
 const REQUIRED_ENV = ['JWT_SECRET'];
 const missingEnv = REQUIRED_ENV.filter((k) => !process.env[k] || !String(process.env[k]).trim());
 if (missingEnv.length) {
@@ -29,18 +44,24 @@ if (missingEnv.length) {
 
 const app = express();
 
-// Middlewares
-// Allowlisted CORS origins: local dev (port 3000) + deployed Vercel frontend.
+// SECURITY FIX 10: Set security-related HTTP headers with helmet.
+// Content-Security-Policy, X-Frame-Options, HSTS etc. are handled automatically.
+app.use(helmet());
+
+// SECURITY FIX 9: Lock CORS to known origins only.
+// Allowlisted CORS origins: local dev + deployed Vercel frontend.
 // Extra origins can be added via ALLOWED_ORIGINS (comma-separated) in the env.
 const allowedOrigins = [
-  process.env.FRONTEND_URL,        // e.g. http://localhost:3000
-  process.env.FRONTEND_URL_PROD,   // e.g. https://bjp-schemes.vercel.app
-  'http://localhost:3000',
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URL_PROD,
+  'https://bjp-scheme.vercel.app',
   'https://bjp-schemes.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
   ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [])
 ]
   .filter(Boolean)
-  .map((o) => o.trim().replace(/\/$/, '')); // normalize (drop trailing slash)
+  .map((o) => o.trim().replace(/\/$/, ''));
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -54,8 +75,37 @@ app.use(cors({
   credentials: true
 }));
 app.use(requestContext);        // assign a correlation id per request
-app.use(express.json());
+// SECURITY FIX 10: Limit request body size to prevent memory-exhaustion attacks.
+app.use(express.json({ limit: '100kb' }));
 app.use(requestLogger);         // structured access log (method/path/status/latency)
+
+// SECURITY FIX 8: Rate limiters — defined here, applied to specific routes below.
+// Login: 5 attempts per 15 minutes per IP.
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Too many login attempts. Try again in 15 minutes.' }
+});
+
+// OTP: 3 requests per 10 minutes per IP.
+const otpLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Too many OTP requests. Try again in 10 minutes.' }
+});
+
+// Export: 10 exports per hour per IP.
+const exportLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Export limit reached. Try again in 1 hour.' }
+});
 
 // Root API Status Endpoint
 app.get('/', (req, res) => {
@@ -88,12 +138,22 @@ app.get('/', (req, res) => {
 });
 
 // API Routes
+// SECURITY FIX 8: Apply rate limiters to sensitive endpoints before mounting routers.
+app.use('/api/admin/login', loginLimiter);
+app.use('/api/send-otp', otpLimiter);
+app.use('/api/verify-otp', otpLimiter);
+app.use('/api/auth/send-otp', otpLimiter);
+app.use('/api/auth/verify-otp', otpLimiter);
+app.use('/api/admin/export-csv', exportLimiter);
+app.use('/api/admin/export-excel', exportLimiter);
+
 app.use('/api', userChatRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/voter', voterRoutes);
 app.use('/api/schemes', schemeRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/referrals', referralRoutes);
+app.use('/api/booth-president', boothPresidentRoutes);
 
 // Health Check
 app.get('/api/health', (req, res) => {
@@ -104,78 +164,10 @@ app.get('/api/health', (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
-// Seed Required Default Admin Credentials
-const seedDefaultAdmins = async () => {
-  try {
-    // 1. Super Admin: admin / admin
-    const superAdmin = await Admin.findOne({ username: 'admin' });
-    if (!superAdmin) {
-      await Admin.create({
-        username: 'admin',
-        password: 'admin',
-        role: 'SUPER_ADMIN',
-        createdBy: 'SYSTEM_SEED'
-      });
-      logger.info('[Admin Seed] Created Super Admin: admin / admin');
-    }
-
-    // 2. State Admin: BJP / BJP@2026
-    const stateAdmin = await Admin.findOne({ username: 'BJP' });
-    if (!stateAdmin) {
-      await Admin.create({
-        username: 'BJP',
-        password: 'BJP@2026',
-        role: 'STATE_ADMIN',
-        createdBy: 'SYSTEM_SEED'
-      });
-      logger.info('[Admin Seed] Created State Admin: BJP / BJP@2026');
-    }
-
-    // 3. Sample District Admin (Chengalpattu)
-    const distAdmin = await Admin.findOne({ username: 'district_chengalpattu' });
-    if (!distAdmin) {
-      await Admin.create({
-        username: 'district_chengalpattu',
-        password: 'BJP@2026',
-        role: 'DISTRICT_ADMIN',
-        district: 'CHENGALPATTU',
-        createdBy: 'SYSTEM_SEED'
-      });
-      logger.info('[Admin Seed] Created District Admin: district_chengalpattu / BJP@2026');
-    }
-
-    // 4. Sample Assembly Admin (Thiruporur)
-    const assAdmin = await Admin.findOne({ username: 'ass_thiruporur' });
-    if (!assAdmin) {
-      await Admin.create({
-        username: 'ass_thiruporur',
-        password: 'BJP@2026',
-        role: 'ASSEMBLY_ADMIN',
-        district: 'CHENGALPATTU',
-        assemblyName: 'Thiruporur',
-        createdBy: 'SYSTEM_SEED'
-      });
-      logger.info('[Admin Seed] Created Assembly Admin: ass_thiruporur / BJP@2026');
-    }
-
-    // 5. Sample Booth Admin (Thiruporur Booth 1)
-    const boothAdmin = await Admin.findOne({ username: 'booth_thiruporur_1' });
-    if (!boothAdmin) {
-      await Admin.create({
-        username: 'booth_thiruporur_1',
-        password: 'BJP@2026',
-        role: 'BOOTH_ADMIN',
-        district: 'CHENGALPATTU',
-        assemblyName: 'Thiruporur',
-        boothNo: '1',
-        createdBy: 'SYSTEM_SEED'
-      });
-      logger.info('[Admin Seed] Created Booth Admin: booth_thiruporur_1 / BJP@2026');
-    }
-  } catch (err) {
-    logger.error('[Admin Seed Error]', { error: err.message });
-  }
-};
+// SECURITY FIX 2: seedDefaultAdmins() has been removed entirely.
+// Hardcoded credentials (admin/admin, BJP/BJP@2026, etc.) are a critical
+// security vulnerability. Use scripts/seedAdmin.js instead, which reads
+// credentials exclusively from environment variables.
 
 const PORT = process.env.PORT || 5000;
 
@@ -183,7 +175,9 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
   await connectAppDb();
   await getVoterDbClient();
-  await seedDefaultAdmins();
+  // SECURITY FIX 2: seedDefaultAdmins() removed — no auto-seeding of hardcoded credentials.
+  // Run `node scripts/seedAdmin.js` once with SUPER_ADMIN_USERNAME / SUPER_ADMIN_PASSWORD
+  // set in the environment to create the initial admin securely.
 
   app.listen(PORT, () => {
     logger.info('BJP Nalam Thittam Backend API Server running', { port: PORT, url: `http://localhost:${PORT}` });

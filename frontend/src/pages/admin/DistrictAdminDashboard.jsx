@@ -1,3 +1,4 @@
+import AdminMobileNav from '../../components/AdminMobileNav';
 import React, { useState, useEffect, useRef } from 'react';
 import API from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
@@ -254,13 +255,21 @@ const DistrictAdminDashboard = () => {
       className="theme-districtadmin"
       style={{
         display: 'flex',
-        gap: '24px',
+        flexDirection: 'column',
         width: '100%',
+        maxWidth: '100vw',
         boxSizing: 'border-box',
-        minHeight: 'calc(100vh - 130px)',
-        alignItems: 'flex-start'
+        minHeight: '100vh'
       }}
     >
+      <AdminMobileNav
+        role="DISTRICT_ADMIN"
+        title={`${admin?.district || 'District'} Portal`}
+        subPage={subPage}
+        onNavigate={navigateSubPage}
+        onRefresh={fetchDashboardData}
+      />
+      <div style={{ display: 'flex', gap: '24px', width: '100%', boxSizing: 'border-box', alignItems: 'flex-start' }}>
       <style>{`
         .districtadmin-scroll { scrollbar-width: thin; scrollbar-color: #3b2e5a #0d0a17; scroll-behavior: smooth; }
         .districtadmin-scroll::-webkit-scrollbar { width: 8px; }
@@ -878,6 +887,7 @@ const DistrictAdminDashboard = () => {
       )}
       </main>
     </div>
+  </div>
   );
 };
 

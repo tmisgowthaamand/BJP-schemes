@@ -65,4 +65,14 @@ export const chat = {
 
   registerSchemes: (data) =>
     api.post('/api/register-schemes', data),
+
+  // ── Booth President ──────────────────────────────────────
+  applyBoothPresident: (body) =>
+    api.post('/api/booth-president/apply', body),
+
+  getMyBoothApplications: () =>
+    api.get('/api/booth-president/my-applications'),
+
+  getAssemblyList: () =>
+    api.get('/api/assemblies-list'),
 }

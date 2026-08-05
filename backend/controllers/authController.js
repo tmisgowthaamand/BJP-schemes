@@ -4,6 +4,7 @@ const OtpSession = require('../models/OtpSession');
 const { sendSmsOtp } = require('../services/smsService');
 const logger = require('../config/logger');
 
+// SECURITY FIX 3: process.env.JWT_SECRET used directly — no fallback string.
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d'
@@ -42,17 +43,18 @@ const sendOtp = async (req, res) => {
       expiresAt
     });
 
+    // SECURITY FIX 4: devOtp removed — never return OTP in API response.
     return res.status(200).json({
       success: true,
       message: 'OTP sent successfully',
       mobile: cleanMobile,
       isExistingUser: !!existingUser,
-      existingVoterName: existingUser ? existingUser.voterName : null,
-      ...(process.env.NODE_ENV !== 'production' && { devOtp: smsResult.devOtp || otp })
+      existingVoterName: existingUser ? existingUser.voterName : null
     });
   } catch (error) {
-    logger.error('[sendOtp Error]', { error: error.message, stack: error.stack });
-    return res.status(500).json({ success: false, message: 'Failed to send OTP', error: error.message });
+    logger.error('[sendOtp Error]', { error: error.message, stack: error.stack, correlationId: req.correlationId });
+    // SECURITY FIX 10: Generic error message.
+    return res.status(500).json({ success: false, message: 'Something went wrong', correlationId: req.correlationId || 'unknown' });
   }
 };
 
@@ -105,8 +107,9 @@ const verifyOtp = async (req, res) => {
       });
     }
   } catch (error) {
-    logger.error('[verifyOtp Error]', { error: error.message, stack: error.stack });
-    return res.status(500).json({ success: false, message: 'Failed to verify OTP', error: error.message });
+    logger.error('[verifyOtp Error]', { error: error.message, stack: error.stack, correlationId: req.correlationId });
+    // SECURITY FIX 10: Generic error message.
+    return res.status(500).json({ success: false, message: 'Something went wrong', correlationId: req.correlationId || 'unknown' });
   }
 };
 

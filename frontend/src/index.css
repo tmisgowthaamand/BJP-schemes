@@ -44,9 +44,9 @@
   --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
-/* ════════════════════════════════════════════════════════ */
-/* 🎭 ROLE-BASED DISTINCT DARK MODE THEMES                   */
-/* ════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ðŸŽ­ ROLE-BASED DISTINCT DARK MODE THEMES                   */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 /* 1. SUPER ADMIN: Dark Lavender Cosmic */
 .theme-superadmin {
@@ -178,9 +178,9 @@
   --color-ember-brown: #fca5a5;
 }
 
-/* ════════════════════════════════════════════════════════ */
-/* 🛠️ GLOBAL BASE & COMPONENT RULES                         */
-/* ════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ðŸ› ï¸ GLOBAL BASE & COMPONENT RULES                         */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 * {
   box-sizing: border-box;
@@ -343,7 +343,10 @@ body {
   color: var(--theme-badge-text);
 }
 
-.form-control, select, textarea, input, input[type="text"], input[type="password"], input[type="search"], input[type="number"], input[type="tel"], input[type="email"] {
+.admin-app-shell .form-control, 
+.admin-app-shell select, 
+.admin-app-shell textarea, 
+.admin-app-shell input {
   width: 100%;
   padding: 10px 14px;
   background: var(--theme-bg-subcard);
@@ -357,12 +360,148 @@ body {
   box-sizing: border-box;
 }
 
-.form-control:focus, select:focus, textarea:focus, input:focus, input[type="text"]:focus, input[type="password"]:focus, input[type="search"]:focus {
+.admin-app-shell .form-control:focus, 
+.admin-app-shell select:focus, 
+.admin-app-shell textarea:focus, 
+.admin-app-shell input:focus {
   outline: none;
   background: var(--theme-bg-card) !important;
   color: #ffffff !important;
   border-color: var(--theme-accent) !important;
   box-shadow: 0 0 0 3px var(--theme-accent-glow) !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   WHITE THEME FORM CONTROLS & DROPDOWNS (Public & Booth President Portal)
+   ════════════════════════════════════════════════════════════════════════════ */
+.white-theme-select,
+.white-theme-input,
+.brochure-panel select,
+.brochure-panel input,
+.brochure-content select,
+.brochure-content input {
+  width: 100% !important;
+  padding: 12px 14px !important;
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+  caret-color: #f26522 !important;
+  outline: none !important;
+  -webkit-appearance: menulist !important;
+  appearance: auto !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+/* Dropdown option items */
+.white-theme-select option,
+.white-theme-input option,
+.brochure-panel select option,
+.brochure-content select option,
+select.white-theme-select option {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+  padding: 8px 12px !important;
+  font-size: 15px !important;
+}
+
+/* Hover & Focus states */
+.white-theme-select:focus,
+.white-theme-input:focus,
+.brochure-panel select:focus,
+.brochure-panel input:focus,
+.brochure-content select:focus,
+.brochure-content input:focus {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+  border-color: #f26522 !important;
+  box-shadow: 0 0 0 3px rgba(242, 101, 34, 0.2) !important;
+}
+
+/* Placeholder styling */
+.white-theme-input::placeholder,
+.brochure-panel input::placeholder,
+.brochure-content input::placeholder {
+  color: #6b7280 !important;
+  opacity: 1 !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE RULES (iPhone 14/15, iPhone SE, Galaxy, Pixel, Fold, iPad)
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* Navbar Booth President Button */
+.nav-booth-president-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(242, 101, 34, 0.15) 0%, rgba(255, 140, 66, 0.25) 100%);
+  color: #f26522;
+  border: 1.5px solid rgba(242, 101, 34, 0.4);
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(242, 101, 34, 0.12);
+  white-space: nowrap;
+}
+
+.nav-booth-president-btn:hover {
+  background: linear-gradient(135deg, rgba(242, 101, 34, 0.25) 0%, rgba(255, 140, 66, 0.35) 100%);
+  border-color: #f26522;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .nav-booth-president-btn {
+    padding: 5px 10px;
+    font-size: 12px;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 380px) {
+  .nav-booth-president-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+}
+
+/* Mobile Hero Banner & Touch Targets */
+@media (max-width: 640px) {
+  .booth-president-hero-card {
+    padding: 12px 14px !important;
+    gap: 10px !important;
+  }
+  
+  .booth-hero-apply-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+    min-height: 44px !important;
+  }
+
+  /* Prevent auto-zoom on iOS Safari (iPhone SE / iPhone 14/15) */
+  .white-theme-select,
+  .white-theme-input {
+    font-size: 16px !important;
+    min-height: 44px !important;
+  }
+}
+
+@media (max-width: 375px) {
+  .booth-president-hero-card {
+    padding: 10px 12px !important;
+  }
 }
 
 /* Disabled Input & Select Controls Override for Dark Mode */
@@ -393,12 +532,20 @@ input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
 }
 
-/* Option elements inside select dropdowns */
-option {
+/* Option elements inside select dropdowns — admin panels only */
+.theme-superadmin option,
+.theme-stateadmin option,
+.theme-districtadmin option,
+.theme-assemblyadmin option,
+.theme-boothadmin option {
   background-color: var(--theme-bg-card) !important;
   color: var(--theme-text-main) !important;
 }
-option:disabled {
+.theme-superadmin option:disabled,
+.theme-stateadmin option:disabled,
+.theme-districtadmin option:disabled,
+.theme-assemblyadmin option:disabled,
+.theme-boothadmin option:disabled {
   color: var(--theme-text-muted) !important;
 }
 
@@ -611,4 +758,870 @@ td {
 
 tr:hover td {
   background-color: var(--theme-badge-bg);
+}
+
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+
+/* ════════════════════════════════════════════════════════════════════════════
+   ADMIN PORTAL — MOBILE RESPONSIVE SYSTEM
+   Complete mobile-first rules for all 5 admin dashboards.
+   These run after all component styles so !important overrides win.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Prevent page-level horizontal overflow ── */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* ── 2. Outer navbar visibility ── */
+@media (max-width: 1023px) {
+  .admin-outer-navbar-wrap { display: none !important; }
+  .admin-portal-content    { padding: 0 !important; }
+}
+@media (min-width: 1024px) {
+  .admin-outer-navbar-wrap { display: block !important; }
+  .admin-portal-content    { padding: 20px 24px; }
+}
+
+/* ── 3. Root dashboard containers ── */
+.sa-root, .st-root, .da-root, .aa-root, .ba-root {
+  width: 100%;
+  box-sizing: border-box;
+  /* overflow: visible is the default — do not override */
+}
+/* Admin app shell must not clip scroll */
+.admin-app-shell {
+  overflow: visible !important;
+}
+/* Admin portal content wrapper must not clip scroll */
+.admin-portal-content {
+  overflow: visible !important;
+}
+
+/* ── 4. Sidebar: hidden on mobile/tablet; shown on desktop ── */
+@media (max-width: 1023px) {
+  .sa-sidebar, .st-sidebar, .da-sidebar, .aa-sidebar, .ba-sidebar {
+    display: none !important;
+  }
+  /* Body goes column */
+  .sa-body, .st-body, .da-body, .aa-body, .ba-body {
+    flex-direction: column !important;
+    gap: 0 !important;
+    width: 100% !important;
+  }
+  /* Mobile topbars appear */
+  .sa-mobile-topbar, .st-topbar, .da-topbar, .aa-topbar, .ba-topbar {
+    display: flex !important;
+  }
+}
+
+/* ── 5. Main content area — let document body scroll on mobile ── */
+@media (max-width: 1023px) {
+  .sa-main, .st-main, .da-main, .aa-main, .ba-main {
+    height: auto !important;
+    max-height: none !important;
+    /* overflow:visible → pure block element, document body scrolls the page.
+       NOTE: must set BOTH axes to visible — if only one axis is visible
+       the browser silently changes it to auto (CSS spec quirk). */
+    overflow: visible !important;
+    padding-right: 0 !important;
+    width: 100% !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    padding: 12px 14px calc(24px + env(safe-area-inset-bottom, 0px)) 14px !important;
+  }
+}
+@media (max-width: 480px) {
+  .sa-main, .st-main, .da-main, .aa-main, .ba-main {
+    padding: 10px 12px calc(20px + env(safe-area-inset-bottom, 0px)) 12px !important;
+  }
+}
+@media (max-width: 360px) {
+  .sa-main, .st-main, .da-main, .aa-main, .ba-main {
+    padding: 8px 10px calc(16px + env(safe-area-inset-bottom, 0px)) 10px !important;
+  }
+}
+
+/* ── 6. Cards — readable padding and sizing on mobile ── */
+@media (max-width: 1023px) {
+  .campsite-card, .admin-card {
+    padding: 16px !important;
+    margin-bottom: 16px !important;
+    border-radius: 12px !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+  .stat-card {
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+    box-sizing: border-box !important;
+  }
+}
+@media (max-width: 480px) {
+  .campsite-card, .admin-card {
+    padding: 14px 12px !important;
+    border-radius: 10px !important;
+    margin-bottom: 12px !important;
+  }
+  .stat-card {
+    padding: 12px 14px !important;
+  }
+}
+
+/* ── 7. Typography — readable on every screen ── */
+@media (max-width: 1023px) {
+  .stat-number {
+    font-size: clamp(1.3rem, 5vw, 2rem) !important;
+    line-height: 1.1 !important;
+  }
+  .stat-label {
+    font-size: clamp(11px, 3vw, 13px) !important;
+  }
+  h3, .campsite-card h3, .admin-card h3 {
+    font-size: clamp(14px, 4vw, 18px) !important;
+    line-height: 1.3 !important;
+  }
+  h2 {
+    font-size: clamp(16px, 4.5vw, 22px) !important;
+  }
+}
+
+/* ── 8. Stat grids ── */
+@media (max-width: 1023px) {
+  .sa-stat-grid, .st-stat-grid, .da-stat-grid, .aa-stat-grid, .ba-stat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    margin-bottom: 16px !important;
+  }
+}
+@media (max-width: 400px) {
+  .sa-stat-grid, .st-stat-grid, .da-stat-grid, .aa-stat-grid, .ba-stat-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+}
+
+/* ── 9. Scheme grids — 2 columns on mobile, compact cards ── */
+@media (max-width: 1023px) {
+  .sa-scheme-grid, .st-scheme-grid, .da-scheme-grid,
+  .aa-scheme-grid, .ba-scheme-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+}
+/* Scheme images: reduce height on mobile for 2-col layout */
+@media (max-width: 767px) {
+  /* scheme card image — target the img tag directly */
+  .sa-scheme-grid img,
+  .st-scheme-grid img,
+  .da-scheme-grid img,
+  .aa-scheme-grid img,
+  .ba-scheme-grid img {
+    height: 70px !important;
+    object-fit: cover !important;
+  }
+  /* scheme card padding */
+  .sa-scheme-grid > div,
+  .st-scheme-grid > div,
+  .da-scheme-grid > div,
+  .aa-scheme-grid > div,
+  .ba-scheme-grid > div {
+    padding: 0 0 10px 0 !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+  }
+  /* scheme card text area */
+  .sa-scheme-grid > div > div:last-child,
+  .st-scheme-grid > div > div:last-child,
+  .da-scheme-grid > div > div:last-child,
+  .aa-scheme-grid > div > div:last-child,
+  .ba-scheme-grid > div > div:last-child {
+    padding: 8px 10px 0 10px !important;
+  }
+  /* scheme name font size */
+  .sa-scheme-grid > div > div:last-child > div:first-child,
+  .st-scheme-grid > div > div:last-child > div:first-child {
+    font-size: 12px !important;
+  }
+  /* scheme count font size */
+  .sa-scheme-grid > div > div:last-child > div:last-child,
+  .st-scheme-grid > div > div:last-child > div:last-child {
+    font-size: 15px !important;
+  }
+}
+@media (max-width: 400px) {
+  /* Very small phones: still 2 col but even smaller image */
+  .sa-scheme-grid img, .st-scheme-grid img,
+  .da-scheme-grid img, .aa-scheme-grid img {
+    height: 56px !important;
+  }
+}
+
+/* ── 10. Filter bars: stack on mobile ── */
+@media (max-width: 767px) {
+  .sa-filter-bar, .st-filter-bar, .da-filter-bar, .aa-filter-bar {
+    flex-direction: column !important;
+    padding: 10px !important;
+  }
+  .sa-filter-bar > *, .st-filter-bar > *,
+  .da-filter-bar > *, .aa-filter-bar > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 100% !important;
+    min-width: 0 !important;
+  }
+  /* form-control inside filter bars */
+  .sa-filter-bar .form-control,
+  .st-filter-bar .form-control,
+  .da-filter-bar .form-control,
+  .aa-filter-bar .form-control {
+    font-size: 16px !important; /* prevent iOS zoom */
+    width: 100% !important;
+  }
+}
+
+/* ── 11. Table wrappers ── */
+@media (max-width: 1023px) {
+  .sa-table-wrap, .st-table-wrap, .da-table-wrap,
+  .aa-table-wrap, .ba-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 10px !important;
+  }
+  .sa-table-wrap table,
+  .st-table-wrap table,
+  .da-table-wrap table,
+  .aa-table-wrap table,
+  .ba-table-wrap table {
+    min-width: 520px !important;
+    font-size: 12px !important;
+  }
+  .sa-table-wrap th,
+  .st-table-wrap th,
+  .da-table-wrap th {
+    padding: 8px 10px !important;
+    font-size: 11px !important;
+  }
+  .sa-table-wrap td,
+  .st-table-wrap td,
+  .da-table-wrap td {
+    padding: 10px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* ── 12. Tabs header ── */
+@media (max-width: 1023px) {
+  .tabs-header {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    padding: 4px 8px !important;
+  }
+  .tabs-header::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    font-size: 12px !important;
+    padding: 7px 12px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    min-height: 40px !important;
+  }
+}
+
+/* ── 13. Buttons — 44px minimum tap target ── */
+@media (max-width: 1023px) {
+  .btn, .btn-ghost, .btn-primary, .tab-btn {
+    min-height: 44px !important;
+  }
+  .sidebar-nav-btn {
+    min-height: 48px !important;
+    padding: 10px 12px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* ── 14. AI console section — tablet + mobile ── */
+
+/* Tablet 768–1023px (iPad): form stacks, buttons wrap */
+@media (max-width: 1023px) {
+  /* Title never collapses vertically — enforced by component layout */
+  .sa-ai-header {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  .sa-ai-header-right {
+    width: 100% !important;
+  }
+  .sa-ai-btns {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+  .sa-ai-form {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .sa-ai-submit {
+    width: 100% !important;
+    justify-content: center !important;
+    min-height: 44px !important;
+  }
+  .sa-ai-input {
+    font-size: 16px !important;
+    width: 100% !important;
+  }
+}
+
+/* Mobile ≤767px: buttons become horizontal scroll strip */
+@media (max-width: 767px) {
+  .sa-ai-btns {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    padding-bottom: 4px !important;
+  }
+  .sa-ai-btns::-webkit-scrollbar { display: none; }
+  .sa-ai-prompt-btn {
+    font-size: 11px !important;
+    padding: 6px 10px !important;
+    min-height: 34px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* ── 15. Referral leaderboard table on mobile ── */
+@media (max-width: 767px) {
+  .campsite-card table {
+    font-size: 12px !important;
+  }
+  .campsite-card th {
+    font-size: 11px !important;
+    padding: 8px 8px !important;
+    white-space: nowrap !important;
+  }
+  .campsite-card td {
+    padding: 10px 8px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* ── 16. Pagination ── */
+@media (max-width: 600px) {
+  .pagination {
+    gap: 4px !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+  }
+  .page-btn {
+    min-width: 34px !important;
+    height: 34px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* ── 17. LiveTracking panel header text wrap ── */
+@media (max-width: 767px) {
+  .ltp-header-title {
+    font-size: 14px !important;
+    white-space: normal !important;
+    line-height: 1.3 !important;
+  }
+}
+
+/* ── 18. Stat chip strips (mobile top strip) ── */
+@media (max-width: 1023px) {
+  .ba-stat-strip, .da-stat-strip, .aa-stat-strip {
+    display: flex !important;
+    overflow-x: auto !important;
+    gap: 10px !important;
+    padding-bottom: 6px !important;
+    margin-bottom: 12px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+  .ba-stat-strip::-webkit-scrollbar,
+  .da-stat-strip::-webkit-scrollbar,
+  .aa-stat-strip::-webkit-scrollbar { display: none; }
+}
+
+/* ── 19. TopReferrersCard table horizontal scroll ── */
+@media (max-width: 767px) {
+  .campsite-card > div[style*="overflowX"] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
+
+/* ── 20. Export button groups — full width stacked on mobile ── */
+@media (max-width: 600px) {
+  .sa-export-btns, .rt-export-btns {
+    flex-direction: column !important;
+  }
+  .sa-export-btns .btn, .rt-export-btns .btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════════
+   FINAL MOBILE RESPONSIVE OVERRIDE — ALL ADMIN DASHBOARDS
+   ─────────────────────────────────────────────────────────────────────────
+   These rules target the actual rendered DOM structure of all 5 dashboards:
+     .theme-{role} > aside + main
+   They work regardless of whether the dashboard uses sa-root/sa-body classes
+   or the older inline flex layout. !important overrides inline styles.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── On mobile/tablet (≤1023px): hide sidebar, stack to column, let body scroll ── */
+@media (max-width: 1023px) {
+
+  /* Root containers: column layout, no side gap, full width */
+  .theme-superadmin,
+  .theme-stateadmin,
+  .theme-districtadmin,
+  .theme-assemblyadmin,
+  .theme-boothadmin {
+    flex-direction: column !important;
+    gap: 0 !important;
+    align-items: stretch !important;
+    min-height: 100vh !important;
+    width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Sidebar (aside): ALWAYS hidden on mobile */
+  .theme-superadmin > aside,
+  .theme-stateadmin > aside,
+  .theme-districtadmin > aside,
+  .theme-assemblyadmin > aside,
+  .theme-boothadmin > aside,
+  .sa-sidebar, .st-sidebar, .da-sidebar, .aa-sidebar, .ba-sidebar {
+    display: none !important;
+  }
+
+  /* Main content area: full width, natural scroll, proper padding */
+  .theme-superadmin > main,
+  .theme-stateadmin > main,
+  .theme-districtadmin > main,
+  .theme-assemblyadmin > main,
+  .theme-boothadmin > main,
+  .sa-main, .st-main, .da-main, .aa-main, .ba-main {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 12px 14px calc(24px + env(safe-area-inset-bottom, 0px)) 14px !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  /* Mobile topbar: shown */
+  .sa-mobile-topbar, .st-topbar, .da-topbar, .aa-topbar, .ba-topbar {
+    display: flex !important;
+  }
+
+  /* All cards: full width, no overflow */
+  .campsite-card, .admin-card, .stat-card {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    margin-bottom: 14px !important;
+  }
+
+  /* stat grids → 2 columns — must override inline style */
+  .sa-stat-grid, .st-stat-grid, .da-stat-grid,
+  .aa-stat-grid, .ba-stat-grid,
+  .bpa-stat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  /* FORCE 2-column on ANY grid that contains .stat-card children */
+  div:has(> .stat-card) {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  /* scheme grids → 2 columns */
+  .sa-scheme-grid, .st-scheme-grid, .da-scheme-grid,
+  .aa-scheme-grid, .ba-scheme-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* Force 2-col on any grid with scheme card images inside campsite-card */
+  .campsite-card div[style*="grid"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  /* scheme images → smaller on tablet */
+  .sa-scheme-grid img, .st-scheme-grid img,
+  .da-scheme-grid img, .aa-scheme-grid img,
+  .ba-scheme-grid img {
+    height: 72px !important;
+    object-fit: cover !important;
+  }
+
+  /* scheme card padding compact */
+  .sa-scheme-grid > div, .st-scheme-grid > div,
+  .da-scheme-grid > div, .aa-scheme-grid > div,
+  .ba-scheme-grid > div {
+    padding: 0 !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+  }
+
+  /* tables → horizontal scroll */
+  .sa-table-wrap, .st-table-wrap, .da-table-wrap,
+  .aa-table-wrap, .ba-table-wrap, .bpa-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* filter bars → stack */
+  .sa-filter-bar, .st-filter-bar, .da-filter-bar,
+  .aa-filter-bar, .bpa-filter-row {
+    flex-direction: column !important;
+  }
+  .sa-filter-bar > *, .st-filter-bar > *,
+  .da-filter-bar > *, .aa-filter-bar > *,
+  .bpa-filter-row > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: unset !important;
+    min-width: unset !important;
+  }
+
+  /* AI console form → stack on mobile/tablet */
+  .sa-ai-form {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .sa-ai-submit {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  .sa-ai-input {
+    width: 100% !important;
+    font-size: 16px !important;
+  }
+
+  /* AI quick-action buttons → horizontal scrollable strip */
+  .sa-ai-btns,
+  div[style*="gap: '8px'"][style*="flexWrap"],
+  div[style*="gap: 8px"][style*="flex-wrap"],
+  .campsite-card > div > div:last-of-type > div[style*="flex"][style*="wrap"] {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 6px !important;
+    padding-bottom: 4px !important;
+  }
+  .sa-ai-btns::-webkit-scrollbar { display: none !important; }
+  .sa-ai-prompt-btn,
+  .sa-ai-btns > button,
+  .campsite-card .btn.btn-ghost[style*="border-radius: '6px'"],
+  .campsite-card .btn.btn-ghost[style*="border-radius:6px"] {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    font-size: 12px !important;
+    padding: 8px 12px !important;
+    min-height: 36px !important;
+  }
+
+  /* Tabs → horizontal scroll */
+  .tabs-header, .bpa-tabs {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+  .tabs-header::-webkit-scrollbar, .bpa-tabs::-webkit-scrollbar { display: none; }
+  .tab-btn { flex-shrink: 0 !important; }
+}
+
+/* ── Small phones (≤480px): keep 2-column, more compact ── */
+@media (max-width: 480px) {
+  .theme-superadmin > main,
+  .theme-stateadmin > main,
+  .theme-districtadmin > main,
+  .theme-assemblyadmin > main,
+  .theme-boothadmin > main,
+  .sa-main, .st-main, .da-main, .aa-main, .ba-main {
+    padding: 10px 12px calc(20px + env(safe-area-inset-bottom, 0px)) 12px !important;
+  }
+
+  /* KEEP stat grids at 2 columns — they fit on modern phones (360px+) */
+  .sa-stat-grid, .st-stat-grid, .da-stat-grid, .bpa-stat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* Force 2-col on stat card grids via :has() */
+  div:has(> .stat-card) {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* Force 2-col on campsite-card inner grids */
+  .campsite-card div[style*="grid"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .campsite-card, .admin-card {
+    padding: 14px 12px !important;
+    border-radius: 10px !important;
+  }
+
+  .stat-number, .bpa-stat-val {
+    font-size: clamp(1.1rem, 5vw, 1.6rem) !important;
+  }
+
+  .stat-label, .bpa-stat-label {
+    font-size: 11px !important;
+  }
+
+  .sa-scheme-grid img, .st-scheme-grid img,
+  .da-scheme-grid img, .aa-scheme-grid img {
+    height: 56px !important;
+  }
+
+  /* AI buttons → horizontal scroll */
+  .sa-ai-btns {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+  .sa-ai-btns::-webkit-scrollbar { display: none; }
+  .sa-ai-prompt-btn {
+    flex-shrink: 0 !important;
+    font-size: 11px !important;
+    padding: 6px 10px !important;
+  }
+
+  /* BPA filter row */
+  .bpa-filter-row {
+    flex-direction: column !important;
+  }
+  .bpa-filter-row > * {
+    width: 100% !important;
+    flex: unset !important;
+    min-width: unset !important;
+  }
+}
+
+/* ── Very small phones (≤375px): still 2-col but tighter ── */
+@media (max-width: 375px) {
+  .theme-superadmin > main,
+  .theme-stateadmin > main,
+  .theme-districtadmin > main,
+  .theme-assemblyadmin > main,
+  .theme-boothadmin > main {
+    padding: 8px 10px calc(16px + env(safe-area-inset-bottom, 0px)) 10px !important;
+  }
+
+  .sa-scheme-grid, .st-scheme-grid,
+  .da-scheme-grid, .aa-scheme-grid,
+  .ba-scheme-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  .stat-number, .bpa-stat-val {
+    font-size: 1rem !important;
+  }
+
+  .stat-card {
+    padding: 10px 12px !important;
+  }
+}
+
+/* ── Hide outer desktop navbar on all mobile sizes ── */
+@media (max-width: 1023px) {
+  .admin-outer-navbar-wrap {
+    display: none !important;
+  }
+  .admin-portal-content {
+    padding: 0 !important;
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════════
+   VOTER DETAIL / PROFILE VIEW — MOBILE 2-COLUMN GRID
+   Force all stat/metric cards inside voter detail views to 2-column
+   ════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1023px) {
+  /* VoterSchemesView / MemberProfileTimelineView stat grids */
+  .voter-stats-grid,
+  .voter-detail-grid,
+  .profile-stats-grid,
+  .scheme-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  /* Force 2-col on ANY grid inside campsite-card / admin-card */
+  .campsite-card div[style*="grid"],
+  .admin-card div[style*="grid"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  /* :has() — catches inline style grids containing stat-card */
+  div:has(> .stat-card) {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+}
+
+/* On very small screens, still keep 2 columns for stat overview cards */
+@media (max-width: 480px) {
+  .campsite-card div[style*="grid"],
+  .admin-card div[style*="grid"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  div:has(> .stat-card) {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+
+/* Only go to 1 column on truly tiny screens (< 320px) */
+@media (max-width: 319px) {
+  .campsite-card div[style*="grid"],
+  .admin-card div[style*="grid"],
+  div:has(> .stat-card),
+  .sa-stat-grid, .st-stat-grid, .da-stat-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════════
+   AI CONSOLE — MOBILE LAYOUT FIXES (all devices)
+   ════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1023px) {
+  /* AI Console card — reduce padding */
+  .campsite-card[style*="background: '#141022'"],
+  .campsite-card[style*="background: rgb(20, 16, 34)"],
+  .sa-ai-card {
+    padding: 14px 12px !important;
+  }
+
+  /* AI title — smaller, no wrap */
+  .sa-ai-card h3,
+  .sa-ai-header-title,
+  .campsite-card h3[style*="fontSize: '17px'"],
+  .campsite-card h3[style*="font-size: 17px"] {
+    font-size: 15px !important;
+    line-height: 1.3 !important;
+  }
+
+  /* AI subtitle / description — truncate */
+  .sa-ai-desc,
+  .campsite-card p[style*="fontSize: '12px'"][style*="color: '#9d8ec4'"],
+  .campsite-card p[style*="color: rgb(157, 142, 196)"] {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+    font-size: 11px !important;
+  }
+
+  /* AI form container — always stack vertically */
+  form[class*="ai-form"],
+  form[style*="display: 'flex'"][style*="gap"],
+  .campsite-card form {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  /* AI input — full width */
+  .sa-ai-input,
+  .campsite-card form input[type="text"] {
+    width: 100% !important;
+    font-size: 16px !important;
+    padding: 12px 14px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* AI submit button — full width below input */
+  .sa-ai-submit,
+  .campsite-card form button[type="submit"] {
+    width: 100% !important;
+    justify-content: center !important;
+    min-height: 44px !important;
+    font-size: 14px !important;
+  }
+
+  /* Quick-action buttons — horizontal scroll strip (single row, swipeable) */
+  .sa-ai-btns,
+  .campsite-card div[style*="flexWrap: 'wrap'"][style*="gap"],
+  .campsite-card div[style*="flex-wrap: wrap"][style*="gap: 8px"] {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 6px !important;
+    padding: 2px 0 6px !important;
+    margin: 0 -2px !important;
+  }
+  .sa-ai-btns::-webkit-scrollbar,
+  .campsite-card div[style*="flex-wrap"]::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Each AI prompt button — compact pill, doesn't shrink */
+  .sa-ai-prompt-btn,
+  .sa-ai-btns > button,
+  .campsite-card div[style*="flex-wrap"] > button {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    font-size: 12px !important;
+    padding: 7px 12px !important;
+    min-height: 34px !important;
+    border-radius: 8px !important;
+  }
+}
+
+/* Smaller phones — even more compact AI buttons */
+@media (max-width: 480px) {
+  .sa-ai-prompt-btn,
+  .sa-ai-btns > button,
+  .campsite-card div[style*="flex-wrap"] > button {
+    font-size: 11px !important;
+    padding: 6px 10px !important;
+    min-height: 32px !important;
+  }
+}
+
+/* Fold / very narrow — buttons get even tighter */
+@media (max-width: 360px) {
+  .sa-ai-prompt-btn,
+  .sa-ai-btns > button {
+    font-size: 10px !important;
+    padding: 5px 8px !important;
+  }
 }

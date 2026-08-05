@@ -1,3 +1,4 @@
+import AdminMobileNav from '../../components/AdminMobileNav';
 import React, { useState, useEffect } from 'react';
 import API from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
@@ -259,16 +260,21 @@ const BoothAdminDashboard = () => {
       className="theme-boothadmin"
       style={{
         display: 'flex',
-        gap: '24px',
+        flexDirection: 'column',
         width: '100%',
-        maxWidth: '100%',
+        maxWidth: '100vw',
         boxSizing: 'border-box',
-        minHeight: 'calc(100vh - 80px)',
-        alignItems: 'flex-start',
-        background: 'transparent',
-        margin: '0 auto'
+        minHeight: '100vh'
       }}
     >
+      <AdminMobileNav
+        role="BOOTH_ADMIN"
+        title={`Booth ${admin?.boothNo || ''} Portal`}
+        subPage={subPage}
+        onNavigate={navigateSubPage}
+        onRefresh={fetchDashboardData}
+      />
+      <div style={{ display: 'flex', gap: '24px', width: '100%', boxSizing: 'border-box', alignItems: 'flex-start' }}>
       <style>{`
         .theme-boothadmin {
           --bg-primary: #0a0a0f;
@@ -1336,6 +1342,7 @@ const BoothAdminDashboard = () => {
 
       </main>
     </div>
+  </div>
   );
 };
 

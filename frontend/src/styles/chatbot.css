@@ -1399,6 +1399,33 @@
   text-overflow: ellipsis;
 }
 
+/* Option items & Tamil translations — multiline full text display */
+.chatbot-app.bjp-theme .left-chat-item.option-item .left-chat-msg,
+.chatbot-app.bjp-theme.lang-ta .left-chat-msg,
+.left-chat-item.option-item .left-chat-msg {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  word-break: break-word !important;
+  line-height: 1.4 !important;
+  font-size: 12px !important;
+  color: var(--color-ash, #6b7280) !important;
+}
+
+.chatbot-app.bjp-theme .left-chat-item.option-item,
+.left-chat-item.option-item {
+  height: auto !important;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
+
+.chatbot-app.bjp-theme .left-chat-name,
+.left-chat-name {
+  white-space: normal !important;
+  word-break: break-word !important;
+  line-height: 1.3 !important;
+}
+
 .chatbot-app.bjp-theme .left-chat-item.locked {
   opacity: 0.5;
   cursor: not-allowed;

@@ -70,18 +70,68 @@ const AssemblyBoothsPage = () => {
           marginBottom: '24px',
           boxShadow: '0 8px 32px rgba(255, 153, 51, 0.3)'
         }}>
-          <h1 style={{
-            fontSize: '36px',
-            fontWeight: '800',
-            margin: '0 0 8px 0',
-            color: '#fff',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.2)'
-          }}>
-            🗳️ Tamil Nadu Assembly Constituencies
-          </h1>
-          <p style={{ fontSize: '16px', margin: '0 0 20px 0', opacity: 0.95 }}>
-            Complete booth information for all 233 assemblies
-          </p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+            <div>
+              <h1 style={{
+                fontSize: '36px',
+                fontWeight: '800',
+                margin: '0 0 8px 0',
+                color: '#fff',
+                textShadow: '2px 2px 4px rgba(0,0,0,0.2)'
+              }}>
+                🗳️ Tamil Nadu Assembly Constituencies
+              </h1>
+              <p style={{ fontSize: '16px', margin: '0 0 16px 0', opacity: 0.95 }}>
+                Complete booth information for all 233 assemblies
+              </p>
+            </div>
+
+            {/* Be a Booth President Call to Action */}
+            <div style={{
+              background: 'rgba(0, 0, 0, 0.25)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '12px',
+              padding: '16px 20px',
+              backdropFilter: 'blur(8px)',
+              maxWidth: '420px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '22px' }}>🏆</span>
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: '800', color: '#ffffff' }}>
+                    Be a Booth President
+                  </div>
+                  <div style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.85)' }}>
+                    Apply to lead your electoral booth
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => { window.location.href = '/?action=booth_president'; }}
+                style={{
+                  background: '#ffffff',
+                  color: '#FF6B35',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '10px 18px',
+                  fontWeight: '800',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                }}
+              >
+                <span>Apply to Lead Booth</span>
+                <span style={{ fontSize: '15px' }}>&rarr;</span>
+              </button>
+            </div>
+          </div>
           
           {/* Stats Cards */}
           <div style={{

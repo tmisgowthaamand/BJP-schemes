@@ -149,7 +149,7 @@ const getActiveStep = (chatState) => {
 }
 
 // ── Message renderers ───────────────────────────────────────
-function WelcomeBannerMsg({ onStart }) {
+function WelcomeBannerMsg({ onStart, onApplyBooth }) {
   const { t } = useLang()
   return (
     <div className="welcome-banner">
@@ -159,9 +159,76 @@ function WelcomeBannerMsg({ onStart }) {
       <div className="banner-content">
         <h2>{t("World's Largest. India's Biggest. Soon to be Tamil Nadu's No. 1.")}</h2>
         <p>{t("You are joining the world's leading political organization. Click below to register for Central Government welfare schemes.")}</p>
-        <button className="btn-start" onClick={onStart}>
-          <i className="bi bi-play-circle-fill" /> {t('Start')}
-        </button>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 12 }}>
+          <button className="btn-start" onClick={onStart}>
+            <i className="bi bi-play-circle-fill" /> {t('Start')}
+          </button>
+          <button
+            className="btn-start"
+            onClick={onApplyBooth}
+            style={{ background: 'linear-gradient(135deg, #f26522 0%, #ff8c42 100%)', boxShadow: '0 4px 12px rgba(242, 101, 34, 0.3)' }}
+          >
+            <i className="bi bi-award-fill" /> {t('Be a Booth President')}
+          </button>
+        </div>
+
+        {/* Hero Card for Booth President */}
+        <div style={{
+          marginTop: 16,
+          background: 'linear-gradient(135deg, rgba(242, 101, 34, 0.08) 0%, rgba(255, 140, 66, 0.16) 100%)',
+          border: '1.5px solid rgba(242, 101, 34, 0.3)',
+          borderRadius: 12,
+          padding: '14px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 12
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              background: '#f26522',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 20,
+              flexShrink: 0
+            }}>
+              <i className="bi bi-award-fill" />
+            </div>
+            <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--color-chalk, #1a1a1a)', whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: 1.3 }}>
+                {t('Be a Booth President')}
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--color-ash, #6b7280)', marginTop: 3, whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: 1.4 }}>
+                {t('Apply to lead your electoral booth')}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onApplyBooth}
+            style={{
+              background: '#f26522',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: 8,
+              padding: '8px 16px',
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6
+            }}
+          >
+            <span>{t('Apply Now')}</span>
+            <i className="bi bi-arrow-right" />
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -2479,9 +2546,6 @@ function MyReferralsListPanel({ bjpCode, onBack }) {
                     </div>
                     <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
                       <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-chalk)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
-                      <div style={{ fontSize: 11, color: 'var(--color-ash)', marginTop: 2 }}>
-                        <i className="bi bi-card-text" style={{ marginRight: 4 }} />{epic}
-                      </div>
                       <div style={{ fontSize: 11, color: 'var(--color-ash)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         <i className="bi bi-geo-alt" style={{ marginRight: 4 }} />{district} • {assembly} • {t('Booth')} {booth}
                       </div>
@@ -2499,6 +2563,570 @@ function MyReferralsListPanel({ bjpCode, onBack }) {
         )}
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  )
+}
+
+// ── Booth President Panel ────────────────────────────────────────────────────
+// Allows a registered member to apply to lead their polling booth.
+// Screens:
+//   1. Show applicant details + two options (registered booth / custom booth)
+//   2. If custom: district/assembly/booth form
+//   3. Confirmation & submission
+// ─────────────────────────────────────────────────────────────────────────────
+function BoothPresidentPanel({ user, onBack, onStartVerification }) {
+  const { t } = useLang()
+  const [step, setStep] = useState('choose')   // 'choose' | 'custom_form' | 'submitting' | 'success' | 'error'
+  const [customDistrict, setCustomDistrict]   = useState(user?.district || '')
+  const [customAssembly, setCustomAssembly]   = useState(user?.assemblyName || '')
+  const [customBoothNo, setCustomBoothNo]     = useState('')
+  const [resultMsg, setResultMsg]             = useState('')
+
+  // Dropdown data — loaded from backend
+  const [allAssemblies, setAllAssemblies] = useState([])  // full 234 assembly list
+  const [districtList, setDistrictList]   = useState([])  // 38 unique districts
+  const [filteredAss, setFilteredAss]     = useState([])  // assemblies for selected district
+
+  // Load all assemblies on mount
+  useEffect(() => {
+    let retryCount = 0
+    const loadData = async () => {
+      try {
+        const res = await chat.getAssemblyList()
+        if (res && res.assemblies && res.assemblies.length > 0) {
+          processAssemblies(res.assemblies)
+          return
+        }
+      } catch { /* ignore — will retry or use fallback */ }
+
+      // Retry up to 3 times with 2s delay
+      if (retryCount < 3) {
+        retryCount++
+        setTimeout(loadData, 2000)
+      } else {
+        // Fallback: set a basic list of 38 TN districts so dropdown isn't empty
+        setDistrictList([
+          'ARIYALUR','CHENGALPATTU','CHENNAI','COIMBATORE','CUDDALORE',
+          'DHARMAPURI','DINDIGUL','ERODE','KALLAKURICHI','KANCHEEPURAM',
+          'KANNIYAKUMARI','KARUR','KRISHNAGIRI','MADURAI','MAYILADUTHURAI',
+          'NAGAPATTINAM','NAMAKKAL','NILGIRIS','PERAMBALUR','PUDUKKOTTAI',
+          'RAMANATHAPURAM','RANIPET','SALEM','SIVAGANGAI','TENKASI',
+          'THANJAVUR','THENI','THIRUVALLUR','THIRUVARUR','THOOTHUKUDI',
+          'TIRUCHIRAPPALLI','TIRUNELVELI','TIRUPATHUR','TIRUPPUR',
+          'TIRUVANNAMALAI','VELLORE','VILUPPURAM','VIRUDHUNAGAR'
+        ])
+      }
+    }
+
+    const processAssemblies = (list) => {
+      const sorted = [...list].sort((a, b) => parseInt(a.assemblyNo || 0) - parseInt(b.assemblyNo || 0))
+      setAllAssemblies(sorted)
+
+      const seen = new Set()
+      const dists = sorted
+        .map(a => (a.district || '').trim())
+        .filter(d => {
+          const key = d.toUpperCase()
+          if (!key || seen.has(key)) return false
+          seen.add(key)
+          return true
+        })
+        .map(d => d.toUpperCase())
+        .sort((a, b) => a.localeCompare(b))
+      setDistrictList(dists)
+    }
+
+    loadData()
+  }, [])
+
+  // Filter assemblies when district changes
+  useEffect(() => {
+    if (!customDistrict) { setFilteredAss(allAssemblies); return }
+    const normalizedDist = customDistrict.toUpperCase().trim()
+    const filtered = allAssemblies.filter(
+      a => (a.district || '').toUpperCase().trim() === normalizedDist
+    )
+    setFilteredAss(filtered)
+    // Reset assembly if it doesn't belong to new district
+    if (customAssembly && !filtered.find(a => a.assemblyName === customAssembly)) {
+      setCustomAssembly('')
+    }
+  }, [customDistrict, allAssemblies])
+
+  const userDistrict  = user?.district      || ''
+  const userAssembly  = user?.assemblyName  || ''
+  const userBooth     = user?.boothNo       || ''
+  const voterName     = user?.voterName     || ''
+  const epicNo        = user?.epicNo        || user?.epic_no || ''
+  const mobile        = user?.mobile        || ''
+
+  const isLoggedIn = !!(voterName || epicNo || mobile)
+
+  // Load existing user applications on mount
+  const [existingApps, setExistingApps] = useState([])
+  const [loadingApps, setLoadingApps]   = useState(true)
+
+  useEffect(() => {
+    if (!isLoggedIn) { setLoadingApps(false); return }
+    chat.getMyBoothApplications()
+      .then(res => {
+        const apps = res?.data?.applications || res?.applications || []
+        setExistingApps(apps)
+      })
+      .catch(() => {})
+      .finally(() => setLoadingApps(false))
+  }, [isLoggedIn])
+
+  const submit = async (boothType) => {
+    if (!isLoggedIn) {
+      if (onStartVerification) onStartVerification()
+      return
+    }
+    setStep('submitting')
+    try {
+      const body = { boothType }
+      if (boothType === 'custom') {
+        body.targetDistrict = customDistrict.trim()
+        body.targetAssembly = customAssembly.trim()
+        body.targetBoothNo  = customBoothNo.trim()
+        if (!body.targetDistrict || !body.targetAssembly || !body.targetBoothNo) {
+          setResultMsg(t('Please fill in all booth location fields.'))
+          setStep('error')
+          return
+        }
+      }
+      const res = await chat.applyBoothPresident(body)
+      if (res.data?.success || res.success) {
+        setResultMsg(res.data?.message || res.message || t('Application submitted successfully!'))
+        setStep('success')
+        // Refresh application list
+        chat.getMyBoothApplications().then(r => {
+          const apps = r?.data?.applications || r?.applications || []
+          setExistingApps(apps)
+        })
+      } else {
+        setResultMsg(res.data?.message || res.message || t('Something went wrong.'))
+        setStep('error')
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || t('Could not submit application. Please try again.')
+      setResultMsg(msg)
+      setStep('error')
+      // Refresh list to pull existing application if 409 Conflict
+      if (err.response?.status === 409) {
+        chat.getMyBoothApplications().then(r => {
+          const apps = r?.data?.applications || r?.applications || []
+          setExistingApps(apps)
+        })
+      }
+    }
+  }
+
+  const ORANGE  = '#f26522'
+  const BG      = 'var(--bg-surface, #fff)'
+  const BORDER  = 'var(--border-dim, #e2e8f0)'
+  const MUTED   = 'var(--color-ash, #6b7280)'
+
+  return (
+    <div className="chatbot-container brochure-panel">
+      <header className="brochure-header" style={{
+        background: '#ffffff',
+        borderBottom: '1px solid #e2e8f0',
+        padding: '14px 18px',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
+      }}>
+        <div className="brochure-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button
+            onClick={onBack}
+            style={{
+              background: 'rgba(242, 101, 34, 0.08)',
+              border: 'none',
+              color: ORANGE,
+              borderRadius: '50%',
+              width: 34,
+              height: 34,
+              cursor: 'pointer',
+              fontSize: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease'
+            }}
+            aria-label={t('Back')}
+          >
+            <i className="bi bi-chevron-left" style={{ fontWeight: 800 }} />
+          </button>
+          <i className="bi bi-award-fill" style={{ color: ORANGE, fontSize: 20 }} />
+          <span style={{ fontWeight: 800, fontSize: 17, color: '#111827' }}>{t('Be a Booth President')}</span>
+        </div>
+      </header>
+
+      <div className="brochure-content" style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '18px' }}>
+
+        {/* ── Applicant info card / Guest verification prompt ── */}
+        {isLoggedIn ? (
+          <div style={{
+            background: '#ffffff',
+            border: '1.5px solid #e2e8f0',
+            borderRadius: 14,
+            padding: '16px',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.04)'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 8
+            }}>
+              <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: ORANGE, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <i className="bi bi-person-badge-fill" /> {t('APPLICANT DETAILS')}
+              </div>
+              <span style={{ fontSize: 10, fontWeight: 700, background: 'rgba(39, 174, 96, 0.12)', color: '#27ae60', padding: '3px 8px', borderRadius: 999 }}>
+                ✓ VERIFIED
+              </span>
+            </div>
+            <div style={{ fontWeight: 800, fontSize: 16, color: '#111827', marginBottom: 6 }}>{voterName}</div>
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 13, color: '#4b5563', marginBottom: 8 }}>
+              {epicNo && <span><i className="bi bi-card-text" style={{ marginRight: 5, color: ORANGE }} />{epicNo}</span>}
+              {mobile && <span><i className="bi bi-telephone-fill" style={{ marginRight: 5, color: ORANGE }} />{mobile}</span>}
+            </div>
+            {(userDistrict || userAssembly || userBooth) && (
+              <div style={{
+                fontSize: 13,
+                color: '#1e293b',
+                fontWeight: 700,
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: 8,
+                padding: '8px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6
+              }}>
+                <i className="bi bi-geo-alt-fill" style={{ color: ORANGE }} />
+                <span>{[userDistrict, userAssembly, userBooth ? `${t('Booth')} ${userBooth}` : null].filter(Boolean).join(' • ')}</span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div style={{ background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)', border: '1.5px solid #fdba74', borderRadius: 14, padding: '16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ fontWeight: 800, fontSize: 15, color: '#c2410c', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <i className="bi bi-shield-lock-fill" style={{ fontSize: 18 }} />
+              {t('Voter Registration Required')}
+            </div>
+            <div style={{ fontSize: 13, color: '#9a3412', lineHeight: 1.4 }}>
+              {t('To submit an official Booth President application, please verify your mobile number and voter details.')}
+            </div>
+            {onStartVerification && (
+              <button
+                onClick={onStartVerification}
+                style={{
+                  background: 'linear-gradient(135deg, #f26522 0%, #ff7836 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: 10,
+                  padding: '13px 18px',
+                  fontWeight: 800,
+                  fontSize: 14,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  marginTop: 4,
+                  boxShadow: '0 4px 14px rgba(242, 101, 34, 0.35)'
+                }}
+              >
+                <i className="bi bi-person-check-fill" />
+                {t('Verify Mobile & EPIC ID Now')}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* ── Active Application Status Card ── */}
+        {existingApps.length > 0 && (
+          <div style={{
+            background: 'linear-gradient(135deg, #fffdf5 0%, #fef3c7 100%)',
+            border: '1.5px solid #f59e0b',
+            borderRadius: 14,
+            padding: '16px',
+            boxShadow: '0 4px 14px rgba(245, 158, 11, 0.15)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#b45309', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <i className="bi bi-award-fill" style={{ fontSize: 14 }} /> {t('MY BOOTH APPLICATION STATUS')}
+              </div>
+              <span style={{
+                fontSize: 11,
+                fontWeight: 800,
+                padding: '3px 10px',
+                borderRadius: 999,
+                background: existingApps[0].status === 'Approved' ? '#dcfce7' : existingApps[0].status === 'Declined' ? '#fee2e2' : '#fef3c7',
+                color: existingApps[0].status === 'Approved' ? '#15803d' : existingApps[0].status === 'Declined' ? '#b91c1c' : '#b45309',
+                border: `1px solid ${existingApps[0].status === 'Approved' ? '#86efac' : existingApps[0].status === 'Declined' ? '#fca5a5' : '#fde68a'}`
+              }}>
+                {existingApps[0].status === 'Approved' ? '✓ APPROVED' : existingApps[0].status === 'Declined' ? '✗ DECLINED' : '⏳ PENDING REVIEW'}
+              </span>
+            </div>
+            <div style={{ fontWeight: 800, fontSize: 15, color: '#92400e', marginBottom: 4 }}>
+              {t('Booth {n} President Application', { n: existingApps[0].targetBoothNo })}
+            </div>
+            <div style={{ fontSize: 13, color: '#78350f', lineHeight: 1.45, marginBottom: 8 }}>
+              {[existingApps[0].targetDistrict, existingApps[0].targetAssembly, `${t('Booth')} ${existingApps[0].targetBoothNo}`].filter(Boolean).join(' • ')}
+            </div>
+            <div style={{ fontSize: 12, color: '#92400e', background: 'rgba(255, 255, 255, 0.7)', borderRadius: 8, padding: '8px 12px', border: '1px solid #fde68a' }}>
+              <i className="bi bi-info-circle-fill" style={{ marginRight: 6, color: '#d97706' }} />
+              {existingApps[0].status === 'Approved'
+                ? t('Congratulations! Your Booth President request has been approved by party leadership.')
+                : existingApps[0].status === 'Declined'
+                ? t('Your application was not approved. You can select another booth below.')
+                : t('Your request is currently under review by the District and Assembly Admin.')}
+            </div>
+          </div>
+        )}
+
+        {/* ── Step: choose ── */}
+        {step === 'choose' && (
+          <>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#4b5563', marginTop: 2 }}>
+              {t('Select how you would like to apply for Booth President:')}
+            </div>
+
+            {/* Option A: registered booth */}
+            <div style={{
+              background: '#ffffff',
+              border: `2px solid ${ORANGE}`,
+              borderRadius: 14,
+              padding: '16px',
+              boxShadow: '0 4px 16px rgba(242, 101, 34, 0.1)',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }} onClick={() => submit('registered')}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
+                <div style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: 'rgba(242, 101, 34, 0.12)',
+                  color: ORANGE,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 16,
+                  flexShrink: 0,
+                  marginTop: 2
+                }}>
+                  <i className="bi bi-check-lg" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 800, fontSize: 15, color: '#111827', lineHeight: 1.35, marginBottom: 4 }}>
+                    {t('Confirm My Registered Booth (Booth {n})', { n: userBooth })}
+                  </div>
+                  <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.45 }}>
+                    {t('Apply as Booth President for your registered voter location in {assembly}', { assembly: userAssembly })}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                style={{
+                  width: '100%',
+                  marginTop: 14,
+                  padding: '14px 16px',
+                  background: 'linear-gradient(135deg, #f26522 0%, #ff7836 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: 10,
+                  fontWeight: 800,
+                  fontSize: 14,
+                  lineHeight: 1.35,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 10,
+                  boxShadow: '0 4px 14px rgba(242, 101, 34, 0.35)',
+                  wordBreak: 'break-word',
+                  textAlign: 'center'
+                }}
+                onClick={(e) => { e.stopPropagation(); submit('registered') }}
+              >
+                <i className="bi bi-shield-check" style={{ fontSize: 18, flexShrink: 0 }} />
+                <span>{t('Confirm & Apply for Booth {n}', { n: userBooth })}</span>
+              </button>
+            </div>
+
+            {/* Option B: custom booth */}
+            <div style={{
+              background: '#ffffff',
+              border: `1.5px solid ${BORDER}`,
+              borderRadius: 14,
+              padding: '16px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
+                <div style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: 'rgba(107, 114, 128, 0.1)',
+                  color: '#4b5563',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 15,
+                  flexShrink: 0,
+                  marginTop: 2
+                }}>
+                  <i className="bi bi-pencil-square" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 800, fontSize: 15, color: '#111827', lineHeight: 1.35, marginBottom: 4 }}>
+                    {t('Apply for Another Booth')}
+                  </div>
+                  <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.45 }}>
+                    {t('Choose a different District, Assembly Constituency, or Booth Number')}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                style={{
+                  width: '100%',
+                  marginTop: 14,
+                  padding: '12px 16px',
+                  background: '#ffffff',
+                  color: ORANGE,
+                  border: `1.5px solid ${ORANGE}`,
+                  borderRadius: 10,
+                  fontWeight: 700,
+                  fontSize: 14,
+                  lineHeight: 1.35,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  boxShadow: '0 2px 8px rgba(242, 101, 34, 0.08)',
+                  wordBreak: 'break-word',
+                  textAlign: 'center'
+                }}
+                onClick={() => setStep('custom_form')}
+              >
+                <i className="bi bi-sliders" style={{ fontSize: 16, flexShrink: 0 }} />
+                <span>{t('Select Another Booth Location')}</span>
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* ── Step: custom_form ── */}
+        {step === 'custom_form' && (
+          <>
+            <div style={{ fontSize: 13, fontWeight: 700, color: ORANGE, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <i className="bi bi-geo-alt-fill" /> {t('Select Custom Booth Location')}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: MUTED, display: 'block', marginBottom: 6 }}>{t('District')} *</label>
+                <select
+                  value={customDistrict}
+                  onChange={e => setCustomDistrict(e.target.value)}
+                  className="white-theme-select"
+                >
+                  <option value="">{districtList.length === 0 ? t('Loading districts...') : t('-- Select District --')}</option>
+                  {districtList.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: MUTED, display: 'block', marginBottom: 6 }}>{t('Assembly Constituency')} *</label>
+                <select
+                  value={customAssembly}
+                  onChange={e => setCustomAssembly(e.target.value)}
+                  className="white-theme-select"
+                >
+                  <option value="">{allAssemblies.length === 0 ? t('Loading assemblies...') : t('-- Select Assembly --')}</option>
+                  {(customDistrict ? filteredAss : allAssemblies).map(a => (
+                    <option key={a.assemblyNo} value={a.assemblyName}>
+                      {a.assemblyNo} - {a.assemblyName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: MUTED, display: 'block', marginBottom: 6 }}>{t('Booth Number')} *</label>
+                <input
+                  value={customBoothNo}
+                  onChange={e => setCustomBoothNo(e.target.value.replace(/[^0-9]/g, ''))}
+                  placeholder={t('Enter Booth Number e.g. 42')}
+                  inputMode="numeric"
+                  className="white-theme-input"
+                />
+              </div>
+              <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                <button
+                  onClick={() => setStep('choose')}
+                  style={{ flex: 1, padding: '12px 0', background: 'transparent', border: `1px solid ${BORDER}`, borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', color: MUTED }}
+                >
+                  {t('Cancel')}
+                </button>
+                <button
+                  onClick={() => submit('custom')}
+                  style={{ flex: 2, padding: '12px 0', background: ORANGE, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                >
+                  <i className="bi bi-send-fill" /> {t('Submit Request')}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ── Step: submitting ── */}
+        {step === 'submitting' && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 180, gap: 16 }}>
+            <div style={{ width: 36, height: 36, border: `3px solid rgba(242,101,34,0.15)`, borderTopColor: ORANGE, borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+            <div style={{ color: MUTED, fontSize: 14 }}>{t('Submitting your application...')}</div>
+          </div>
+        )}
+
+        {/* ── Step: success ── */}
+        {step === 'success' && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 14, padding: '24px 16px' }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(39,174,96,0.12)', border: '2px solid rgba(39,174,96,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <i className="bi bi-check-circle-fill" style={{ fontSize: 28, color: '#27ae60' }} />
+            </div>
+            <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--color-chalk, #1a1a1a)', margin: 0 }}>{t('Application Submitted!')}</h3>
+            <p style={{ fontSize: 14, color: MUTED, margin: 0, lineHeight: 1.6, maxWidth: 320 }}>{resultMsg}</p>
+            <button
+              onClick={() => setStep('choose')}
+              style={{ marginTop: 8, padding: '12px 28px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
+            >
+              {t('View My Application Status')}
+            </button>
+          </div>
+        )}
+
+        {/* ── Step: error ── */}
+        {step === 'error' && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 14, padding: '24px 16px' }}>
+            <i className={`bi ${existingApps.length > 0 ? 'bi-info-circle-fill' : 'bi-exclamation-circle-fill'}`} style={{ fontSize: 40, color: existingApps.length > 0 ? '#f59e0b' : '#e53935' }} />
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-chalk, #1a1a1a)', margin: 0 }}>
+              {existingApps.length > 0 ? t('Application Already Submitted') : t('Could Not Submit')}
+            </h3>
+            <p style={{ fontSize: 14, color: MUTED, margin: 0, lineHeight: 1.6, maxWidth: 320 }}>{resultMsg}</p>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <button onClick={() => setStep('choose')} style={{ padding: '10px 20px', background: 'transparent', border: `1px solid ${BORDER}`, borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', color: ORANGE }}>
+                {existingApps.length > 0 ? t('View Application Details') : t('Try Again')}
+              </button>
+              <button onClick={onBack} style={{ padding: '10px 20px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                {t('Back to Menu')}
+              </button>
+            </div>
+          </div>
+        )}
+
+      </div>
     </div>
   )
 }
@@ -2866,6 +3494,17 @@ export default function ChatbotPage() {
 
   // ── Initialise ────────────────────────────────────────────
   useEffect(() => {
+    window.dispatchBoothPresidentAction = () => setActiveView('booth_president')
+
+    const checkUrlAction = () => {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('action') === 'booth_president' || params.get('booth') === 'true') {
+        setActiveView('booth_president')
+      }
+    }
+    checkUrlAction()
+    window.addEventListener('popstate', checkUrlAction)
+
     if (initializedRef.current) return
     initializedRef.current = true
 
@@ -2903,6 +3542,11 @@ export default function ChatbotPage() {
     } else {
       addMsg('bot', 'welcome_banner', {})
       setChatState(S.WELCOME)
+    }
+
+    return () => {
+      delete window.dispatchBoothPresidentAction
+      window.removeEventListener('popstate', checkUrlAction)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -3186,6 +3830,10 @@ export default function ChatbotPage() {
       setActiveView('my_referrals')
       return
     }
+    if (action === 'booth_president') {
+      setActiveView('booth_president')
+      return
+    }
     setActiveView('chat')
     const bjpCode = cardRef.current?.bjp_code || cardRef.current?.ptc_code || profileRef.current?.bjp_code || profileRef.current?.ptc_code
 
@@ -3343,7 +3991,7 @@ export default function ChatbotPage() {
         return <span dangerouslySetInnerHTML={{ __html: safeHtml }} />
       }
       case 'welcome_banner':
-        return <WelcomeBannerMsg onStart={handleStart} />
+        return <WelcomeBannerMsg onStart={handleStart} onApplyBooth={() => setActiveView('booth_president')} />
       case 'voter_card': {
         const isLatest = messages[messages.length - 1]?.id === msg.id
         return (
@@ -3477,12 +4125,13 @@ export default function ChatbotPage() {
             </div>
 
             {[
-              { icon: 'person-circle',  label: 'My Profile',              action: 'profile',     desc: 'View your registration details' },
-              { icon: 'check2-all',     label: 'My Schemes',              action: 'my_schemes',  desc: 'Schemes you registered for' },
-              { icon: 'link-45deg',     label: 'Referral Link',           action: 'referral',    desc: 'Share and invite others' },
-              { icon: 'people-fill',    label: 'My Referrals',            action: 'my_referrals',desc: 'Members you referred' },
+              { icon: 'person-circle',  label: 'My Profile',              action: 'profile',        desc: 'View your registration details' },
+              { icon: 'check2-all',     label: 'My Schemes',              action: 'my_schemes',     desc: 'Schemes you registered for' },
+              { icon: 'link-45deg',     label: 'Referral Link',           action: 'referral',       desc: 'Share and invite others' },
+              { icon: 'people-fill',    label: 'My Referrals',            action: 'my_referrals',   desc: 'Members you referred' },
+              { icon: 'award-fill',     label: 'Be a Booth President',    action: 'booth_president',desc: 'Apply to lead your electoral booth' },
             ].map((item) => {
-              const locked = !isDone
+              const locked = !isDone && item.action !== 'booth_president'
               return (
                 <div
                   key={item.action}
@@ -3504,7 +4153,7 @@ export default function ChatbotPage() {
                       </div>
                       {locked && <i className="bi bi-lock-fill lock-icon" />}
                     </div>
-                    <div className="left-chat-msg">{t(item.desc)}</div>
+                    <div className="left-chat-msg" style={{ whiteSpace: 'normal', overflow: 'visible', wordBreak: 'break-word', lineHeight: 1.4 }}>{t(item.desc)}</div>
                   </div>
                 </div>
               )
@@ -3536,6 +4185,22 @@ export default function ChatbotPage() {
             <MyReferralsListPanel 
               bjpCode={cardRef.current?.bjp_code || cardRef.current?.ptc_code || profileRef.current?.bjp_code || profileRef.current?.ptc_code}
               onBack={() => setActiveView('chat')} 
+            />
+          ) : activeView === 'booth_president' ? (
+            <BoothPresidentPanel
+              user={{
+                voterName:   cardRef.current?.voter_name   || profileRef.current?.voter_name   || profileRef.current?.voterName,
+                epicNo:      epicRef.current               || cardRef.current?.epic_no          || profileRef.current?.epic_no,
+                mobile:      mobileRef.current             || cardRef.current?.mobile           || profileRef.current?.mobile,
+                district:    cardRef.current?.district     || profileRef.current?.district,
+                assemblyName:cardRef.current?.assembly     || profileRef.current?.assemblyName  || profileRef.current?.assembly_name,
+                boothNo:     cardRef.current?.part_no      || profileRef.current?.boothNo       || profileRef.current?.booth_no,
+              }}
+              onBack={() => setActiveView('chat')}
+              onStartVerification={() => {
+                setActiveView('chat')
+                handleStart()
+              }}
             />
           ) : (
             <div className="chatbot-container">
@@ -3729,6 +4394,7 @@ export default function ChatbotPage() {
                 { icon: 'check2-all',          label: 'My Schemes',              action: 'my_schemes' },
                 { icon: 'link-45deg',          label: 'Referral Link',           action: 'referral' },
                 { icon: 'people-fill',         label: 'My Referrals',            action: 'my_referrals' },
+                { icon: 'award-fill',          label: 'Be a Booth President',    action: 'booth_president' },
               ].map((item) => {
                 return (
                   <button
