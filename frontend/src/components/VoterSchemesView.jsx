@@ -16,7 +16,7 @@ const VoterSchemesView = ({ voter, onUpdateStatus, onClose }) => {
       <div className="voter-schemes-header">
         <div className="voter-info-header">
           <button className="btn-back" onClick={onClose}>
-            ← Back
+            Back
           </button>
           <div className="voter-details">
             <h2>{voter.voterName}</h2>
