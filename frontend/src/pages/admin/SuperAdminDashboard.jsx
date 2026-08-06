@@ -1,5 +1,5 @@
 import AdminMobileNav from '../../components/AdminMobileNav';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import API from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import StatusBadge from '../../components/StatusBadge';
@@ -13,6 +13,270 @@ import {
   LayoutDashboard, Key, MapPin, CheckSquare, BarChart3
 } from 'lucide-react';
 import TopReferrersCard from '../../components/TopReferrersCard';
+
+// ── Booth President Admin Panel ──────────────────────────────────────────────
+const BoothPresidentAdminPanel = () => {
+  const [apps, setApps] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [summary, setSummary] = useState({ total:0, pending:0, approved:0, declined:0 })
+  const [statusTab, setStatusTab] = useState('')
+  const [searchQ, setSearchQ] = useState('')
+  const [distFilter, setDistFilter] = useState('')
+  const [assFilter, setAssFilter] = useState('')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [flash, setFlash] = useState({ msg:'', type:'success' })
+  const [allDistricts, setAllDistricts] = useState([])
+  const [allAssemblies, setAllAssemblies] = useState([])
+  const [filteredAss, setFilteredAss] = useState([])
+
+  useEffect(() => {
+    API.get('/admin/jurisdiction-assemblies').then(res => {
+      if (!res.data.success) return
+      const list = res.data.assemblies || []
+      const seen = new Set()
+      const dists = list.map(a => (a.district||'').toUpperCase().trim()).filter(d => d && !seen.has(d) && seen.add(d)).sort((a,b)=>a.localeCompare(b))
+      setAllDistricts(dists)
+      setAllAssemblies([...list].sort((a,b)=>parseInt(a.assemblyNo||0)-parseInt(b.assemblyNo||0)))
+    }).catch(()=>{})
+  }, [])
+
+  useEffect(() => {
+    setAssFilter('')
+    if (!distFilter) { setFilteredAss([]); return }
+    setFilteredAss(allAssemblies.filter(a=>(a.district||'').toUpperCase().trim()===distFilter))
+  }, [distFilter, allAssemblies])
+
+  const loadApps = useCallback(async (p=1) => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({ page:p, limit:20 })
+      if (statusTab) params.set('status', statusTab)
+      if (searchQ)   params.set('search', searchQ.trim())
+      if (distFilter) params.set('district', distFilter.trim())
+      if (assFilter)  params.set('assembly', assFilter.trim())
+      const res = await API.get(`/booth-president/admin/applications?${params}`)
+      if (res.data.success) {
+        setApps(res.data.applications||[])
+        setSummary({ total:res.data.total||0, pending:res.data.pending||0, approved:res.data.approved||0, declined:res.data.declined||0 })
+        setTotalPages(res.data.totalPages||1)
+        setPage(p)
+      }
+    } catch(e){ console.error(e) } finally { setLoading(false) }
+  }, [statusTab, searchQ, distFilter, assFilter])
+
+  useEffect(() => { loadApps(1) }, [loadApps])
+
+  const doAction = async (id, status) => {
+    try {
+      await API.put(`/booth-president/admin/applications/${id}`, { status })
+      setFlash({ msg:`Application ${status} successfully.`, type:'success' })
+      setTimeout(()=>setFlash({msg:'',type:'success'}),3500)
+      loadApps(page)
+    } catch(e) {
+      setFlash({ msg:e.response?.data?.message||'Action failed.', type:'error' })
+      setTimeout(()=>setFlash({msg:'',type:'success'}),3500)
+    }
+  }
+
+  const BADGE = { Pending:{bg:'#FAEEDA',fg:'#854F0B'}, Approved:{bg:'#EAF3DE',fg:'#3B6D11'}, Declined:{bg:'#FCEBEB',fg:'#A32D2D'} }
+  const hasFilter = !!(statusTab||searchQ||distFilter||assFilter)
+
+  return (
+    <div className="campsite-card bpa-panel" style={{ width:'100%', padding:'20px', boxSizing:'border-box' }}>
+      <style>{`
+        .bpa-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+        .bpa-tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+        .bpa-filter-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px}
+        .bpa-table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;border:1px solid var(--color-linen)}
+        .bpa-table-wrap table{min-width:680px;width:100%;border-collapse:collapse;font-size:13px}
+        .bpa-approve{background:#10b981;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;min-height:30px}
+        .bpa-reject{background:#ef4444;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;min-height:30px}
+        .bpa-pagination{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid var(--color-linen);flex-wrap:wrap;gap:10px}
+        @media(max-width:1023px){.bpa-stat-grid{grid-template-columns:repeat(2,1fr)!important;gap:10px!important}}
+        @media(max-width:600px){
+          .bpa-stat-grid{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
+          .bpa-filter-row{flex-direction:column!important}
+          .bpa-filter-row>*{width:100%!important;min-width:unset!important}
+          .bpa-tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px}
+          .bpa-tabs::-webkit-scrollbar{display:none}
+          .bpa-tabs .btn{flex-shrink:0}
+        }
+      `}</style>
+
+      {/* Header */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px', flexWrap:'wrap', gap:'10px' }}>
+        <div>
+          <h3 style={{ margin:0, fontSize:'18px', fontWeight:700, color:'var(--color-midnight-ink)', display:'flex', alignItems:'center', gap:'8px' }}>
+            <Award size={20} color="var(--theme-accent)" /> Booth President Requests
+          </h3>
+          <p style={{ margin:'4px 0 0', fontSize:'13px', color:'var(--color-slate)' }}>
+            Review and manage Booth President requests across Tamil Nadu
+          </p>
+        </div>
+        <button onClick={()=>loadApps(page)} className="btn btn-ghost" style={{ fontSize:'13px', gap:'6px' }}>
+          <RefreshCw size={14} /> Refresh
+        </button>
+      </div>
+
+      {/* Summary */}
+      <div className="bpa-stat-grid">
+        {[
+          {label:'Total Requests', val:summary.total,    color:'var(--color-midnight-ink)', icon:<FileText size={20}/>},
+          {label:'Pending Approval',val:summary.pending, color:'#f59e0b',  icon:<Eye size={20}/>},
+          {label:'Approved',       val:summary.approved, color:'#10b981',  icon:<Award size={20}/>},
+          {label:'Declined',       val:summary.declined, color:'#ef4444',  icon:<Shield size={20}/>},
+        ].map(s=>(
+          <div key={s.label} className="stat-card" style={{ padding:'14px 16px', cursor:'default' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+              <div className="stat-icon" style={{ color:s.color, background:`${s.color}18`, border:`1px solid ${s.color}33` }}>{s.icon}</div>
+              <div>
+                <div className="stat-number" style={{ color:s.color, fontSize:'22px', lineHeight:1 }}>{s.val}</div>
+                <div className="stat-label" style={{ marginTop:'4px' }}>{s.label}</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Status tabs + Search */}
+      <div className="bpa-tabs">
+        {[['','All Requests'],['Pending','Pending'],['Approved','Approved'],['Declined','Declined']].map(([v,l])=>(
+          <button key={v} onClick={()=>{setStatusTab(v);setPage(1)}}
+            className={`btn ${statusTab===v?'btn-primary':'btn-ghost'}`}
+            style={{ padding:'5px 14px', fontSize:'13px', minHeight:'36px', borderRadius:'20px', fontWeight:statusTab===v?700:500, flexShrink:0 }}>
+            {l}
+          </button>
+        ))}
+        <div style={{ flex:'1 1 200px', position:'relative', minWidth:'180px' }}>
+          <Search size={14} style={{ position:'absolute', left:'11px', top:'50%', transform:'translateY(-50%)', color:'var(--color-slate)', pointerEvents:'none' }}/>
+          <input type="text" value={searchQ} onChange={e=>{setSearchQ(e.target.value);setPage(1)}}
+            placeholder="Search Name, EPIC, Mobile, Booth..."
+            className="form-control" style={{ paddingLeft:'34px', fontSize:'16px', height:'36px' }}/>
+        </div>
+      </div>
+
+      {/* District + Assembly filters */}
+      <div className="bpa-filter-row">
+        <div style={{ flex:'1 1 220px', minWidth:'200px' }}>
+          <label style={{ display:'block', fontSize:'11px', fontWeight:700, color:'var(--color-slate)', textTransform:'uppercase', letterSpacing:'.05em', marginBottom:'4px' }}>Filter by District</label>
+          <select value={distFilter} onChange={e=>{setDistFilter(e.target.value);setPage(1)}} className="form-control" style={{ fontSize:'16px', height:'40px' }}>
+            <option value="">All Districts</option>
+            {allDistricts.map(d=><option key={d} value={d}>{d}</option>)}
+          </select>
+        </div>
+        <div style={{ flex:'1 1 240px', minWidth:'200px' }}>
+          <label style={{ display:'block', fontSize:'11px', fontWeight:700, color:'var(--color-slate)', textTransform:'uppercase', letterSpacing:'.05em', marginBottom:'4px' }}>Filter by Assembly</label>
+          <select value={assFilter} onChange={e=>{setAssFilter(e.target.value);setPage(1)}} className="form-control" style={{ fontSize:'16px', height:'40px' }}>
+            <option value="">All Assemblies</option>
+            {(distFilter?filteredAss:allAssemblies).map(a=>(
+              <option key={a.assemblyNo} value={a.assemblyName}>{a.assemblyNo} - {a.assemblyName}</option>
+            ))}
+          </select>
+        </div>
+        {hasFilter && (
+          <div style={{ alignSelf:'flex-end', paddingBottom:'2px' }}>
+            <button onClick={()=>{setStatusTab('');setSearchQ('');setDistFilter('');setAssFilter('')}} className="btn btn-ghost"
+              style={{ fontSize:'12px', padding:'5px 12px', minHeight:'36px', borderRadius:'20px', whiteSpace:'nowrap' }}>
+              Clear All ×
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Flash */}
+      {flash.msg && (
+        <div style={{ padding:'10px 16px', borderRadius:'8px', fontSize:'13px', fontWeight:600, marginBottom:'14px',
+          background:flash.type==='success'?'rgba(16,185,129,0.1)':'rgba(239,68,68,0.1)',
+          border:`1px solid ${flash.type==='success'?'rgba(16,185,129,0.3)':'rgba(239,68,68,0.3)'}`,
+          color:flash.type==='success'?'#10b981':'#ef4444' }}>
+          {flash.type==='success'?'✓ ':'✗ '}{flash.msg}
+        </div>
+      )}
+
+      {/* Table */}
+      <div className="bpa-table-wrap">
+        <table>
+          <thead>
+            <tr style={{ background:'var(--color-fog-gray)', borderBottom:'2px solid var(--color-linen)', textAlign:'left' }}>
+              {['APPLICANT','TARGET BOOTH & LOCATION','ORIGINAL BOOTH','APPLIED DATE','STATUS','ACTIONS'].map((h,i)=>(
+                <th key={h} style={{ padding:'10px 12px', fontSize:'11px', color:'var(--color-slate)', textTransform:'uppercase', letterSpacing:'.04em', textAlign:i===5?'right':'left', whiteSpace:'nowrap' }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              Array.from({length:5}).map((_,i)=>(
+                <tr key={i} style={{ borderBottom:'1px solid var(--color-linen)' }}>
+                  {[70,55,45,40,30,80].map((w,j)=>(
+                    <td key={j} style={{ padding:'14px 12px' }}>
+                      <div style={{ height:'13px', borderRadius:'4px', background:'var(--color-linen)', width:`${w}%` }}/>
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : apps.length===0 ? (
+              <tr><td colSpan={6} style={{ padding:'40px 20px', textAlign:'center', color:'var(--color-slate)' }}>
+                <div style={{ fontSize:'28px', marginBottom:'8px' }}>🏛</div>
+                <div style={{ fontWeight:600, marginBottom:'4px' }}>No requests found</div>
+                <div style={{ fontSize:'12px' }}>{hasFilter?'Try adjusting filters.':'Booth President requests appear here.'}</div>
+              </td></tr>
+            ) : apps.map(app=>{
+              const badge=BADGE[app.status]||BADGE.Pending
+              const dt=new Date(app.appliedAt).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true})
+              return (
+                <tr key={app._id} style={{ borderBottom:'1px solid var(--color-linen)', transition:'background .15s' }}
+                  onMouseEnter={e=>e.currentTarget.style.background='var(--color-fog-gray)'}
+                  onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                  <td style={{ padding:'12px' }}>
+                    <div style={{ fontWeight:700, color:'var(--color-midnight-ink)', fontSize:'14px' }}>{app.voterName} -</div>
+                    <div style={{ fontSize:'11px', color:'var(--color-slate)', fontFamily:'monospace', marginTop:'3px', display:'flex', gap:'8px' }}>
+                      <span>{app.epicNo}</span><span>{app.mobile}</span>
+                    </div>
+                  </td>
+                  <td style={{ padding:'12px' }}>
+                    <div style={{ fontWeight:700, color:'#f97316', fontSize:'13px' }}>Booth {app.targetBoothNo}</div>
+                    <div style={{ fontSize:'11px', color:'var(--color-slate)', marginTop:'2px' }}>{app.targetAssembly}</div>
+                    <div style={{ fontSize:'10px', color:'var(--color-ash-gray)' }}>{app.targetDistrict}</div>
+                  </td>
+                  <td style={{ padding:'12px', fontSize:'12px', color:'var(--color-slate)' }}>
+                    <div>Booth {app.originalBoothNo}</div>
+                    <div style={{ fontSize:'11px', marginTop:'2px' }}>{app.originalAssembly}</div>
+                  </td>
+                  <td style={{ padding:'12px', fontSize:'12px', color:'var(--color-slate)', whiteSpace:'nowrap' }}>{dt}</td>
+                  <td style={{ padding:'12px' }}>
+                    <span style={{ background:badge.bg, color:badge.fg, padding:'4px 10px', borderRadius:'20px', fontSize:'11px', fontWeight:700, whiteSpace:'nowrap' }}>{app.status}</span>
+                  </td>
+                  <td style={{ padding:'12px', textAlign:'right' }}>
+                    {app.status==='Pending' ? (
+                      <div style={{ display:'inline-flex', gap:'6px' }}>
+                        <button onClick={()=>doAction(app._id,'Approved')} className="bpa-approve">Approve</button>
+                        <button onClick={()=>doAction(app._id,'Declined')} className="bpa-reject">Reject</button>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize:'11px', color:'var(--color-slate)', fontStyle:'italic' }}>{app.reviewedBy||'Reviewed'}</span>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      {totalPages>1 && (
+        <div className="bpa-pagination">
+          <div style={{ fontSize:'13px', color:'var(--color-slate)' }}>Page <strong>{page}</strong> of <strong>{totalPages}</strong></div>
+          <div style={{ display:'flex', gap:'6px' }}>
+            <button onClick={()=>loadApps(page-1)} disabled={page<=1} className="btn btn-ghost" style={{ padding:'5px 14px', fontSize:'12px', opacity:page<=1?.4:1 }}>← Prev</button>
+            <button onClick={()=>loadApps(page+1)} disabled={page>=totalPages} className="btn btn-ghost" style={{ padding:'5px 14px', fontSize:'12px', opacity:page>=totalPages?.4:1 }}>Next →</button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 const LIMIT = 20;
 
@@ -523,15 +787,8 @@ const SuperAdminDashboard = () => {
 
   return (
     <div
-      className="theme-superadmin"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        width: '100%',
-        maxWidth: '100vw',
-        boxSizing: 'border-box',
-        minHeight: '100vh'
-      }}
+      className="theme-superadmin sa-root"
+      style={{ display: 'flex', flexDirection: 'column', width: '100%', boxSizing: 'border-box', minHeight: '100vh', overflow: 'visible' }}
     >
       <AdminMobileNav
         role="SUPER_ADMIN"
@@ -540,29 +797,126 @@ const SuperAdminDashboard = () => {
         onNavigate={navigateSubPage}
         onRefresh={fetchDashboardData}
       />
-      <div style={{ display: 'flex', gap: '24px', width: '100%', boxSizing: 'border-box', alignItems: 'flex-start' }}>
+
+      {/* ── Responsive styles for all devices ── */}
       <style>{`
+        /* Scrollbars */
         .superadmin-scroll { scrollbar-width: thin; scrollbar-color: #3b2e5a #0d0a17; scroll-behavior: smooth; }
-        .superadmin-scroll::-webkit-scrollbar { width: 8px; }
+        .superadmin-scroll::-webkit-scrollbar { width: 6px; }
         .superadmin-scroll::-webkit-scrollbar-track { background: #0d0a17; border-radius: 8px; }
-        .superadmin-scroll::-webkit-scrollbar-thumb { background: #3b2e5a; border-radius: 8px; border: 2px solid #0d0a17; }
-        .superadmin-scroll::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
+        .superadmin-scroll::-webkit-scrollbar-thumb { background: #3b2e5a; border-radius: 8px; }
+
+        /* ── Layout shell ── */
+        .sa-body { display: flex; gap: 0; width: 100%; box-sizing: border-box; align-items: flex-start; overflow: visible; }
+        .sa-sidebar { width: 270px; min-width: 270px; flex-shrink: 0; position: sticky; top: 10px; max-height: calc(100vh - 20px); overflow-y: auto; }
+        .sa-main { flex: 1; min-width: 0; padding: 20px 20px 40px 20px; overflow: visible; box-sizing: border-box; }
+
+        /* ── Stat grid ── */
+        .sa-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; width: 100%; }
+
+        /* ── Scheme grid ── */
+        .sa-scheme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; width: 100%; }
+        .sa-scheme-card { border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform .2s, box-shadow .2s; }
+        .sa-scheme-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(167,139,250,.3); }
+        .sa-scheme-card img { width: 100%; height: 96px; object-fit: cover; display: block; }
+        .sa-scheme-card-body { padding: 10px 12px; }
+
+        /* ── Filter bar ── */
+        .sa-filter-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: var(--color-fog-gray); padding: 12px; border-radius: 10px; border: 1px solid var(--color-linen); margin-bottom: 16px; }
+        .sa-filter-bar select, .sa-filter-bar input { font-size: 16px; }
+
+        /* ── Table wrapper ── */
+        .sa-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; }
+        .sa-table-wrap table { min-width: 600px; width: 100%; border-collapse: collapse; }
+
+        /* ── AI Console ── */
+        .sa-ai-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+        .sa-ai-prompt-btn { padding: 7px 12px; font-size: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; min-height: 36px; white-space: nowrap; }
+        .sa-ai-form { display: flex; gap: 10px; }
+        .sa-ai-input { flex: 1; background: #110d1e; border: 1px solid #2b2242; border-radius: 8px; padding: 12px 14px; color: #f5f3ff; font-size: 16px; outline: none; font-weight: 500; min-width: 0; }
+        .sa-ai-submit { background: linear-gradient(135deg,#7c3aed,#a78bfa); color: #fff; font-weight: 700; padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 6px; min-height: 44px; white-space: nowrap; flex-shrink: 0; }
+        /* Scheme card image */
+        .sa-scheme-img { width: 100%; height: 96px; object-fit: cover; display: block; }
+
+        /* ── Tabs ── */
+        .tabs-header { display: flex; gap: 6px; background: var(--color-fog-gray); padding: 6px; border-radius: 10px; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+        .tabs-header::-webkit-scrollbar { display: none; }
+
+        /* ═══════════════════════════════════════
+           RESPONSIVE BREAKPOINTS
+           ═══════════════════════════════════════ */
+
+        /* iPad Pro (1024-1366px): 3-col stats, 3-col schemes */
+        @media (max-width: 1366px) and (min-width: 1024px) {
+          .sa-stat-grid { grid-template-columns: repeat(2, 1fr); }
+          .sa-scheme-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        /* Tablet / iPad (768-1023px): sidebar hidden, 2-col stats, 2-col schemes */
+        @media (max-width: 1023px) {
+          .sa-sidebar { display: none !important; }
+          .sa-body { flex-direction: column !important; }
+          .sa-main { padding: 14px 14px calc(24px + env(safe-area-inset-bottom,0px)) 14px !important; overflow: visible !important; height: auto !important; }
+          .sa-stat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+          .sa-scheme-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+          .sa-scheme-card img, .sa-scheme-img { height: 72px !important; }
+          .sa-ai-btns { overflow-x: auto !important; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch !important; scrollbar-width: none !important; padding-bottom: 4px; }
+          .sa-ai-btns::-webkit-scrollbar { display: none; }
+          .sa-ai-form { flex-direction: column !important; gap: 8px !important; }
+          .sa-ai-submit { width: 100% !important; justify-content: center !important; }
+          .sa-filter-bar { flex-direction: column !important; }
+          .sa-filter-bar > * { width: 100% !important; min-width: unset !important; flex: unset !important; }
+        }
+
+        /* Large phone (481-767px): 2-col stats, 2-col schemes */
+        @media (max-width: 767px) {
+          .sa-main { padding: 10px 12px calc(20px + env(safe-area-inset-bottom,0px)) 12px !important; }
+          .sa-stat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+          .sa-scheme-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+          .sa-scheme-card img, .sa-scheme-img { height: 60px !important; }
+          .sa-ai-prompt-btn { font-size: 11px !important; padding: 6px 10px !important; }
+          .stat-number { font-size: clamp(1.1rem, 5vw, 1.6rem) !important; }
+          .stat-card { padding: 12px 14px !important; }
+          .campsite-card, .admin-card { padding: 14px 12px !important; border-radius: 10px !important; }
+          h3 { font-size: clamp(14px, 4vw, 18px) !important; }
+        }
+
+        /* Small phone / iPhone SE (≤480px): 2-col stats, 2-col schemes */
+        @media (max-width: 480px) {
+          .sa-main { padding: 8px 10px calc(16px + env(safe-area-inset-bottom,0px)) 10px !important; }
+          .sa-stat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+          .sa-scheme-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
+          .sa-scheme-card img, .sa-scheme-img { height: 52px !important; }
+          .stat-card { padding: 10px 12px !important; }
+        }
+
+        /* Fold / very narrow (≤360px) */
+        @media (max-width: 360px) {
+          .sa-stat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
+          .sa-scheme-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 5px !important; }
+          .stat-number { font-size: 1rem !important; }
+        }
+
+        /* iPhone SE (320px) — still 2-col */
+        @media (max-width: 320px) {
+          .sa-stat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 5px !important; }
+          .stat-card { padding: 8px 10px !important; }
+        }
       `}</style>
+
+      <div className="sa-body">
 
       {/* ══════════════════════════════════════════ */}
       {/* LEFT SIDEBAR NAVIGATION MENU               */}
       {/* ══════════════════════════════════════════ */}
       <aside
+        className="sa-sidebar"
         style={{
-          width: '270px',
-          minWidth: '270px',
           background: 'var(--theme-bg-card)',
           border: '1px solid var(--theme-border)',
           borderRadius: '16px',
           padding: '20px 14px',
           boxSizing: 'border-box',
-          position: 'sticky',
-          top: '10px',
           display: 'flex',
           flexDirection: 'column',
           gap: '6px',
@@ -648,6 +1002,18 @@ const SuperAdminDashboard = () => {
         </button>
 
         <div style={{ fontSize: '10.5px', fontWeight: '800', color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '12px 10px 2px 10px' }}>
+          Field Operations
+        </div>
+
+        <button
+          onClick={() => navigateSubPage('booth_president')}
+          className={`sidebar-nav-btn ${subPage === 'booth_president' ? 'active' : ''}`}
+        >
+          <Award size={18} />
+          <span>Booth President Requests</span>
+        </button>
+
+        <div style={{ fontSize: '10.5px', fontWeight: '800', color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '12px 10px 2px 10px' }}>
           Exports & Reports
         </div>
 
@@ -674,7 +1040,7 @@ const SuperAdminDashboard = () => {
       {/* ══════════════════════════════════════════ */}
       {/* RIGHT MAIN CONTENT AREA                   */}
       {/* ══════════════════════════════════════════ */}
-      <main className="superadmin-scroll" style={{ flex: 1, minWidth: 0, paddingRight: '6px', height: 'calc(100vh - 130px)', overflowY: 'auto' }}>
+      <main className="superadmin-scroll sa-main">
 
       {/* ══════════════════════════════════════════ */}
       {/* PAGE 1: OVERVIEW DASHBOARD                */}
@@ -806,7 +1172,7 @@ const SuperAdminDashboard = () => {
             </div>
 
             {/* ── 4 Stat Cards ── */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px', width: '100%' }}>
+            <div className="sa-stat-grid">
 
               {/* Card 1: Total Voters in Electoral Roll (Read DB) */}
               <div className="stat-card">
@@ -895,7 +1261,7 @@ const SuperAdminDashboard = () => {
                 </h3>
                 <span style={{ fontSize: '12px', color: 'var(--color-slate)' }}>Click any scheme to filter applications</span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px', width: '100%' }}>
+              <div className="sa-scheme-grid">
                 {statsData.schemePopularity?.map((item) => {
                   const schemeImg = getSchemeBgImage(item._id);
                   return (
@@ -932,7 +1298,8 @@ const SuperAdminDashboard = () => {
                         alt={formatSchemeName(item._id)}
                         loading="lazy"
                         onError={(e) => { e.target.style.display = 'none'; }}
-                        style={{ width: '100%', height: '96px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px', display: 'block', border: '1px solid var(--color-linen)' }}
+                        className="sa-scheme-img"
+                        style={{ width: '100%', height: '96px', objectFit: 'cover', borderRadius: '8px 8px 0 0', marginBottom: 0, display: 'block' }}
                       />
                     )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1577,9 +1944,14 @@ const SuperAdminDashboard = () => {
           initialScheme={schemeFilter}
         />
       )}
+
+      {/* PAGE 8: BOOTH PRESIDENT REQUESTS */}
+      {subPage === 'booth_president' && (
+        <BoothPresidentAdminPanel />
+      )}
       </main>
     </div>
-  </div>
+    </div>
   );
 };
 

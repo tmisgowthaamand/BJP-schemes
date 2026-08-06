@@ -4,7 +4,7 @@ import API from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import StatusBadge from '../../components/StatusBadge';
 import VoterSchemesView from '../../components/VoterSchemesView';
-import MemberProfileTimelineView, { formatSchemeName } from '../../components/MemberProfileTimelineView';
+import MemberProfileTimelineView, { formatSchemeName, getSchemeBgImage } from '../../components/MemberProfileTimelineView';
 import ReportsView from '../../components/ReportsView';
 import LiveTrackingPanel from '../../components/LiveTrackingPanel';
 import { BJP_SCHEMES } from '../../utils/constants';
@@ -269,29 +269,89 @@ const DistrictAdminDashboard = () => {
         onNavigate={navigateSubPage}
         onRefresh={fetchDashboardData}
       />
-      <div style={{ display: 'flex', gap: '24px', width: '100%', boxSizing: 'border-box', alignItems: 'flex-start' }}>
       <style>{`
         .districtadmin-scroll { scrollbar-width: thin; scrollbar-color: #3b2e5a #0d0a17; scroll-behavior: smooth; }
         .districtadmin-scroll::-webkit-scrollbar { width: 8px; }
         .districtadmin-scroll::-webkit-scrollbar-track { background: #0d0a17; border-radius: 8px; }
         .districtadmin-scroll::-webkit-scrollbar-thumb { background: #3b2e5a; border-radius: 8px; border: 2px solid #0d0a17; }
         .districtadmin-scroll::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
+
+        /* Layout */
+        .da-body { display:flex; gap:0; width:100%; box-sizing:border-box; align-items:flex-start; overflow:visible; }
+        .da-sidebar { width:270px; min-width:270px; flex-shrink:0; position:sticky; top:10px; max-height:calc(100vh - 20px); overflow-y:auto; }
+        .da-main { flex:1; min-width:0; padding:20px; overflow:visible; box-sizing:border-box; }
+        /* Stat grid */
+        .da-stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px; width:100%; }
+        /* Scheme grid */
+        .da-scheme-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; width:100%; }
+        /* Scheme image */
+        .da-scheme-img { width:100%; height:96px; object-fit:cover; display:block; }
+        /* Filter bar */
+        .da-filter-bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; background:var(--color-fog-gray); padding:12px; border-radius:10px; border:1px solid var(--color-linen); margin-bottom:16px; }
+        .da-filter-bar select, .da-filter-bar input { font-size:16px; }
+        /* Table */
+        .da-table-wrap { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; border-radius:10px; }
+        .da-table-wrap table { min-width:580px; width:100%; border-collapse:collapse; }
+
+        /* iPad Pro (1024-1366px) */
+        @media (max-width:1366px) and (min-width:1024px) {
+          .da-stat-grid { grid-template-columns:repeat(2,1fr); }
+          .da-scheme-grid { grid-template-columns:repeat(3,1fr); }
+        }
+        /* Tablet / iPad (<=1023px) */
+        @media (max-width:1023px) {
+          .da-sidebar { display:none !important; }
+          .da-body { flex-direction:column !important; }
+          .da-main { padding:14px 14px calc(24px + env(safe-area-inset-bottom,0px)) 14px !important; overflow:visible !important; height:auto !important; }
+          .da-stat-grid { grid-template-columns:repeat(2,1fr) !important; gap:12px !important; }
+          .da-scheme-grid { grid-template-columns:repeat(2,1fr) !important; gap:10px !important; }
+          .da-scheme-img { height:72px !important; }
+          .da-filter-bar { flex-direction:column !important; }
+          .da-filter-bar>* { width:100% !important; min-width:unset !important; flex:unset !important; }
+        }
+        /* Large phone (481-767px) */
+        @media (max-width:767px) {
+          .da-main { padding:10px 12px calc(20px + env(safe-area-inset-bottom,0px)) 12px !important; }
+          .da-stat-grid { grid-template-columns:repeat(2,1fr) !important; gap:10px !important; }
+          .da-scheme-grid { grid-template-columns:repeat(2,1fr) !important; gap:8px !important; }
+          .da-scheme-img { height:60px !important; }
+          .stat-number { font-size:clamp(1.1rem,5vw,1.6rem) !important; }
+          .stat-card { padding:12px 14px !important; }
+          .campsite-card,.admin-card { padding:14px 12px !important; border-radius:10px !important; }
+        }
+        /* Small phone (<=480px) */
+        @media (max-width:480px) {
+          .da-main { padding:8px 10px calc(16px + env(safe-area-inset-bottom,0px)) 10px !important; }
+          .da-stat-grid { grid-template-columns:repeat(2,1fr) !important; gap:8px !important; }
+          .da-scheme-grid { grid-template-columns:repeat(2,1fr) !important; gap:6px !important; }
+          .da-scheme-img { height:52px !important; }
+          .stat-card { padding:10px 12px !important; }
+        }
+        /* Fold / narrow (<=360px) */
+        @media (max-width:360px) {
+          .da-stat-grid { grid-template-columns:repeat(2,1fr) !important; gap:6px !important; }
+          .da-scheme-grid { grid-template-columns:repeat(2,1fr) !important; }
+          .stat-number { font-size:1rem !important; }
+        }
+        /* iPhone SE (<=320px) */
+        @media (max-width:320px) {
+          .da-main { padding:6px 8px calc(14px + env(safe-area-inset-bottom,0px)) 8px !important; }
+          .stat-card { padding:8px 10px !important; }
+        }
       `}</style>
+      <div className="da-body">
 
       {/* ══════════════════════════════════════════ */}
       {/* LEFT SIDEBAR NAVIGATION MENU               */}
       {/* ══════════════════════════════════════════ */}
       <aside
+        className="da-sidebar"
         style={{
-          width: '270px',
-          minWidth: '270px',
           background: 'var(--theme-bg-card)',
           border: '1px solid var(--theme-border)',
           borderRadius: '16px',
           padding: '20px 14px',
           boxSizing: 'border-box',
-          position: 'sticky',
-          top: '10px',
           display: 'flex',
           flexDirection: 'column',
           gap: '6px',
@@ -387,7 +447,7 @@ const DistrictAdminDashboard = () => {
       {/* ══════════════════════════════════════════ */}
       {/* RIGHT MAIN CONTENT AREA                   */}
       {/* ══════════════════════════════════════════ */}
-      <main className="districtadmin-scroll" style={{ flex: 1, minWidth: 0, paddingRight: '6px', height: 'calc(100vh - 130px)', overflowY: 'auto' }}>
+      <main className="districtadmin-scroll da-main" style={{ flex: 1, minWidth: 0, paddingRight: '6px' }}>
 
       {/* PAGE 1: OVERVIEW DASHBOARD */}
       {subPage === 'dashboard' && (
@@ -401,7 +461,7 @@ const DistrictAdminDashboard = () => {
         ) : statsData ? (
         <div style={{ width: '100%', boxSizing: 'border-box' }}>
           <LiveTrackingPanel />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px', width: '100%' }}>
+          <div className="da-stat-grid" style={{ display: 'grid', gap: '16px', marginBottom: '24px', width: '100%' }}>
             {/* Stat 1: Total Voters in Electoral Roll (from READ DB) */}
             <div className="stat-card">
               <div className="stat-icon" style={{ background: '#eff6ff', color: '#2563eb' }}>
@@ -472,8 +532,10 @@ const DistrictAdminDashboard = () => {
               </h3>
               <span style={{ fontSize: '12px', color: 'var(--color-slate)' }}>Click any scheme to filter applications</span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '12px', width: '100%' }}>
-              {statsData.schemePopularity?.map((item) => (
+            <div className="da-scheme-grid" style={{ display: 'grid', gap: '12px', width: '100%' }}>
+              {statsData.schemePopularity?.map((item) => {
+                const schemeImg = getSchemeBgImage(item._id);
+                return (
                 <div
                   key={item._id}
                   onClick={() => {
@@ -482,8 +544,9 @@ const DistrictAdminDashboard = () => {
                     navigateSubPage('applications');
                   }}
                   style={{
-                    padding: '14px', background: '#1b162b', borderRadius: '10px',
+                    background: '#1b162b', borderRadius: '10px',
                     border: '1px solid var(--color-linen)', cursor: 'pointer',
+                    overflow: 'hidden',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.2)', transition: 'all 0.2s ease'
                   }}
                   onMouseEnter={e => {
@@ -497,16 +560,29 @@ const DistrictAdminDashboard = () => {
                     e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--color-midnight-ink)' }}>{formatSchemeName(item._id)}</div>
-                    <span style={{ fontSize: '11px', color: 'var(--color-saffron)', fontWeight: '600' }}>View →</span>
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-slate)', marginTop: '2px' }}>{item.cluster}</div>
-                  <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--color-midnight-ink)', marginTop: '8px' }}>
-                    {item.count} <span style={{ fontSize: '12px', color: 'var(--color-slate)', fontWeight: 'normal' }}>applications</span>
+                  {schemeImg && (
+                    <img
+                      src={schemeImg}
+                      alt={formatSchemeName(item._id)}
+                      loading="lazy"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                      className="da-scheme-img"
+                      style={{ width: '100%', height: '96px', objectFit: 'cover', display: 'block' }}
+                    />
+                  )}
+                  <div style={{ padding: '10px 12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--color-midnight-ink)' }}>{formatSchemeName(item._id)}</div>
+                      <span style={{ fontSize: '11px', color: 'var(--color-saffron)', fontWeight: '600' }}>View →</span>
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-slate)', marginTop: '2px' }}>{item.cluster}</div>
+                    <div style={{ fontSize: '18px', fontWeight: '700', color: 'var(--color-midnight-ink)', marginTop: '6px' }}>
+                      {item.count} <span style={{ fontSize: '12px', color: 'var(--color-slate)', fontWeight: 'normal' }}>applications</span>
+                    </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -564,7 +640,7 @@ const DistrictAdminDashboard = () => {
             </div>
 
             {/* ─── Filters Row 2: Status + Assembly + Booth + Clear ─── */}
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '16px', width: '100%', alignItems: 'center' }}>
+            <div className="da-filter-bar" style={{ display: 'flex', gap: '10px', marginBottom: '16px', width: '100%', alignItems: 'center' }}>
               {/* Status */}
               <select
                 value={statusFilter}
@@ -658,7 +734,7 @@ const DistrictAdminDashboard = () => {
             </div>
 
             {/* ─── Table ─── */}
-            <div style={{ width: '100%', overflowX: 'auto' }}>
+            <div className="da-table-wrap" style={{ width: '100%', overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid var(--color-linen)', color: 'var(--color-slate)', textAlign: 'left', background: 'var(--color-fog-gray)' }}>
@@ -799,7 +875,7 @@ const DistrictAdminDashboard = () => {
           <h3 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--color-midnight-ink)', marginBottom: '16px' }}>
             Assembly Constituencies in {admin.district}
           </h3>
-          <div style={{ width: '100%', overflowX: 'auto' }}>
+          <div className="da-table-wrap" style={{ width: '100%', overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--color-linen)', color: 'var(--color-slate)', textAlign: 'left' }}>
@@ -839,7 +915,7 @@ const DistrictAdminDashboard = () => {
           <h3 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--color-midnight-ink)', marginBottom: '16px' }}>
             Polling Booths Breakdown in {admin.district}
           </h3>
-          <div style={{ width: '100%', overflowX: 'auto' }}>
+          <div className="da-table-wrap" style={{ width: '100%', overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--color-linen)', color: 'var(--color-slate)', textAlign: 'left' }}>

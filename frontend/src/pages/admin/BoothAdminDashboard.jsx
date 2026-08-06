@@ -274,7 +274,6 @@ const BoothAdminDashboard = () => {
         onNavigate={navigateSubPage}
         onRefresh={fetchDashboardData}
       />
-      <div style={{ display: 'flex', gap: '24px', width: '100%', boxSizing: 'border-box', alignItems: 'flex-start' }}>
       <style>{`
         .theme-boothadmin {
           --bg-primary: #0a0a0f;
@@ -457,22 +456,83 @@ const BoothAdminDashboard = () => {
         .form-control::placeholder {
           color: var(--text-muted);
         }
+
+        /* Layout */
+        .ba-body { display:flex; gap:0; width:100%; box-sizing:border-box; align-items:flex-start; overflow:visible; }
+        .ba-sidebar { width:270px; min-width:270px; flex-shrink:0; position:sticky; top:10px; max-height:calc(100vh - 20px); overflow-y:auto; }
+        .ba-main { flex:1; min-width:0; padding:20px; overflow:visible; box-sizing:border-box; }
+        /* Stat grid */
+        .ba-stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px; width:100%; }
+        /* Scheme grid */
+        .ba-scheme-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; width:100%; }
+        /* Scheme image */
+        .ba-scheme-img { width:100%; height:96px; object-fit:cover; display:block; }
+        /* Filter bar */
+        .ba-filter-bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; background:var(--bg-secondary); padding:12px; border-radius:10px; border:1px solid var(--border-color); margin-bottom:16px; }
+        .ba-filter-bar select, .ba-filter-bar input { font-size:16px; }
+        /* Table */
+        .ba-table-wrap { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; border-radius:10px; }
+        .ba-table-wrap table { min-width:580px; width:100%; border-collapse:collapse; }
+
+        /* iPad Pro (1024-1366px) */
+        @media (max-width:1366px) and (min-width:1024px) {
+          .ba-stat-grid { grid-template-columns:repeat(2,1fr); }
+          .ba-scheme-grid { grid-template-columns:repeat(3,1fr); }
+        }
+        /* Tablet / iPad (<=1023px) */
+        @media (max-width:1023px) {
+          .ba-sidebar { display:none !important; }
+          .ba-body { flex-direction:column !important; }
+          .ba-main { padding:14px 14px calc(24px + env(safe-area-inset-bottom,0px)) 14px !important; overflow:visible !important; height:auto !important; }
+          .ba-stat-grid { grid-template-columns:repeat(2,1fr) !important; gap:12px !important; }
+          .ba-scheme-grid { grid-template-columns:repeat(2,1fr) !important; gap:10px !important; }
+          .ba-scheme-img { height:72px !important; }
+          .ba-filter-bar { flex-direction:column !important; }
+          .ba-filter-bar>* { width:100% !important; min-width:unset !important; flex:unset !important; }
+        }
+        /* Large phone (481-767px) */
+        @media (max-width:767px) {
+          .ba-main { padding:10px 12px calc(20px + env(safe-area-inset-bottom,0px)) 12px !important; }
+          .ba-stat-grid { grid-template-columns:repeat(2,1fr) !important; gap:10px !important; }
+          .ba-scheme-grid { grid-template-columns:repeat(2,1fr) !important; gap:8px !important; }
+          .ba-scheme-img { height:60px !important; }
+          .stat-number { font-size:clamp(1.1rem,5vw,1.6rem) !important; }
+          .stat-card { padding:12px 14px !important; }
+          .campsite-card,.admin-card { padding:14px 12px !important; border-radius:10px !important; }
+        }
+        /* Small phone (<=480px) */
+        @media (max-width:480px) {
+          .ba-main { padding:8px 10px calc(16px + env(safe-area-inset-bottom,0px)) 10px !important; }
+          .ba-stat-grid { grid-template-columns:repeat(2,1fr) !important; gap:8px !important; }
+          .ba-scheme-grid { grid-template-columns:repeat(2,1fr) !important; gap:6px !important; }
+          .ba-scheme-img { height:52px !important; }
+          .stat-card { padding:10px 12px !important; }
+        }
+        /* Fold / narrow (<=360px) */
+        @media (max-width:360px) {
+          .ba-stat-grid { grid-template-columns:repeat(2,1fr) !important; gap:6px !important; }
+          .ba-scheme-grid { grid-template-columns:repeat(2,1fr) !important; }
+          .stat-number { font-size:1rem !important; }
+        }
+        /* iPhone SE (<=320px) */
+        @media (max-width:320px) {
+          .ba-main { padding:6px 8px calc(14px + env(safe-area-inset-bottom,0px)) 8px !important; }
+          .stat-card { padding:8px 10px !important; }
+        }
       `}</style>
+      <div className="ba-body">
 
       {/* ══════════════════════════════════════════ */}
       {/* LEFT SIDEBAR NAVIGATION MENU               */}
       {/* ══════════════════════════════════════════ */}
       <aside
+        className="ba-sidebar"
         style={{
-          width: '270px',
-          minWidth: '270px',
           background: 'var(--bg-card)',
           border: '1px solid var(--border-color)',
           borderRadius: '16px',
           padding: '20px 14px',
           boxSizing: 'border-box',
-          position: 'sticky',
-          top: '10px',
           display: 'flex',
           flexDirection: 'column',
           gap: '6px',
@@ -561,7 +621,7 @@ const BoothAdminDashboard = () => {
       {/* ══════════════════════════════════════════ */}
       {/* RIGHT MAIN CONTENT AREA                   */}
       {/* ══════════════════════════════════════════ */}
-      <main className="boothadmin-scroll" style={{ flex: 1, minWidth: 0, paddingRight: '6px', maxHeight: 'calc(100vh - 80px)', overflowY: 'auto' }}>
+      <main className="boothadmin-scroll ba-main" style={{ flex: 1, minWidth: 0, paddingRight: '6px' }}>
 
       {/* ══════════════════════════════════════════ */}
       {/* PAGE 1: OVERVIEW DASHBOARD                */}
@@ -576,7 +636,7 @@ const BoothAdminDashboard = () => {
           <div style={{ width: '100%', boxSizing: 'border-box' }}>
             <LiveTrackingPanel />
             {/* ── 4 Stat Cards ── */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px', width: '100%' }}>
+            <div className="ba-stat-grid" style={{ display: 'grid', gap: '16px', marginBottom: '24px', width: '100%' }}>
 
               {/* Card 1: Total Voters in Electoral Roll (Read DB) */}
               <div className="stat-card">
@@ -658,7 +718,7 @@ const BoothAdminDashboard = () => {
                 </h3>
                 <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Click any scheme to filter applications</span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px', width: '100%' }}>
+              <div className="ba-scheme-grid" style={{ display: 'grid', gap: '16px', width: '100%' }}>
                 {statsData.schemePopularity?.map((item) => {
                   const schemeImage = CLOUDINARY_SCHEME_IMAGES[item._id] || CLOUDINARY_SCHEME_IMAGES[formatSchemeName(item._id)];
                   
@@ -855,7 +915,7 @@ const BoothAdminDashboard = () => {
             </div>
 
             {/* ── Filter Row 2: Status + Scheme + Clear ── */}
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '16px', width: '100%', alignItems: 'center' }}>
+            <div className="ba-filter-bar" style={{ display: 'flex', gap: '10px', marginBottom: '16px', width: '100%', alignItems: 'center' }}>
               <select 
                 value={statusFilter} 
                 onChange={(e) => setStatusFilter(e.target.value)} 
@@ -900,7 +960,7 @@ const BoothAdminDashboard = () => {
             </div>
 
             {/* ── Table ── */}
-            <div style={{ width: '100%', overflowX: 'auto' }}>
+            <div className="ba-table-wrap" style={{ width: '100%', overflowX: 'auto' }}>
               <table className="admin-table" style={{ width: '100%' }}>
                 <thead>
                   <tr>
@@ -1028,7 +1088,7 @@ const BoothAdminDashboard = () => {
           </div>
 
           {/* Stats Summary Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px', width: '100%' }}>
+          <div className="ba-stat-grid" style={{ display: 'grid', gap: '16px', marginBottom: '24px', width: '100%' }}>
             
             {/* Total Voters */}
             <div className="stat-card" style={{
@@ -1222,7 +1282,7 @@ const BoothAdminDashboard = () => {
                 </div>
               </div>
             ) : (
-              <div style={{ overflowX: 'auto', width: '100%' }}>
+              <div className="ba-table-wrap" style={{ overflowX: 'auto', width: '100%' }}>
                 <table className="admin-table" style={{ width: '100%' }}>
                   <thead>
                     <tr>
