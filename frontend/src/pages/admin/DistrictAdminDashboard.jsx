@@ -293,6 +293,17 @@ const DistrictAdminDashboard = () => {
         .da-table-wrap { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; border-radius:10px; }
         .da-table-wrap table { min-width:580px; width:100%; border-collapse:collapse; }
 
+        /* Mobile Application Cards */
+        .da-app-cards { display:none; flex-direction:column; gap:10px; width:100%; }
+        .da-app-card { background:var(--theme-bg-subcard,var(--color-fog-gray)); border:1px solid var(--theme-border,var(--color-linen)); border-radius:12px; padding:14px; }
+        .da-app-card-header { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:8px; }
+        .da-app-card-name { font-size:15px; font-weight:700; color:var(--theme-text-main,var(--color-midnight-ink)); }
+        .da-app-card-epic { font-size:11px; font-family:monospace; color:var(--theme-text-muted,var(--color-slate)); margin-top:2px; }
+        .da-app-card-meta { font-size:12px; color:var(--theme-text-muted,var(--color-slate)); margin-bottom:6px; }
+        .da-app-card-schemes { font-size:11px; color:var(--color-slate); margin-bottom:6px; line-height:1.4; }
+        .da-app-card-actions { display:flex; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid var(--theme-border,var(--color-linen)); }
+        .da-app-card-actions .btn { flex:1; justify-content:center; min-height:44px; font-size:13px; }
+
         /* iPad Pro (1024-1366px) */
         @media (max-width:1366px) and (min-width:1024px) {
           .da-stat-grid { grid-template-columns:repeat(2,1fr); }
@@ -308,6 +319,8 @@ const DistrictAdminDashboard = () => {
           .da-scheme-img { height:72px !important; }
           .da-filter-bar { flex-direction:column !important; }
           .da-filter-bar>* { width:100% !important; min-width:unset !important; flex:unset !important; }
+          .da-table-wrap { display:none !important; }
+          .da-app-cards { display:flex !important; }
         }
         /* Large phone (481-767px) */
         @media (max-width:767px) {
@@ -813,6 +826,56 @@ const DistrictAdminDashboard = () => {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* ─── Mobile Application Cards (shown ≤1023px) ─── */}
+            <div className="da-app-cards">
+              {loadingVoters ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="da-app-card">
+                    <div style={{ height: '14px', borderRadius: '6px', background: 'var(--color-linen)', marginBottom: '8px', width: '60%' }} />
+                    <div style={{ height: '11px', borderRadius: '4px', background: 'var(--color-linen)', marginBottom: '6px', width: '40%' }} />
+                    <div style={{ height: '11px', borderRadius: '4px', background: 'var(--color-linen)', width: '80%' }} />
+                  </div>
+                ))
+              ) : voters.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--color-slate)' }}>
+                  <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔍</div>
+                  <div>No applications found for {admin.district}.</div>
+                </div>
+              ) : (
+                voters.map((voter) => (
+                  <div className="da-app-card" key={voter.epicNo}>
+                    <div className="da-app-card-header">
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="da-app-card-name">{voter.voterName}</div>
+                        <div className="da-app-card-epic">{voter.epicNo}</div>
+                      </div>
+                      <StatusBadge status={getVoterDisplayStatus(voter.applications)} />
+                    </div>
+                    <div className="da-app-card-meta">
+                      📱 {voter.mobile} &nbsp;·&nbsp; 🗳 Booth {voter.boothNo}
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-slate)', marginBottom: '6px' }}>
+                      {voter.assemblyName}
+                    </div>
+                    <div className="da-app-card-schemes">
+                      <span className="tag-pill tag-sunlit" style={{ fontWeight: '700', fontSize: '11px', marginRight: '6px' }}>
+                        <Award size={11} /> {voter.applications.length} Scheme{voter.applications.length > 1 ? 's' : ''}
+                      </span>
+                      {voter.applications.map(a => formatSchemeName(a.schemeName, a.schemeId)).join(', ')}
+                    </div>
+                    <div className="da-app-card-actions">
+                      <button onClick={() => setSelectedVoterTimeline(voter)} className="btn btn-ghost">
+                        <Eye size={14} /> View
+                      </button>
+                      <button onClick={() => handleDirectCallVoter(voter)} className="btn btn-ghost">
+                        <PhoneCall size={14} /> Call
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             {/* ─── Pagination Controls ─── */}

@@ -829,6 +829,17 @@ const SuperAdminDashboard = () => {
         .sa-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; }
         .sa-table-wrap table { min-width: 600px; width: 100%; border-collapse: collapse; }
 
+        /* ── Mobile Application Cards ── */
+        .sa-app-cards { display:none; flex-direction:column; gap:10px; width:100%; }
+        .sa-app-card { background:var(--theme-bg-subcard,var(--color-fog-gray)); border:1px solid var(--theme-border,var(--color-linen)); border-radius:12px; padding:14px; }
+        .sa-app-card-header { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:8px; }
+        .sa-app-card-name { font-size:15px; font-weight:700; color:var(--theme-text-main,var(--color-midnight-ink)); }
+        .sa-app-card-epic { font-size:11px; font-family:monospace; color:var(--theme-text-muted,var(--color-slate)); margin-top:2px; }
+        .sa-app-card-meta { font-size:12px; color:var(--theme-text-muted,var(--color-slate)); margin-bottom:6px; }
+        .sa-app-card-schemes { font-size:11px; color:var(--color-slate); margin-bottom:6px; line-height:1.4; }
+        .sa-app-card-actions { display:flex; gap:8px; margin-top:10px; padding-top:10px; border-top:1px solid var(--theme-border,var(--color-linen)); }
+        .sa-app-card-actions .btn { flex:1; justify-content:center; min-height:44px; font-size:13px; }
+
         /* ── AI Console ── */
         .sa-ai-btns { display: flex; gap: 6px; flex-wrap: wrap; }
         .sa-ai-prompt-btn { padding: 7px 12px; font-size: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; min-height: 36px; white-space: nowrap; }
@@ -866,6 +877,8 @@ const SuperAdminDashboard = () => {
           .sa-ai-submit { width: 100% !important; justify-content: center !important; }
           .sa-filter-bar { flex-direction: column !important; }
           .sa-filter-bar > * { width: 100% !important; min-width: unset !important; flex: unset !important; }
+          .sa-table-wrap { display: none !important; }
+          .sa-app-cards { display: flex !important; }
         }
 
         /* Large phone (481-767px): 2-col stats, 2-col schemes */
@@ -1372,7 +1385,7 @@ const SuperAdminDashboard = () => {
             </div>
 
             {/* ── Filters Row 2: District + Assembly + Booth + Status + Clear All ── */}
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '18px', width: '100%', alignItems: 'center', background: 'var(--color-fog-gray)', padding: '12px', borderRadius: '10px', border: '1px solid var(--color-linen)' }}>
+            <div className="sa-filter-bar" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '18px', width: '100%', alignItems: 'center', background: 'var(--color-fog-gray)', padding: '12px', borderRadius: '10px', border: '1px solid var(--color-linen)' }}>
 
               {/* District Filter */}
               <select
@@ -1479,7 +1492,7 @@ const SuperAdminDashboard = () => {
             </div>
 
             {/* ── Table ── */}
-            <div style={{ width: '100%', overflowX: 'auto' }}>
+            <div className="sa-table-wrap" style={{ width: '100%', overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid var(--color-linen)', color: 'var(--color-slate)', textAlign: 'left', background: 'var(--color-fog-gray)' }}>
@@ -1558,6 +1571,56 @@ const SuperAdminDashboard = () => {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* ── Mobile Application Cards (shown ≤1023px, table hidden) ── */}
+            <div className="sa-app-cards">
+              {loadingVoters ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="sa-app-card">
+                    <div style={{ height: '14px', borderRadius: '6px', background: 'var(--color-linen)', marginBottom: '8px', width: '60%' }} />
+                    <div style={{ height: '11px', borderRadius: '4px', background: 'var(--color-linen)', marginBottom: '6px', width: '40%' }} />
+                    <div style={{ height: '11px', borderRadius: '4px', background: 'var(--color-linen)', width: '80%' }} />
+                  </div>
+                ))
+              ) : voters.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--color-slate)' }}>
+                  <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔍</div>
+                  <div>No member applications found matching criteria.</div>
+                </div>
+              ) : (
+                voters.map((voter) => (
+                  <div className="sa-app-card" key={voter.epicNo}>
+                    <div className="sa-app-card-header">
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="sa-app-card-name">{voter.voterName}</div>
+                        <div className="sa-app-card-epic">{voter.epicNo}</div>
+                      </div>
+                      <StatusBadge status={getVoterDisplayStatus(voter.applications)} />
+                    </div>
+                    <div className="sa-app-card-meta">
+                      📱 {voter.mobile} &nbsp;·&nbsp; 🗳 Booth {voter.boothNo}
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-slate)', marginBottom: '6px' }}>
+                      {voter.district} · {voter.assemblyName}
+                    </div>
+                    <div className="sa-app-card-schemes">
+                      <span className="tag-pill tag-sunlit" style={{ fontWeight: '700', fontSize: '11px', marginRight: '6px' }}>
+                        <Award size={11} /> {voter.applications.length} Scheme{voter.applications.length > 1 ? 's' : ''}
+                      </span>
+                      {voter.applications.map(a => formatSchemeName(a.schemeName, a.schemeId)).join(', ')}
+                    </div>
+                    <div className="sa-app-card-actions">
+                      <button onClick={() => setSelectedVoterTimeline(voter)} className="btn btn-ghost">
+                        <Eye size={14} /> View
+                      </button>
+                      <button onClick={() => handleDirectCallVoter(voter)} className="btn btn-ghost">
+                        <PhoneCall size={14} /> Call
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             {/* ── Pagination Controls ── */}

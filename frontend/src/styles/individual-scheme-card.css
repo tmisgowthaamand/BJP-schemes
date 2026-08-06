@@ -605,14 +605,86 @@
 .isc-btn--comment:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); }
 
 /* ─── Responsive ────────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .scheme-card-actions { flex-direction: column; }
-  .btn-sm { width: 100%; }
+
+/* Tablet / iPad (≤1023px) */
+@media (max-width: 1023px) {
+  .scheme-card-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  /* "Mark as Delivered" — full width, most important */
+  .scheme-card-actions .btn-primary {
+    grid-column: 1 / -1;
+  }
+  /* "Reject" — full width, destructive action needs deliberate tap */
+  .scheme-card-actions .btn-danger {
+    grid-column: 1 / -1;
+  }
+  /* "Comment" and "History" — full width */
+  .scheme-card-actions .btn-comment,
+  .scheme-card-actions .btn-ghost {
+    grid-column: 1 / -1;
+  }
+  .btn-sm {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    min-height: 44px;
+    font-size: 13px;
+  }
+}
+
+/* Large phone (≤767px) */
+@media (max-width: 767px) {
+  .individual-scheme-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  .scheme-card-header { margin-bottom: 12px; gap: 10px; }
+  .scheme-card-title h4 { font-size: 15px; }
+  .scheme-card-info { padding: 12px; }
+  .info-label { font-size: 11px; }
+  .info-value { font-size: 12px; }
+  .scheme-card-actions { gap: 8px; }
+  .btn-sm { padding: 10px 12px; font-size: 12px; min-height: 42px; }
+}
+
+/* Small phone (≤480px) — iPhone SE, Galaxy S21 */
+@media (max-width: 480px) {
+  .individual-scheme-card { padding: 14px 12px; border-radius: 10px; }
+  .scheme-card-title h4 { font-size: 14px; }
+  .scheme-id { font-size: 10px; padding: 3px 8px; }
+  .scheme-card-info { padding: 10px; border-radius: 8px; }
+  .scheme-card-actions {
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+  }
+  /* Keep full-width rules at smaller sizes too */
+  .scheme-card-actions .btn-primary,
+  .scheme-card-actions .btn-danger,
+  .scheme-card-actions .btn-comment,
+  .scheme-card-actions .btn-ghost {
+    grid-column: 1 / -1;
+  }
+  .btn-sm { padding: 9px 10px; font-size: 12px; min-height: 40px; border-radius: 8px; }
+  .history-item { padding: 10px; }
+  .history-status strong { font-size: 12px; }
+  .history-date { font-size: 10px; }
+  .history-remarks { font-size: 11px; }
+}
+
+/* Fold / very narrow (≤360px) */
+@media (max-width: 360px) {
+  .individual-scheme-card { padding: 12px 10px; }
+  .scheme-card-title h4 { font-size: 13px; }
+  .scheme-card-actions { gap: 6px; }
+  .btn-sm { font-size: 11px; min-height: 38px; padding: 8px 8px; }
 }
 
 @media (max-width: 500px) {
   .isc-modal { border-radius: 16px; }
-  .isc-modal-body { padding: 18px; gap: 18px; }
-  .isc-modal-footer { flex-direction: column-reverse; padding: 14px 18px 16px; }
-  .isc-btn { width: 100%; text-align: center; }
+  .isc-modal-body { padding: 16px; gap: 16px; }
+  .isc-modal-footer { flex-direction: column-reverse; padding: 12px 16px 16px; }
+  .isc-btn { width: 100%; text-align: center; min-height: 44px; }
 }

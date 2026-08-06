@@ -3,21 +3,22 @@
 .voter-schemes-view {
   background: #0a0a0f;
   border-radius: 16px;
-  padding: 32px;
+  padding: 24px;
   min-height: 500px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #ffffff;
 }
 
 .voter-schemes-header {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .voter-info-header {
   display: flex;
   align-items: center;
-  gap: 20px;
-  margin-bottom: 28px;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .btn-back {
@@ -35,6 +36,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  min-height: 44px;
+  white-space: nowrap;
 }
 
 .btn-back:before {
@@ -49,43 +52,47 @@
 }
 
 .voter-details h2 {
-  margin: 0 0 12px 0;
-  font-size: 32px;
+  margin: 0 0 10px 0;
+  font-size: 26px;
   font-weight: 700;
   color: #ffffff;
   font-family: 'Inter', sans-serif;
   letter-spacing: -0.5px;
+  line-height: 1.2;
 }
 
 .voter-meta {
   display: flex;
-  gap: 16px;
+  gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .voter-meta span {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
-  padding: 6px 14px;
-  background: rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.07);
   border-radius: 8px;
-  font-weight: 500;
+  font-weight: 600;
   font-family: 'Inter', sans-serif;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
 }
 
+/* ── Summary cards: 3-col on desktop, 3-col on tablet, 2+1 on small phones ── */
 .schemes-summary {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 20px;
-  margin-top: 24px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
 }
 
 .summary-card {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 24px 20px;
+  border-radius: 14px;
+  padding: 18px 14px;
   text-align: center;
   transition: all 0.3s ease;
   position: relative;
@@ -105,14 +112,12 @@
 }
 
 .summary-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   border-color: rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
-.summary-card:hover:before {
-  opacity: 1;
-}
+.summary-card:hover:before { opacity: 1; }
 
 .summary-card.success {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.04) 100%);
@@ -133,49 +138,45 @@
 }
 
 .summary-number {
-  font-size: 48px;
+  font-size: 40px;
   font-weight: 800;
   color: #FF9933;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-family: 'Inter', sans-serif;
   letter-spacing: -1px;
   line-height: 1;
 }
 
-.summary-card.success .summary-number {
-  color: #10b981;
-}
-
-.summary-card.pending .summary-number {
-  color: #FF9933;
-}
+.summary-card.success .summary-number { color: #10b981; }
+.summary-card.pending .summary-number { color: #FF9933; }
 
 .summary-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   font-family: 'Inter', sans-serif;
+  line-height: 1.3;
 }
 
 .schemes-list-container {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 28px;
-  margin-top: 32px;
+  border-radius: 14px;
+  padding: 20px;
+  margin-top: 20px;
 }
 
 .schemes-list-header {
-  margin-bottom: 24px;
-  padding-bottom: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .schemes-list-header h3 {
   margin: 0;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
   color: #FF9933;
   text-transform: uppercase;
@@ -183,52 +184,52 @@
   font-family: 'Inter', sans-serif;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .toggle-btn {
   background: rgba(255, 153, 51, 0.1);
   border: 1px solid rgba(255, 153, 51, 0.2);
   color: #FF9933;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
-  padding: 6px;
-  width: 28px;
-  height: 28px;
+  padding: 5px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 6px;
   transition: all 0.2s ease;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 .toggle-btn:hover {
   background: rgba(255, 153, 51, 0.15);
   border-color: rgba(255, 153, 51, 0.4);
-  transform: scale(1.05);
 }
 
 .schemes-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .scheme-item {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   align-items: flex-start;
 }
 
 .scheme-number {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
   color: #FF9933;
   background: rgba(255, 153, 51, 0.12);
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -240,49 +241,76 @@
 
 .no-schemes {
   text-align: center;
-  padding: 60px 40px;
+  padding: 40px 20px;
   color: rgba(255, 255, 255, 0.4);
 }
 
 .no-schemes p {
-  font-size: 15px;
+  font-size: 14px;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .voter-schemes-view {
-    padding: 20px;
-  }
+/* ═══════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   ═══════════════════════════════════════════ */
 
-  .voter-info-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+/* iPad / Tablet (768-1023px) */
+@media (max-width: 1023px) {
+  .voter-schemes-view { padding: 20px; }
+  .schemes-summary { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .summary-number { font-size: 36px; }
+}
 
-  .voter-details h2 {
-    font-size: 24px;
-  }
+/* Large phone (481–767px) */
+@media (max-width: 767px) {
+  .voter-schemes-view { padding: 16px; border-radius: 12px; }
+  .voter-info-header { gap: 12px; flex-wrap: wrap; }
+  .voter-details h2 { font-size: 22px; }
+  .voter-meta { gap: 6px; }
+  .voter-meta span { font-size: 11px; padding: 5px 10px; }
+  /* 3-col summary still works fine on 480px+ */
+  .schemes-summary { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .summary-card { padding: 14px 10px; border-radius: 12px; }
+  .summary-number { font-size: 32px; }
+  .summary-label { font-size: 10px; letter-spacing: 0.5px; }
+  .schemes-list-container { padding: 16px; }
+  .scheme-item { gap: 10px; }
+}
 
-  .voter-meta {
-    flex-direction: column;
-    gap: 8px;
-  }
+/* Small phone (≤480px) — iPhone SE, Galaxy S21, etc. */
+@media (max-width: 480px) {
+  .voter-schemes-view { padding: 14px 12px; border-radius: 10px; }
+  .voter-info-header { flex-direction: row; align-items: flex-start; gap: 10px; }
+  .voter-details h2 { font-size: 18px; margin-bottom: 8px; }
+  .voter-meta { gap: 5px; }
+  .voter-meta span { font-size: 11px; padding: 5px 9px; }
+  /* 3-col but compact */
+  .schemes-summary { grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px; }
+  .summary-card { padding: 12px 8px; border-radius: 10px; }
+  .summary-number { font-size: 28px; margin-bottom: 4px; }
+  .summary-label { font-size: 9px; letter-spacing: 0.3px; }
+  .schemes-list-container { padding: 14px 12px; margin-top: 14px; border-radius: 12px; }
+  .schemes-list-header h3 { font-size: 11px; letter-spacing: 1px; }
+  .scheme-item { gap: 8px; }
+  .scheme-number { width: 30px; height: 30px; font-size: 11px; border-radius: 7px; }
+}
 
-  .schemes-summary {
-    grid-template-columns: 1fr;
-  }
+/* Fold / very narrow (≤360px) */
+@media (max-width: 360px) {
+  .voter-schemes-view { padding: 12px 10px; }
+  .voter-details h2 { font-size: 16px; }
+  .schemes-summary { grid-template-columns: repeat(3, 1fr); gap: 5px; }
+  .summary-card { padding: 10px 6px; }
+  .summary-number { font-size: 24px; }
+  .summary-label { font-size: 8px; }
+  .voter-meta span { font-size: 10px; padding: 4px 8px; }
+}
 
-  .scheme-item {
-    flex-direction: column;
-  }
-
-  .scheme-number {
-    align-self: flex-start;
-  }
-
-  .summary-number {
-    font-size: 40px;
-  }
+/* iPhone SE (≤320px) */
+@media (max-width: 320px) {
+  .voter-schemes-view { padding: 10px 8px; }
+  .voter-details h2 { font-size: 15px; }
+  .summary-number { font-size: 22px; }
+  .schemes-list-container { padding: 12px 10px; }
 }
