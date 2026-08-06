@@ -163,71 +163,6 @@ function WelcomeBannerMsg({ onStart, onApplyBooth }) {
           <button className="btn-start" onClick={onStart}>
             <i className="bi bi-play-circle-fill" /> {t('Start')}
           </button>
-          <button
-            className="btn-start"
-            onClick={onApplyBooth}
-            style={{ background: 'linear-gradient(135deg, #f26522 0%, #ff8c42 100%)', boxShadow: '0 4px 12px rgba(242, 101, 34, 0.3)' }}
-          >
-            <i className="bi bi-award-fill" /> {t('Be a Booth President')}
-          </button>
-        </div>
-
-        {/* Hero Card for Booth President */}
-        <div style={{
-          marginTop: 16,
-          background: 'linear-gradient(135deg, rgba(242, 101, 34, 0.08) 0%, rgba(255, 140, 66, 0.16) 100%)',
-          border: '1.5px solid rgba(242, 101, 34, 0.3)',
-          borderRadius: 12,
-          padding: '14px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 12
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              background: '#f26522',
-              color: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 20,
-              flexShrink: 0
-            }}>
-              <i className="bi bi-award-fill" />
-            </div>
-            <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-              <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--color-chalk, #1a1a1a)', whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: 1.3 }}>
-                {t('Be a Booth President')}
-              </div>
-              <div style={{ fontSize: 13, color: 'var(--color-ash, #6b7280)', marginTop: 3, whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: 1.4 }}>
-                {t('Apply to lead your electoral booth')}
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={onApplyBooth}
-            style={{
-              background: '#f26522',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: 8,
-              padding: '8px 16px',
-              fontSize: 13,
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6
-            }}
-          >
-            <span>{t('Apply Now')}</span>
-            <i className="bi bi-arrow-right" />
-          </button>
         </div>
       </div>
     </div>
@@ -4131,7 +4066,7 @@ export default function ChatbotPage() {
               { icon: 'people-fill',    label: 'My Referrals',            action: 'my_referrals',   desc: 'Members you referred' },
               { icon: 'award-fill',     label: 'Be a Booth President',    action: 'booth_president',desc: 'Apply to lead your electoral booth' },
             ].map((item) => {
-              const locked = !isDone && item.action !== 'booth_president'
+              const locked = !isDone
               return (
                 <div
                   key={item.action}
