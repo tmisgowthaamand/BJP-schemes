@@ -4,6 +4,7 @@ const SchemeApplication = require('../models/SchemeApplication');
 const { getVoterDbClient } = require('../config/db');
 const { sendSmsOtp } = require('../services/smsService');
 const { findVoterByEpic } = require('../services/voterSearchService');
+const { normalizeMobile, getMobileVariants } = require('./whatsappController');
 const jwt = require('jsonwebtoken');
 const logger = require('../config/logger');
 
@@ -19,18 +20,19 @@ const generateToken = (id) => {
 const sendOtp = async (req, res) => {
   try {
     const { mobile } = req.body;
-    if (!mobile || !/^[6-9]\d{9}$/.test(mobile.trim())) {
+    const cleanMobile = normalizeMobile(mobile);
+    if (!cleanMobile || !/^[6-9]\d{9}$/.test(cleanMobile)) {
       return res.status(400).json({ success: false, message: 'Please provide a valid 10-digit mobile number' });
     }
 
-    const cleanMobile = mobile.trim();
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+    const variants = getMobileVariants(mobile);
 
     // Run the user lookup and old-session cleanup together (both local DB ops).
     const [existingUser] = await Promise.all([
-      User.findOne({ mobile: cleanMobile }),
-      OtpSession.deleteMany({ mobile: cleanMobile })
+      User.findOne({ mobile: { $in: variants } }),
+      OtpSession.deleteMany({ mobile: { $in: variants } })
     ]);
 
     // Persist the OTP session BEFORE responding so verification is ready
@@ -76,12 +78,13 @@ const verifyOtp = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Mobile number and OTP are required' });
     }
 
-    const cleanMobile = mobile.trim();
+    const cleanMobile = normalizeMobile(mobile);
     const cleanOtp = otp.trim();
+    const variants = getMobileVariants(mobile);
 
     // SECURITY FIX 4: OTP universal bypass (cleanOtp === '123456') removed entirely.
     // Only accept the OTP stored in the OtpSession document from MongoDB.
-    const session = await OtpSession.findOne({ mobile: cleanMobile, verified: false });
+    const session = await OtpSession.findOne({ mobile: { $in: variants }, verified: false });
 
     if (!session) {
       return res.status(400).json({ success: false, message: 'OTP session expired. Please request a new OTP.' });
@@ -94,7 +97,7 @@ const verifyOtp = async (req, res) => {
     session.verified = true;
     await session.save();
 
-    const existingUser = await User.findOne({ mobile: cleanMobile });
+    const existingUser = await User.findOne({ mobile: { $in: variants } });
 
     if (existingUser) {
       const token = generateToken(existingUser._id);
@@ -134,8 +137,9 @@ const checkMobile = async (req, res) => {
     const { mobile } = req.body;
     if (!mobile) return res.status(400).json({ success: false, message: 'Mobile required' });
 
-    const cleanMobile = mobile.trim();
-    const user = await User.findOne({ mobile: cleanMobile });
+    const cleanMobile = normalizeMobile(mobile);
+    const variants = getMobileVariants(mobile);
+    const user = await User.findOne({ mobile: { $in: variants } });
 
     return res.status(200).json({
       success: true,
@@ -214,7 +218,8 @@ const getProfile = async (req, res) => {
       orConditions.push({ epicNo: epicNo.trim().toUpperCase() });
     }
     if (mobile && mobile !== 'undefined' && mobile !== 'null' && mobile.trim()) {
-      orConditions.push({ mobile: mobile.trim() });
+      const variants = getMobileVariants(mobile);
+      orConditions.push({ mobile: { $in: variants } });
     }
 
     if (orConditions.length === 0) {
@@ -228,7 +233,10 @@ const getProfile = async (req, res) => {
 
     const appConditions = [{ userId: user._id }];
     if (user.epicNo) appConditions.push({ epicNo: user.epicNo });
-    if (user.mobile) appConditions.push({ mobile: user.mobile });
+    if (user.mobile) {
+      const mVariants = getMobileVariants(user.mobile);
+      appConditions.push({ mobile: { $in: mVariants } });
+    }
 
     const applications = await SchemeApplication.find({ $or: appConditions }).sort({ appliedAt: -1 });
 
@@ -253,7 +261,7 @@ const registerSchemes = async (req, res) => {
       boothNo, part_no, gender, schemes, schemeIds, referralCode, refCode, referredBy, photo
     } = req.body;
 
-    const cleanMobile = (mobile || '').trim();
+    const cleanMobile = normalizeMobile(mobile);
     const cleanEpic = (epicNo || epic_no || '').trim().toUpperCase();
     const cleanName = (voterName || name || 'BJP Member').trim();
     const cleanDist = (district || 'TAMIL NADU').trim();
@@ -265,7 +273,10 @@ const registerSchemes = async (req, res) => {
     }
 
     const orConditions = [];
-    if (cleanMobile) orConditions.push({ mobile: cleanMobile });
+    if (cleanMobile) {
+      const variants = getMobileVariants(cleanMobile);
+      orConditions.push({ mobile: { $in: variants } });
+    }
     if (cleanEpic) orConditions.push({ epicNo: cleanEpic });
 
     let user = await User.findOne({ $or: orConditions });

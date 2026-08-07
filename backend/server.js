@@ -30,6 +30,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const referralRoutes = require('./routes/referralRoutes');
 const userChatRoutes = require('./routes/userChatRoutes');
 const boothPresidentRoutes = require('./routes/boothPresidentRoutes');
+const whatsappRoutes = require('./routes/whatsappRoutes');
 const { getAssemblyMetadata } = require('./services/jurisdictionService');
 
 // Fail fast if critical secrets are missing — no insecure hardcoded fallbacks.
@@ -76,7 +77,11 @@ app.use(cors({
 }));
 app.use(requestContext);        // assign a correlation id per request
 // SECURITY FIX 10: Limit request body size to prevent memory-exhaustion attacks.
-app.use(express.json({ limit: '100kb' }));
+// Also capture raw body for WhatsApp webhook signature verification.
+app.use(express.json({
+  limit: '100kb',
+  verify: (req, _res, buf) => { req.rawBody = buf; }
+}));
 app.use(requestLogger);         // structured access log (method/path/status/latency)
 
 // SECURITY FIX 8: Rate limiters — defined here, applied to specific routes below.
@@ -154,6 +159,10 @@ app.use('/api/schemes', schemeRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/referrals', referralRoutes);
 app.use('/api/booth-president', boothPresidentRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
+// Alias: also accept Meta webhook + flow-endpoint at root path, since the
+// Meta dashboard callback URL may be configured as /webhook or /flow-endpoint.
+app.use('/', whatsappRoutes);
 
 // Health Check
 app.get('/api/health', (req, res) => {

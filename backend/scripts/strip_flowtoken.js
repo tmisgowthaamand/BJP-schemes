@@ -1,0 +1,10 @@
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const file = path.join(__dirname, 'build_flows.js');
+let c = fs.readFileSync(file, 'utf8');
+const needle = "flow_token: '${flow_token}', ";
+const count = c.split(needle).length - 1;
+c = c.split(needle).join('');
+fs.writeFileSync(file, c);
+console.log('Removed', count, 'flow_token payload entries from build_flows.js');

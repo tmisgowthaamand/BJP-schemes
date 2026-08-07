@@ -124,6 +124,11 @@ const schemeApplicationSchema = new mongoose.Schema({
     }
   },
   statusHistory: [statusHistorySchema],
+  channel: {
+    type: String,
+    enum: ['web', 'whatsapp'],
+    default: 'web'
+  },
   appliedAt: {
     type: Date,
     default: Date.now

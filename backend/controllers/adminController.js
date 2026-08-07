@@ -936,8 +936,16 @@ const getApplicationsList = async (req, res) => {
 
     const isValidFilterVal = (val) => val && val !== 'undefined' && val !== 'null' && val !== 'all' && String(val).trim() !== '';
 
-    // Only allow safe narrowing filters (status and scheme).
-    // district, assemblyName, boothNo from query params are intentionally NOT applied.
+    // Allow safe narrowing filters (district, assemblyName, boothNo, status)
+    if (isValidFilterVal(district) && !adminScope.district) {
+      appScopeFilter.district = new RegExp('^' + district.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+    }
+    if (isValidFilterVal(assemblyName) && !adminScope.assemblyName) {
+      appScopeFilter.assemblyName = new RegExp('^' + assemblyName.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+    }
+    if (isValidFilterVal(boothNo) && !adminScope.boothNo) {
+      appScopeFilter.boothNo = String(boothNo).trim();
+    }
     if (isValidFilterVal(status)) {
       appScopeFilter.status = new RegExp('^' + status.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
     }
@@ -994,13 +1002,38 @@ const getApplicationsList = async (req, res) => {
       }
     }
 
-    // ── Fast Path: Two-step voter-based pagination (avoids MongoDB 32MB sort limit) ──
+    // ── Fast Path: Voter-based pagination across User DB and SchemeApplication DB ──
     if (!isExport) {
       const voterSkip = (pageNum - 1) * limitNum;
 
-      // Step 1: Lightweight aggregation by mobile number — only mobile + latestAt (tiny memory, no $$ROOT)
-      // Run in parallel with counts and status breakdown
-      const [totalAppsCount, rawMobileList, statusGroup, epicPage] = await Promise.all([
+      // Build User scope filter matching admin jurisdiction and search
+      const userScopeFilter = { ...adminScope };
+      if (isValidFilterVal(district) && !adminScope.district) {
+        userScopeFilter.district = new RegExp('^' + district.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+      }
+      if (isValidFilterVal(assemblyName) && !adminScope.assemblyName) {
+        userScopeFilter.assemblyName = new RegExp('^' + assemblyName.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+      }
+      if (isValidFilterVal(boothNo) && !adminScope.boothNo) {
+        userScopeFilter.boothNo = String(boothNo).trim();
+      }
+      if (search) {
+        const escaped = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const r = new RegExp(escaped, 'i');
+        const searchConds = [{ voterName: r }, { epicNo: r }, { mobile: r }];
+        if (userScopeFilter.$or) {
+          const existingOr = userScopeFilter.$or;
+          delete userScopeFilter.$or;
+          userScopeFilter.$and = [{ $or: existingOr }, { $or: searchConds }];
+        } else {
+          userScopeFilter.$or = searchConds;
+        }
+      }
+
+      // Step 1: Query SchemeApplication aggregation AND User documents in parallel
+      const isSpecificSchemeOrStatus = isValidFilterVal(status) || isValidFilterVal(targetScheme);
+
+      const [totalAppsCount, rawMobileList, statusGroup, appVotersAgg, userVotersList] = await Promise.all([
         SchemeApplication.countDocuments(appScopeFilter),
         SchemeApplication.distinct('mobile', appScopeFilter),
         SchemeApplication.aggregate([
@@ -1009,7 +1042,6 @@ const getApplicationsList = async (req, res) => {
         ], { allowDiskUse: true }),
         SchemeApplication.aggregate([
           { $match: appScopeFilter },
-          // Group by voter mobile number — only keep the tiny fields needed for sorting + identity
           {
             $group: {
               _id: { $ifNull: ['$mobile', { $ifNull: ['$epicNo', { $toString: '$userId' }] }] },
@@ -1019,40 +1051,104 @@ const getApplicationsList = async (req, res) => {
             }
           },
           { $sort: { latestAt: -1 } },
-          { $skip: voterSkip },
-          { $limit: limitNum },
-          { $project: { _id: 1, mobile: 1, epicNo: 1 } }
-        ], { allowDiskUse: true })
+          { $project: { _id: 1, mobile: 1, epicNo: 1, latestAt: 1 } }
+        ], { allowDiskUse: true }),
+        isSpecificSchemeOrStatus ? Promise.resolve([]) : User.find(userScopeFilter).select('mobile epicNo voterName district assemblyName boothNo referralCode channel createdAt').lean()
       ]);
 
-      const distinctVoterCount = rawMobileList.length || totalAppsCount;
+      // Combine unique voters from both sources
+      const combinedVoterMap = new Map();
+
+      userVotersList.forEach(u => {
+        const key = u.mobile || u.epicNo || String(u._id);
+        combinedVoterMap.set(key, {
+          _id: u._id,
+          mobile: u.mobile,
+          epicNo: u.epicNo,
+          latestAt: u.createdAt || new Date(0)
+        });
+      });
+
+      appVotersAgg.forEach(a => {
+        const key = a.mobile || a.epicNo || String(a._id);
+        const existing = combinedVoterMap.get(key);
+        const appDate = a.latestAt ? new Date(a.latestAt) : new Date(0);
+        if (!existing) {
+          combinedVoterMap.set(key, {
+            _id: a._id,
+            mobile: a.mobile,
+            epicNo: a.epicNo,
+            latestAt: appDate
+          });
+        } else {
+          if (appDate > existing.latestAt) {
+            existing.latestAt = appDate;
+          }
+        }
+      });
+
+      const allCombinedVoters = Array.from(combinedVoterMap.values()).sort((x, y) => new Date(y.latestAt) - new Date(x.latestAt));
+      const distinctVoterCount = allCombinedVoters.length || rawMobileList.length || totalAppsCount;
       const totalPages = Math.ceil(distinctVoterCount / limitNum) || 1;
+
+      const epicPage = allCombinedVoters.slice(voterSkip, voterSkip + limitNum);
 
       const statusCounts = { Approved: 0, Pending: 0, Submitted: 0, Processing: 0, Called: 0, Verified: 0, Completed: 0, Rejected: 0 };
       statusGroup.forEach(g => { if (g._id) statusCounts[g._id] = g.count; });
 
-      // Step 2: Fetch full application docs for just these 20 voter Mobiles/EPICs
+      // Step 2: Fetch full application docs and User docs for just these voter Mobiles/EPICs
       const pageMobiles = epicPage.map(e => e.mobile).filter(Boolean);
       const pageEpicNos = epicPage.map(e => e.epicNo).filter(Boolean);
       const pageVoterIds = epicPage.map(e => e._id).filter(id => id && !pageMobiles.includes(id) && !pageEpicNos.includes(id));
 
-      const rawApps = await SchemeApplication.find({
-        $and: [
-          appScopeFilter,
-          {
-            $or: [
-              { mobile: { $in: pageMobiles } },
-              { epicNo: { $in: pageEpicNos } },
-              { userId: { $in: pageVoterIds } }
-            ]
-          }
-        ]
-      }).sort({ appliedAt: -1 }).lean();
+      const [rawApps, userDocs] = await Promise.all([
+        SchemeApplication.find({
+          $and: [
+            appScopeFilter,
+            {
+              $or: [
+                { mobile: { $in: pageMobiles } },
+                { epicNo: { $in: pageEpicNos } },
+                { userId: { $in: pageVoterIds } }
+              ]
+            }
+          ]
+        }).sort({ appliedAt: -1 }).lean(),
+        User.find({
+          $or: [
+            { mobile: { $in: pageMobiles } },
+            { epicNo: { $in: pageEpicNos } }
+          ]
+        }).lean()
+      ]);
+
+      // Map User docs by mobile / epicNo
+      const userMapByMobile = {};
+      const userMapByEpic = {};
+      userDocs.forEach(u => {
+        if (u.mobile) userMapByMobile[u.mobile] = u;
+        if (u.epicNo) userMapByEpic[u.epicNo] = u;
+      });
 
       // Group apps by voter mobile key
       const voterMap = {};
       // Preserve the sorted order from epicPage
-      epicPage.forEach(e => { voterMap[e._id] = null; });
+      epicPage.forEach(e => {
+        const u = (e.mobile && userMapByMobile[e.mobile]) || (e.epicNo && userMapByEpic[e.epicNo]) || null;
+        voterMap[e._id] = {
+          _id: u?._id || e._id,
+          epicNo: u?.epicNo || e.epicNo || 'N/A',
+          voterName: u?.voterName || 'Member',
+          mobile: u?.mobile || e.mobile || 'N/A',
+          district: u?.district || 'N/A',
+          assemblyName: u?.assemblyName || 'N/A',
+          boothNo: u?.boothNo || 'N/A',
+          userId: u?._id || e._id,
+          referralCode: u?.referralCode || 'BJP-MEMBER',
+          channel: u?.channel || 'whatsapp',
+          applications: []
+        };
+      });
 
       rawApps.forEach(app => {
         const key = app.mobile || app.epicNo || (app.userId ? String(app.userId) : null);
@@ -1061,15 +1157,19 @@ const getApplicationsList = async (req, res) => {
           voterMap[key] = {
             _id: app.userId || key,
             epicNo: app.epicNo || 'N/A',
-            voterName: app.voterName || 'N/A',
+            voterName: app.voterName || 'Member',
             mobile: app.mobile || 'N/A',
             district: app.district || 'N/A',
             assemblyName: app.assemblyName || 'N/A',
             boothNo: app.boothNo || 'N/A',
             userId: app.userId,
-            referralCode: app.referralCode,
+            referralCode: app.referralCode || 'BJP-MEMBER',
+            channel: app.channel || 'web',
             applications: []
           };
+        }
+        if (app.voterName && app.voterName !== 'N/A' && app.voterName !== 'Member') {
+          voterMap[key].voterName = app.voterName;
         }
         voterMap[key].applications.push(app);
       });
@@ -1232,6 +1332,9 @@ const getApplicationsList = async (req, res) => {
 
       const apps = Array.from(userAppMap.values()).sort((a, b) => new Date(b.appliedAt || b.createdAt) - new Date(a.appliedAt || a.createdAt));
 
+      // Channel: whatsapp if any of the member's applications came via WhatsApp
+      const channel = apps.some(a => a.channel === 'whatsapp') ? 'whatsapp' : 'web';
+
       return {
         id: u._id,
         epicNo: u.epicNo,
@@ -1241,6 +1344,7 @@ const getApplicationsList = async (req, res) => {
         assemblyName: u.assemblyName,
         boothNo: u.boothNo,
         referralCode: u.referralCode,
+        channel,
         applications: apps
       };
     });
@@ -1357,6 +1461,18 @@ const updateApplicationStatus = async (req, res) => {
 
     await app.save();
     try { _liveCache.clear(); } catch (e) {}
+
+    // ── WhatsApp status push notification ────────────────────────────────────
+    // If the voter registered via WhatsApp, send them a push notification.
+    try {
+      const voter = await User.findById(app.userId);
+      if (voter && voter.channel === 'whatsapp' && status && !isCallAction) {
+        const { pushStatusUpdate } = require('./whatsappController');
+        await pushStatusUpdate(voter, app.schemeName, app.status);
+      }
+    } catch (wpErr) {
+      logger.warn('[WA Push] Non-critical push failed', { error: wpErr.message });
+    }
 
     return res.status(200).json({
       success: true,

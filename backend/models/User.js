@@ -51,6 +51,11 @@ const userSchema = new mongoose.Schema({
     type: String, // referral code of inviter
     default: null
   },
+  channel: {
+    type: String,
+    enum: ['web', 'whatsapp'],
+    default: 'web'
+  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -26,9 +26,23 @@ let voterClient = null;
 const getVoterDbClient = async () => {
   if (!voterClient) {
     const voterUrl = process.env.MONGO_VOTER_URL || process.env.MONGO_APP_URL || process.env.MONGO_URI;
-    voterClient = new MongoClient(voterUrl);
-    await voterClient.connect();
-    logger.info('[Voter DB] Native MongoClient connected');
+    try {
+      voterClient = new MongoClient(voterUrl);
+      await voterClient.connect();
+      logger.info('[Voter DB] Native MongoClient connected');
+    } catch (err) {
+      logger.error('[Voter DB Connection Error]', { error: err.message });
+      // If primary Voter DB URL failed (e.g. DNS ESERVFAIL), attempt fallback to App URL
+      const fallbackUrl = process.env.MONGO_APP_URL || process.env.MONGO_URI;
+      if (fallbackUrl && fallbackUrl !== voterUrl) {
+        logger.info('[Voter DB] Attempting fallback to MONGO_APP_URL...');
+        voterClient = new MongoClient(fallbackUrl);
+        await voterClient.connect();
+        logger.info('[Voter DB] Fallback MongoClient connected');
+      } else {
+        throw err;
+      }
+    }
   }
   return voterClient.db(process.env.MONGO_VOTER_DB_NAME || 'voter_db');
 };

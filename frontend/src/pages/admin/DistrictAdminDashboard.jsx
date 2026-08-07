@@ -790,7 +790,12 @@ const DistrictAdminDashboard = () => {
                         >
                           <td style={{ padding: '12px 10px', color: 'var(--color-ash-gray)', fontSize: '12px', fontWeight: '600' }}>{rowNum}</td>
                           <td style={{ padding: '12px 10px' }}>
-                            <div style={{ fontWeight: '700', color: 'var(--color-midnight-ink)' }}>{voter.voterName}</div>
+                            <div style={{ fontWeight: '700', color: 'var(--color-midnight-ink)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                              {voter.voterName}
+                              {voter.channel === 'whatsapp' && (
+                                <span title="Applied via WhatsApp" style={{ fontSize: '10px', fontWeight: 700, color: '#0b8a5b', background: 'rgba(37,211,102,0.14)', border: '1px solid rgba(37,211,102,0.35)', borderRadius: '6px', padding: '1px 6px' }}>💬 WhatsApp</span>
+                              )}
+                            </div>
                             <div style={{ fontSize: '11px', color: 'var(--color-slate)', fontFamily: 'monospace' }}>{voter.epicNo}</div>
                           </td>
                           <td style={{ padding: '12px 10px', fontWeight: '600' }}>{voter.mobile}</td>
@@ -848,7 +853,7 @@ const DistrictAdminDashboard = () => {
                   <div className="da-app-card" key={voter.epicNo}>
                     <div className="da-app-card-header">
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div className="da-app-card-name">{voter.voterName}</div>
+                        <div className="da-app-card-name">{voter.voterName}{voter.channel === 'whatsapp' && <span style={{ fontSize: '9px', fontWeight: 700, color: '#0b8a5b', background: 'rgba(37,211,102,0.14)', border: '1px solid rgba(37,211,102,0.35)', borderRadius: '5px', padding: '1px 5px', marginLeft: '6px' }}>💬 WA</span>}</div>
                         <div className="da-app-card-epic">{voter.epicNo}</div>
                       </div>
                       <StatusBadge status={getVoterDisplayStatus(voter.applications)} />

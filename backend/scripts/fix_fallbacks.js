@@ -1,0 +1,11 @@
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const file = path.join(__dirname, '..', 'controllers', 'whatsappController.js');
+let c = fs.readFileSync(file, 'utf8');
+const needle = "{ screen: 'MAIN_MENU', data: buildMainMenu({ voterName: 'Member' }, lang) }";
+const repl = "{ screen: (lang === 'ta' ? 'MAIN_MENU_TA' : 'MAIN_MENU_EN'), data: {} }";
+const n = c.split(needle).length - 1;
+c = c.split(needle).join(repl);
+fs.writeFileSync(file, c);
+console.log('Replaced', n, 'MAIN_MENU fallbacks');

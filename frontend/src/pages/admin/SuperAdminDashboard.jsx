@@ -1535,18 +1535,31 @@ const SuperAdminDashboard = () => {
                         >
                           <td style={{ padding: '12px 10px', color: 'var(--color-ash-gray)', fontSize: '12px', fontWeight: '600' }}>{rowNum}</td>
                           <td style={{ padding: '12px 10px' }}>
-                            <div style={{ fontWeight: '700', color: 'var(--color-midnight-ink)' }}>{voter.voterName}</div>
+                            <div style={{ fontWeight: '700', color: 'var(--color-midnight-ink)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                              {voter.voterName}
+                              {voter.channel === 'whatsapp' && (
+                                <span title="Applied via WhatsApp" style={{ fontSize: '10px', fontWeight: 700, color: '#0b8a5b', background: 'rgba(37,211,102,0.14)', border: '1px solid rgba(37,211,102,0.35)', borderRadius: '6px', padding: '1px 6px' }}>💬 WhatsApp</span>
+                              )}
+                            </div>
                             <div style={{ fontSize: '11px', color: 'var(--color-slate)', fontFamily: 'monospace' }}>{voter.epicNo}</div>
                           </td>
                           <td style={{ padding: '12px 10px', fontWeight: '600' }}>{voter.mobile}</td>
                           <td style={{ padding: '12px 10px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                              <span className="tag-pill tag-sunlit" style={{ fontWeight: '700', fontSize: '11px' }}>
-                                <Award size={12} /> {voter.applications.length} Scheme{voter.applications.length > 1 ? 's' : ''}
-                              </span>
-                              <span style={{ fontSize: '11px', color: 'var(--color-slate)' }}>
-                                {voter.applications.map(a => formatSchemeName(a.schemeName, a.schemeId)).join(', ')}
-                              </span>
+                              {voter.applications && voter.applications.length > 0 ? (
+                                <>
+                                  <span className="tag-pill tag-sunlit" style={{ fontWeight: '700', fontSize: '11px' }}>
+                                    <Award size={12} /> {voter.applications.length} Scheme{voter.applications.length > 1 ? 's' : ''}
+                                  </span>
+                                  <span style={{ fontSize: '11px', color: 'var(--color-slate)' }}>
+                                    {voter.applications.map(a => formatSchemeName(a.schemeName, a.schemeId)).join(', ')}
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="tag-pill" style={{ fontWeight: '700', fontSize: '11px', background: 'rgba(124,58,237,0.12)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)' }}>
+                                  👤 Registered Member
+                                </span>
+                              )}
                             </div>
                           </td>
                           <td style={{ padding: '12px 10px', color: 'var(--color-midnight-ink)' }}>
@@ -1593,7 +1606,7 @@ const SuperAdminDashboard = () => {
                   <div className="sa-app-card" key={voter.epicNo}>
                     <div className="sa-app-card-header">
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div className="sa-app-card-name">{voter.voterName}</div>
+                        <div className="sa-app-card-name">{voter.voterName}{voter.channel === 'whatsapp' && <span style={{ fontSize: '9px', fontWeight: 700, color: '#0b8a5b', background: 'rgba(37,211,102,0.14)', border: '1px solid rgba(37,211,102,0.35)', borderRadius: '5px', padding: '1px 5px', marginLeft: '6px' }}>💬 WA</span>}</div>
                         <div className="sa-app-card-epic">{voter.epicNo}</div>
                       </div>
                       <StatusBadge status={getVoterDisplayStatus(voter.applications)} />
@@ -1605,10 +1618,18 @@ const SuperAdminDashboard = () => {
                       {voter.district} · {voter.assemblyName}
                     </div>
                     <div className="sa-app-card-schemes">
-                      <span className="tag-pill tag-sunlit" style={{ fontWeight: '700', fontSize: '11px', marginRight: '6px' }}>
-                        <Award size={11} /> {voter.applications.length} Scheme{voter.applications.length > 1 ? 's' : ''}
-                      </span>
-                      {voter.applications.map(a => formatSchemeName(a.schemeName, a.schemeId)).join(', ')}
+                      {voter.applications && voter.applications.length > 0 ? (
+                        <>
+                          <span className="tag-pill tag-sunlit" style={{ fontWeight: '700', fontSize: '11px', marginRight: '6px' }}>
+                            <Award size={11} /> {voter.applications.length} Scheme{voter.applications.length > 1 ? 's' : ''}
+                          </span>
+                          {voter.applications.map(a => formatSchemeName(a.schemeName, a.schemeId)).join(', ')}
+                        </>
+                      ) : (
+                        <span className="tag-pill" style={{ fontWeight: '700', fontSize: '11px', background: 'rgba(124,58,237,0.12)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)' }}>
+                          👤 Registered Member
+                        </span>
+                      )}
                     </div>
                     <div className="sa-app-card-actions">
                       <button onClick={() => setSelectedVoterTimeline(voter)} className="btn btn-ghost">
