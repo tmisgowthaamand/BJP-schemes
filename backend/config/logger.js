@@ -130,7 +130,7 @@ if (logToFile) {
 }
 
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || (isProduction ? 'info' : 'debug'),
+  level: process.env.LOG_LEVEL || (isProduction ? 'http' : 'debug'),
   levels: winston.config.npm.levels, // includes an `http` level below `info`
   format: baseFormat,
   defaultMeta: { service: 'bjp-nalam-thittam-api' },

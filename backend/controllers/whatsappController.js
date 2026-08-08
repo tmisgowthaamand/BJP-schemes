@@ -102,6 +102,7 @@ const handleWebhook = async (req, res) => {
     const msg = value?.messages?.[0];
     if (!msg) return;
     const from = msg.from;
+    logger.info('[WA Webhook] Incoming message', { from, type: msg.type, body: msg.text?.body || msg.interactive?.type });
 
     // Flow submission reply
     if (msg.type === 'interactive' && msg.interactive?.type === 'nfm_reply') {
