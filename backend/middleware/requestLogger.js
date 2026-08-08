@@ -16,9 +16,9 @@ const requestLogger = (req, res, next) => {
       ip: req.ip
     };
     const message = `${req.method} ${req.originalUrl} ${res.statusCode} ${meta.durationMs}ms`;
-    // 5xx → error, 4xx → warn, everything else → http
+    // 5xx → error, 4xx (except 401/404) → warn, 2xx/3xx/401/404 → http
     if (res.statusCode >= 500) logger.error(message, meta);
-    else if (res.statusCode >= 400) logger.warn(message, meta);
+    else if (res.statusCode >= 400 && res.statusCode !== 401 && res.statusCode !== 404) logger.warn(message, meta);
     else logger.http(message, meta);
   });
 

@@ -13,6 +13,9 @@ const LiveTrackingPanel = () => {
   const mountedRef = useRef(true);
 
   const load = async () => {
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+    if (!token) return;
+
     try {
       const res = await API.get(`/admin/live-stats?t=${Date.now()}`);
       if (mountedRef.current && res.data && res.data.success) {
@@ -21,12 +24,18 @@ const LiveTrackingPanel = () => {
         setUpdatedAt(new Date());
       }
     } catch (e) {
+      if (e.response?.status === 401 || e.response?.status === 403) {
+        if (timerRef.current) clearInterval(timerRef.current);
+      }
       if (mountedRef.current) setErr(e.response?.data?.message || 'Live stats unavailable');
     }
   };
 
   useEffect(() => {
     mountedRef.current = true;
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+    if (!token) return;
+
     load();
     timerRef.current = setInterval(load, POLL_MS);
     const handleStatusUpdate = () => { load(); };
