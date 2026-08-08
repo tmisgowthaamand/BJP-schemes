@@ -23,8 +23,27 @@ let _privateKey = null;
 
 const getPrivateKey = () => {
   if (_privateKey) return _privateKey;
+
+  // 1. First check process.env.WA_FLOW_PRIVATE_KEY_PEM (for production platforms like Render)
+  if (process.env.WA_FLOW_PRIVATE_KEY_PEM && String(process.env.WA_FLOW_PRIVATE_KEY_PEM).trim()) {
+    const rawPem = process.env.WA_FLOW_PRIVATE_KEY_PEM.replace(/\\n/g, '\n');
+    const passphrase = process.env.WA_FLOW_PRIVATE_KEY_PASSPHRASE || undefined;
+    _privateKey = crypto.createPrivateKey({ key: rawPem, passphrase });
+    return _privateKey;
+  }
+
+  // 2. Fallback to file on disk (for local dev)
   const file = process.env.WA_FLOW_PRIVATE_KEY_FILE || 'flow_private.pem';
-  const pem  = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+  const filePath = path.join(__dirname, '..', file);
+  if (!fs.existsSync(filePath)) {
+    logger.error('❌ [flowCrypto] Critical error: RSA Private key missing!', {
+      filePath,
+      hint: 'Add WA_FLOW_PRIVATE_KEY_PEM to your Render Environment Variables.'
+    });
+    throw new Error(`RSA Private key missing! Neither process.env.WA_FLOW_PRIVATE_KEY_PEM nor file at '${filePath}' exists.`);
+  }
+
+  const pem = fs.readFileSync(filePath, 'utf8');
   const passphrase = process.env.WA_FLOW_PRIVATE_KEY_PASSPHRASE || undefined;
   _privateKey = crypto.createPrivateKey({ key: pem, passphrase });
   return _privateKey;

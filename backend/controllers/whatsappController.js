@@ -213,11 +213,21 @@ const handleFlowCompletion = async (from, payload) => {
 // ── POST /flow-endpoint (encrypted) ───────────────────────────────────────────
 const handleFlowEndpoint = async (req, res) => {
   let decrypted;
-  try { decrypted = decryptRequest(req.body); }
-  catch (err) { logger.error('[WA FlowEndpoint] Decrypt failed', { error: err.message }); return res.status(421).send(); }
+  try { 
+    decrypted = decryptRequest(req.body); 
+  } catch (err) { 
+    logger.error('❌ [WA FlowEndpoint] Decrypt failed!', { 
+      error: err.message, 
+      stack: err.stack,
+      hint: 'Make sure WA_FLOW_PRIVATE_KEY_PEM is set in Render Environment Variables.'
+    }); 
+    return res.status(421).send(); 
+  }
 
   const { decryptedBody, aesKeyBuffer, initialVectorBuffer } = decrypted;
   const { action, screen, data, flow_token, version } = decryptedBody;
+
+  logger.info('[WA FlowEndpoint] Incoming flow exchange', { action, screen, flow_token });
 
   const respond = (obj) => {
     res.set('Content-Type', 'text/plain');
@@ -232,8 +242,8 @@ const handleFlowEndpoint = async (req, res) => {
     const result = await routeScreen({ action, screen, data: data || {}, from });
     return respond({ version, ...result });
   } catch (err) {
-    logger.error('[WA FlowEndpoint]', { error: err.message, stack: err.stack, screen });
-    return respond({ version, screen: screen || 'LANGUAGE_SELECT', data: { error_msg: 'Something went wrong. Please try again.' } });
+    logger.error('❌ [WA FlowEndpoint] Routing error!', { error: err.message, stack: err.stack, screen, action, data });
+    return respond({ version, screen: screen || 'MAIN_MENU_TA', data: { error_msg: 'Something went wrong. Please try again.' } });
   }
 };
 
