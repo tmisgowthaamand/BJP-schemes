@@ -37,7 +37,11 @@ const SCHEME_FILE_MAP = {
   '23': 'e-Shram.png'
 };
 
-const THREE_SCHEME_BASE64 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'flows', 'three_scheme_base64.json'), 'utf8'));
+const VERCEL_IMAGE_MAP = {
+  '3': 'https://bjp-schemes.vercel.app/whatsapp_schemes/APY.png',
+  '13': 'https://bjp-schemes.vercel.app/whatsapp_schemes/Ayushman%20Bharat.png',
+  '14': 'https://bjp-schemes.vercel.app/whatsapp_schemes/ABHA.png'
+};
 
 const SCHEMES_EN = SCHEMES.map(s => {
   const item = {
@@ -45,8 +49,8 @@ const SCHEMES_EN = SCHEMES.map(s => {
     title: s.en,
     description: `Scheme #${s.id} — BJP Central Welfare`
   };
-  if (THREE_SCHEME_BASE64[s.id]) {
-    item.image = THREE_SCHEME_BASE64[s.id];
+  if (VERCEL_IMAGE_MAP[s.id]) {
+    item.image = VERCEL_IMAGE_MAP[s.id];
   }
   return item;
 });
