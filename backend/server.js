@@ -88,6 +88,7 @@ app.use(express.json({
 }));
 app.use(requestLogger);         // structured access log (method/path/status/latency)
 app.use('/assets', express.static(path.join(__dirname, 'public')));
+app.use('/whatsapp_schemes', express.static(path.join(__dirname, 'public', 'whatsapp_schemes')));
 
 // SECURITY FIX 8: Rate limiters — defined here, applied to specific routes below.
 // Login: 5 attempts per 15 minutes per IP.
