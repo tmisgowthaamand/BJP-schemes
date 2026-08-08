@@ -12,6 +12,7 @@ const { findVoterByEpic } = require('../services/voterSearchService');
 const logger = require('../config/logger');
 const fs     = require('fs');
 const path   = require('path');
+const SCHEME_ICONS = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'flows', 'scheme_icons.json'), 'utf8'));
 
 const CLOUDINARY_SCHEME_MAP = {
   "PMSBY": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/PMSBY.jpg",
@@ -50,7 +51,7 @@ const SCHEME_FILE_MAP = {
   '23': 'e-Shram.png'
 };
 
-const getSchemeImageUrl = (id) => `https://bjp-schemes.onrender.com/whatsapp_schemes/${encodeURIComponent(SCHEME_FILE_MAP[id] || `${id}.png`)}`;
+const getSchemeImageUrl = (id) => SCHEME_ICONS[id];
 
 const SCHEME_ICON_MAP = {
   1: '🛡️', 2: '📜', 3: '👴', 4: '🏪', 5: '👶', 6: '💼', 7: '🏭', 8: '🚀',
