@@ -30,7 +30,7 @@ const SCHEMES_EN = SCHEMES.map(s => ({
   id: s.id,
   title: s.en,
   description: `Scheme #${s.id} — BJP Central Welfare`,
-  image: 'data:image/png;base64,' + SCHEME_ICONS[s.id]
+  image: 'https://bjp-schemes.onrender.com/assets/schemes/' + s.id + '.png'
 }));
 
 const DISTRICTS_STATIC = [

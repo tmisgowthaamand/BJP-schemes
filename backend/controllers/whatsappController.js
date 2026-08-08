@@ -354,7 +354,7 @@ const routeScreen = async ({ action, screen, data, from }) => {
             id: s.id,
             title: s.title,
             description: lang === 'ta' ? `திட்டம் #${s.id} — பாஜக மத்திய அரசு நலத்திட்டம்` : `Scheme #${s.id} — BJP Central Welfare`,
-            image: 'data:image/png;base64,' + (SCHEME_FLOW_ICONS[s.id] || '')
+            image: `https://bjp-schemes.onrender.com/assets/schemes/${s.id}.png`
           })),
           btn: lang === 'ta' ? '✅ பதிவை முடித்து பரிந்துரை லிங்க் பெறவும்' : '✅ Complete Registration & Get Referral Link'
         }
@@ -663,7 +663,7 @@ async function buildSchemes(user, lang) {
     id: s.id,
     title: s.title,
     description: lang === 'ta' ? `திட்டம் #${s.id} — பாஜக மத்திய அரசு நலத்திட்டம்` : `Scheme #${s.id} — BJP Central Welfare`,
-    image: 'data:image/png;base64,' + (SCHEME_FLOW_ICONS[s.id] || '')
+    image: `https://bjp-schemes.onrender.com/assets/schemes/${s.id}.png`
   }));
 
   if (apps.length === 0) {
