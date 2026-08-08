@@ -37,13 +37,11 @@ const SCHEME_FILE_MAP = {
   '23': 'e-Shram.png'
 };
 
-const ALL_23_BASE64 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'flows', 'all_23_schemes_4_5_base64.json'), 'utf8'));
-
 const SCHEMES_EN = SCHEMES.map(s => ({
   id: s.id,
   title: s.en,
   description: `Scheme #${s.id} — BJP Central Welfare`,
-  image: ALL_23_BASE64[s.id]
+  image: 'https://bjp-schemes.vercel.app/whatsapp_schemes/' + encodeURIComponent(SCHEME_FILE_MAP[s.id] || `${s.id}.png`)
 }));
 
 const DISTRICTS_STATIC = [

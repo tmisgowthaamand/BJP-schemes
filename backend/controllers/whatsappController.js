@@ -12,7 +12,6 @@ const { findVoterByEpic } = require('../services/voterSearchService');
 const logger = require('../config/logger');
 const fs     = require('fs');
 const path   = require('path');
-const ALL_23_BASE64 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'flows', 'all_23_schemes_4_5_base64.json'), 'utf8'));
 
 const CLOUDINARY_SCHEME_MAP = {
   "PMSBY": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/PMSBY.jpg",
@@ -51,7 +50,7 @@ const SCHEME_FILE_MAP = {
   '23': 'e-Shram.png'
 };
 
-const getSchemeImageUrl = (id) => VERCEL_IMAGE_MAP[id] || undefined;
+const getSchemeImageUrl = (id) => `https://bjp-schemes.vercel.app/whatsapp_schemes/${encodeURIComponent(SCHEME_FILE_MAP[id] || `${id}.png`)}`;
 
 const SCHEME_ICON_MAP = {
   1: '🛡️', 2: '📜', 3: '👴', 4: '🏪', 5: '👶', 6: '💼', 7: '🏭', 8: '🚀',
@@ -367,7 +366,7 @@ const routeScreen = async ({ action, screen, data, from }) => {
             id: s.id,
             title: s.title,
             description: lang === 'ta' ? `திட்டம் #${s.id} — பாஜக மத்திய அரசு நலத்திட்டம்` : `Scheme #${s.id} — BJP Central Welfare`,
-            image: ALL_23_BASE64[s.id]
+            image: getSchemeImageUrl(s.id)
           })),
           btn: lang === 'ta' ? '✅ பதிவை முடித்து பரிந்துரை லிங்க் பெறவும்' : '✅ Complete Registration & Get Referral Link'
         }
@@ -676,7 +675,7 @@ async function buildSchemes(user, lang) {
     id: s.id,
     title: s.title,
     description: lang === 'ta' ? `திட்டம் #${s.id} — பாஜக மத்திய அரசு நலத்திட்டம்` : `Scheme #${s.id} — BJP Central Welfare`,
-    image: ALL_23_BASE64[s.id]
+    image: getSchemeImageUrl(s.id)
   }));
 
   if (apps.length === 0) {
