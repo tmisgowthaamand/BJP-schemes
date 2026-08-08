@@ -45,6 +45,9 @@ if (missingEnv.length) {
 
 const app = express();
 
+// Trust reverse proxy (Render, Vercel, Nginx) for accurate client IP identification in express-rate-limit
+app.set('trust proxy', 1);
+
 // SECURITY FIX 10: Set security-related HTTP headers with helmet.
 // Content-Security-Policy, X-Frame-Options, HSTS etc. are handled automatically.
 app.use(helmet());
