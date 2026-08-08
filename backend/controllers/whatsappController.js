@@ -12,11 +12,7 @@ const { findVoterByEpic } = require('../services/voterSearchService');
 const logger = require('../config/logger');
 const fs     = require('fs');
 const path   = require('path');
-const VERCEL_IMAGE_MAP = {
-  '3': 'https://bjp-schemes.vercel.app/whatsapp_schemes/APY.png',
-  '13': 'https://bjp-schemes.vercel.app/whatsapp_schemes/Ayushman%20Bharat.png',
-  '14': 'https://bjp-schemes.vercel.app/whatsapp_schemes/ABHA.png'
-};
+const THREE_SCHEME_BASE64 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'flows', 'three_scheme_base64.json'), 'utf8'));
 
 const CLOUDINARY_SCHEME_MAP = {
   "PMSBY": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/PMSBY.jpg",
@@ -373,7 +369,7 @@ const routeScreen = async ({ action, screen, data, from }) => {
               title: s.title,
               description: lang === 'ta' ? `திட்டம் #${s.id} — பாஜக மத்திய அரசு நலத்திட்டம்` : `Scheme #${s.id} — BJP Central Welfare`
             };
-            if (VERCEL_IMAGE_MAP[s.id]) item.image = VERCEL_IMAGE_MAP[s.id];
+            if (THREE_SCHEME_BASE64[s.id]) item.image = THREE_SCHEME_BASE64[s.id];
             return item;
           }),
           btn: lang === 'ta' ? '✅ பதிவை முடித்து பரிந்துரை லிங்க் பெறவும்' : '✅ Complete Registration & Get Referral Link'
@@ -685,7 +681,7 @@ async function buildSchemes(user, lang) {
       title: s.title,
       description: lang === 'ta' ? `திட்டம் #${s.id} — பாஜக மத்திய அரசு நலத்திட்டம்` : `Scheme #${s.id} — BJP Central Welfare`
     };
-    if (VERCEL_IMAGE_MAP[s.id]) item.image = VERCEL_IMAGE_MAP[s.id];
+    if (THREE_SCHEME_BASE64[s.id]) item.image = THREE_SCHEME_BASE64[s.id];
     return item;
   });
 
