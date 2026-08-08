@@ -12,7 +12,7 @@ const { findVoterByEpic } = require('../services/voterSearchService');
 const logger = require('../config/logger');
 const fs     = require('fs');
 const path   = require('path');
-const SCHEME_FLOW_ICONS = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'flows', 'scheme_icons.json'), 'utf8'));
+const THREE_SCHEME_BASE64 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'flows', 'three_scheme_base64.json'), 'utf8'));
 
 const CLOUDINARY_SCHEME_MAP = {
   "PMSBY": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/PMSBY.jpg",
@@ -51,7 +51,7 @@ const SCHEME_FILE_MAP = {
   '23': 'e-Shram.png'
 };
 
-const getSchemeImageUrl = (id) => `https://bjp-schemes.vercel.app/whatsapp_schemes/${encodeURIComponent(SCHEME_FILE_MAP[id] || `${id}.png`)}`;
+const getSchemeImageUrl = (id) => THREE_SCHEME_BASE64[id] || undefined;
 
 const SCHEME_ICON_MAP = {
   1: '🛡️', 2: '📜', 3: '👴', 4: '🏪', 5: '👶', 6: '💼', 7: '🏭', 8: '🚀',
@@ -363,12 +363,15 @@ const routeScreen = async ({ action, screen, data, from }) => {
           heading: lang === 'ta' ? '📋 திட்டதைத் தேர்ந்தெடுக்கவும் (23 திட்டங்கள்)' : '📋 Select Central Welfare Scheme (23 Schemes)',
           body: lang === 'ta' ? 'விண்ணப்பிக்க விரும்பும் பாஜக மத்திய அரசைச் சார்ந்த நலத்திட்டத்தைத் தேர்ந்தெடுக்கவும்:' : 'Choose the BJP Central Welfare Scheme you want to register for:',
           label: lang === 'ta' ? 'திட்டம் தேர்வு' : 'Select Scheme',
-          schemes: schemeOptions(lang).map(s => ({
-            id: s.id,
-            title: s.title,
-            description: lang === 'ta' ? `திட்டம் #${s.id} — பாஜக மத்திய அரசு நலத்திட்டம்` : `Scheme #${s.id} — BJP Central Welfare`,
-            image: getSchemeImageUrl(s.id)
-          })),
+          schemes: schemeOptions(lang).map(s => {
+            const item = {
+              id: s.id,
+              title: s.title,
+              description: lang === 'ta' ? `திட்டம் #${s.id} — பாஜக மத்திய அரசு நலத்திட்டம்` : `Scheme #${s.id} — BJP Central Welfare`
+            };
+            if (THREE_SCHEME_BASE64[s.id]) item.image = THREE_SCHEME_BASE64[s.id];
+            return item;
+          }),
           btn: lang === 'ta' ? '✅ பதிவை முடித்து பரிந்துரை லிங்க் பெறவும்' : '✅ Complete Registration & Get Referral Link'
         }
       };
@@ -672,12 +675,15 @@ async function buildFullSchemesText(user, lang) {
 
 async function buildSchemes(user, lang) {
   const apps = await SchemeApplication.find({ userId: user._id }).sort({ appliedAt: -1 });
-  const schemesList = schemeOptions(lang).map(s => ({
-    id: s.id,
-    title: s.title,
-    description: lang === 'ta' ? `திட்டம் #${s.id} — பாஜக மத்திய அரசு நலத்திட்டம்` : `Scheme #${s.id} — BJP Central Welfare`,
-    image: getSchemeImageUrl(s.id)
-  }));
+  const schemesList = schemeOptions(lang).map(s => {
+    const item = {
+      id: s.id,
+      title: s.title,
+      description: lang === 'ta' ? `திட்டம் #${s.id} — பாஜக மத்திய அரசு நலத்திட்டம்` : `Scheme #${s.id} — BJP Central Welfare`
+    };
+    if (THREE_SCHEME_BASE64[s.id]) item.image = THREE_SCHEME_BASE64[s.id];
+    return item;
+  });
 
   if (apps.length === 0) {
     const emptyBody = lang === 'ta'

@@ -37,12 +37,19 @@ const SCHEME_FILE_MAP = {
   '23': 'e-Shram.png'
 };
 
-const SCHEMES_EN = SCHEMES.map(s => ({
-  id: s.id,
-  title: s.en,
-  description: `Scheme #${s.id} — BJP Central Welfare`,
-  image: 'https://bjp-schemes.vercel.app/whatsapp_schemes/' + encodeURIComponent(SCHEME_FILE_MAP[s.id] || `${s.id}.png`)
-}));
+const THREE_SCHEME_BASE64 = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'flows', 'three_scheme_base64.json'), 'utf8'));
+
+const SCHEMES_EN = SCHEMES.map(s => {
+  const item = {
+    id: s.id,
+    title: s.en,
+    description: `Scheme #${s.id} — BJP Central Welfare`
+  };
+  if (THREE_SCHEME_BASE64[s.id]) {
+    item.image = THREE_SCHEME_BASE64[s.id];
+  }
+  return item;
+});
 
 const DISTRICTS_STATIC = [
   'ARIYALUR','CHENGALPATTU','CHENNAI','COIMBATORE','CUDDALORE','DHARMAPURI','DINDIGUL','ERODE',
