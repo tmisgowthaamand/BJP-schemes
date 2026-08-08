@@ -46,7 +46,7 @@ const menuScreen = (id, heading, body, opts, radioLabel, btn) => ({
     bannerImg, { type: 'TextHeading', text: heading }, { type: 'TextBody', text: body },
     form([
       { type: 'RadioButtonsGroup', name: 'menu_choice', label: radioLabel, required: true, 'data-source': opts },
-      { type: 'Footer', label: btn, 'on-click-action': { name: 'data_exchange', payload: { screen: id, choice: '${form.menu_choice}' } } }
+      { type: 'Footer', label: btn, 'on-click-action': { name: 'data_exchange', payload: { screen: id, choice: '${form.menu_choice}', menu_choice: '${form.menu_choice}' } } }
     ])
   ] }
 });

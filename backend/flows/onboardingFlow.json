@@ -461,7 +461,8 @@
                   "name": "data_exchange",
                   "payload": {
                     "screen": "MAIN_MENU_TA",
-                    "choice": "${form.menu_choice}"
+                    "choice": "${form.menu_choice}",
+                    "menu_choice": "${form.menu_choice}"
                   }
                 }
               }
@@ -540,7 +541,8 @@
                   "name": "data_exchange",
                   "payload": {
                     "screen": "MAIN_MENU_EN",
-                    "choice": "${form.menu_choice}"
+                    "choice": "${form.menu_choice}",
+                    "menu_choice": "${form.menu_choice}"
                   }
                 }
               }
