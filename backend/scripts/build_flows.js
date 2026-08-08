@@ -30,7 +30,7 @@ const SCHEMES_EN = SCHEMES.map(s => ({
   id: s.id,
   title: s.en,
   description: `Scheme #${s.id} — BJP Central Welfare`,
-  image: SCHEME_ICONS[s.id] || ICONS.schemes
+  image: 'data:image/png;base64,' + SCHEME_ICONS[s.id]
 }));
 
 const DISTRICTS_STATIC = [
@@ -67,7 +67,7 @@ const commonScreens = [
       heading: strField('Schemes'),
       body: strField('List'),
       label: strField('Browse 23 Schemes'),
-      schemes: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, title: { type: 'string' }, description: { type: 'string' } } }, __example__: SCHEMES_EN },
+      schemes: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, title: { type: 'string' }, description: { type: 'string' }, image: { type: 'string' } } }, __example__: SCHEMES_EN },
       btn_apply: strField('Apply'),
       done: strField('Close')
     }, layout: { type: 'SingleColumnLayout', children: [
@@ -82,7 +82,7 @@ const commonScreens = [
       heading: strField('Apply'),
       body: strField('Select'),
       label: strField('Scheme'),
-      schemes: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, title: { type: 'string' }, description: { type: 'string' } } }, __example__: SCHEMES_EN },
+      schemes: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, title: { type: 'string' }, description: { type: 'string' }, image: { type: 'string' } } }, __example__: SCHEMES_EN },
       btn: strField('Apply')
     }, layout: { type: 'SingleColumnLayout', children: [
     { type: 'TextHeading', text: '${data.heading}' }, { type: 'TextBody', text: '${data.body}' },
