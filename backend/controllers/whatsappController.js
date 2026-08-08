@@ -360,7 +360,8 @@ const routeScreen = async ({ action, screen, data, from }) => {
       if (!user) return { screen: menuScreen, data: {} };
 
       let result;
-      switch (data.choice || data.action) {
+      const selectedChoice = data.menu_choice || data.choice || data.action;
+      switch (selectedChoice) {
         case 'profile':   result = { screen: 'MY_PROFILE',  data: buildProfile(user, lang) }; break;
         case 'schemes':   result = { screen: 'MY_SCHEMES',  data: await buildSchemes(user, lang) }; break;
         case 'referral':  result = { screen: 'MY_REFERRAL', data: await buildReferral(user, lang) }; break;
