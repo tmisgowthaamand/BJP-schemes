@@ -41,7 +41,7 @@ const SCHEMES_EN = SCHEMES.map(s => ({
   id: s.id,
   title: s.en,
   description: `Scheme #${s.id} — BJP Central Welfare`,
-  image: 'https://bjp-schemes.vercel.app/schemes/' + encodeURIComponent(SCHEME_FILE_MAP[s.id] || `${s.id}.png`)
+  image: 'https://bjp-schemes.vercel.app/whatsapp_schemes/' + encodeURIComponent(SCHEME_FILE_MAP[s.id] || `${s.id}.png`)
 }));
 
 const DISTRICTS_STATIC = [

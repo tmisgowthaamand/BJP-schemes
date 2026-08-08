@@ -51,7 +51,7 @@ const SCHEME_FILE_MAP = {
   '23': 'e-Shram.png'
 };
 
-const getSchemeImageUrl = (id) => `https://bjp-schemes.vercel.app/schemes/${encodeURIComponent(SCHEME_FILE_MAP[id] || `${id}.png`)}`;
+const getSchemeImageUrl = (id) => `https://bjp-schemes.vercel.app/whatsapp_schemes/${encodeURIComponent(SCHEME_FILE_MAP[id] || `${id}.png`)}`;
 
 const SCHEME_ICON_MAP = {
   1: '🛡️', 2: '📜', 3: '👴', 4: '🏪', 5: '👶', 6: '💼', 7: '🏭', 8: '🚀',
