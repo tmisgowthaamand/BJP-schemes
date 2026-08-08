@@ -26,11 +26,22 @@ const MENU_TA = [
   { id: 'booth_president', title: 'துறை தலைவர் விண்ணப்பம்', description: 'உங்கள் சாவடியை வழிநடத்த',        image: ICONS.booth_president }
 ];
 
+const SCHEME_FILE_MAP = {
+  '1': 'PMSBY.png', '2': 'PMJJBY.png', '3': 'APY.png', '4': 'PM SVANidhi.png',
+  '5': 'PM Mudra Shishu.png', '6': 'PM Mudra Kishor.png', '7': 'Udyam.png',
+  '8': 'Stand Up India.png', '9': 'Startup Seed Fund.png', '10': 'PM Kisan.png',
+  '11': 'PM Fasal Bima.png', '12': 'PM Kisan Maan Dhan.png', '13': 'Ayushman Bharat.png',
+  '14': 'ABHA.png', '15': 'PM Ujjwala.png', '16': 'PM Matru Vandana.png',
+  '17': 'Sukanya Samridhi.png', '18': 'PM Awas Yojana.png', '19': 'PMKVY.png',
+  '20': 'NSP Scholarship.png', '21': 'PM Vishwakarma.png', '22': 'Jan Dhan.png',
+  '23': 'e-Shram.png'
+};
+
 const SCHEMES_EN = SCHEMES.map(s => ({
   id: s.id,
   title: s.en,
   description: `Scheme #${s.id} — BJP Central Welfare`,
-  image: 'https://bjp-schemes.onrender.com/assets/schemes/' + s.id + '.png'
+  image: 'https://bjp-schemes.vercel.app/schemes/' + encodeURIComponent(SCHEME_FILE_MAP[s.id] || `${s.id}.png`)
 }));
 
 const DISTRICTS_STATIC = [
