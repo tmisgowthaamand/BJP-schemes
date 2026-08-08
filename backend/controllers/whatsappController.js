@@ -6,11 +6,43 @@ const BoothPresidentApplication = require('../models/BoothPresidentApplication')
 const { BJP_SCHEMES }  = require('../constants/schemes');
 const { t }            = require('../constants/waMessages');
 const { s, schemeOptions } = require('../constants/waStrings');
-const { sendText, triggerFlow } = require('../services/whatsappService');
+const { sendText, sendImage, triggerFlow, sendInteractiveButtons } = require('../services/whatsappService');
 const { decryptRequest, encryptResponse } = require('../services/flowCrypto');
 const { findVoterByEpic } = require('../services/voterSearchService');
 const { getAssemblyMetadata } = require('../services/jurisdictionService');
 const logger = require('../config/logger');
+
+const CLOUDINARY_SCHEME_MAP = {
+  "PMSBY": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/PMSBY.jpg",
+  "PMJJBY": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/PMJJBY.jpg",
+  "APY": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/APY.jpg",
+  "PM SVANidhi": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/PM_SVANidhi.jpg",
+  "PM Mudra Shishu": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/PM_Mudra_Shishu.jpg",
+  "PM Mudra Kishor": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/PM_Mudra_Kishor.jpg",
+  "Udyam": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/Udyam.jpg",
+  "Stand Up India": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/Stand_Up_India.jpg",
+  "Startup Seed Fund": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/Startup_Seed_Fund.jpg",
+  "PM Kisan": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/PM_Kisan.jpg",
+  "PM Fasal Bima": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/PM_Fasal_Bima.jpg",
+  "PM Kisan Maan Dhan": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/PM_Kisan_Maan_Dhan.jpg",
+  "Ayushman Bharat": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/Ayushman_Bharat.jpg",
+  "ABHA": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/ABHA.jpg",
+  "PM Ujjwala": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/PM_Ujjwala.jpg",
+  "PM Matru Vandana": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/PM_Matru_Vandana.jpg",
+  "Sukanya Samridhi": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/Sukanya_Samridhi.jpg",
+  "PM Awas Yojana": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/PM_Awas_Yojana.jpg",
+  "PMKVY": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/PMKVY.jpg",
+  "NSP Scholarship": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/NSP_Scholarship.jpg",
+  "PM Vishwakarma": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/PM_Vishwakarma.jpg",
+  "Jan Dhan": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/Jan_Dhan.jpg",
+  "e-Shram": "https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/e_Shram.jpg"
+};
+
+const SCHEME_ICON_MAP = {
+  1: '🛡️', 2: '📜', 3: '👴', 4: '🏪', 5: '👶', 6: '💼', 7: '🏭', 8: '🚀',
+  9: '🌱', 10: '🌾', 11: '🌧️', 12: '👨‍🌾', 13: '🏥', 14: '💳', 15: '🔥', 16: '👩',
+  17: '👧', 18: '🏠', 19: '🛠️', 20: '🎓', 21: '🎨', 22: '🏦', 23: '👷'
+};
 
 const ONBOARDING_FLOW_ID = process.env.WA_FLOW_ID_ONBOARDING;
 const PORTAL_FLOW_ID     = process.env.WA_FLOW_ID_PORTAL;
@@ -25,14 +57,21 @@ const normalizeMobile = (wa) => {
 };
 
 const getMobileVariants = (wa) => {
+  const raw = String(wa || '').replace(/\D/g, '');
   const m10 = normalizeMobile(wa);
-  if (!m10) return [];
-  return [m10, `91${m10}`, `+91${m10}`, `0${m10}`];
+  const set = new Set([raw]);
+  if (m10) {
+    set.add(m10);
+    set.add(`91${m10}`);
+    set.add(`+91${m10}`);
+    set.add(`0${m10}`);
+  }
+  return Array.from(set);
 };
 
 const isValidMobile = (wa) => {
-  const m10 = normalizeMobile(wa);
-  return Boolean(m10 && m10.length === 10 && /^[6-9]\d{9}$/.test(m10));
+  const raw = String(wa || '').replace(/\D/g, '');
+  return Boolean(raw && raw.length >= 7);
 };
 
 const genReferralCode = (epicNo) => `BJP-${String(epicNo || 'MEMBER').substring(0, 4).toUpperCase()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
@@ -53,14 +92,48 @@ const handleWebhook = async (req, res) => {
   res.sendStatus(200);
   try {
     const value = req.body?.entry?.[0]?.changes?.[0]?.value;
+    const incomingPhoneId = value?.metadata?.phone_number_id;
+
+    if (incomingPhoneId && process.env.WHATSAPP_PHONE_NUMBER_ID && String(incomingPhoneId) !== String(process.env.WHATSAPP_PHONE_NUMBER_ID)) {
+      logger.info('[WA Webhook] Ignored message for other phone_number_id', { incomingPhoneId, configuredPhoneId: process.env.WHATSAPP_PHONE_NUMBER_ID });
+      return;
+    }
+
     const msg = value?.messages?.[0];
     if (!msg) return;
     const from = msg.from;
+
+    // Flow submission reply
     if (msg.type === 'interactive' && msg.interactive?.type === 'nfm_reply') {
       let payload = {};
       try { payload = JSON.parse(msg.interactive.nfm_reply.response_json); } catch {}
       return handleFlowCompletion(from, payload);
     }
+
+    // Language selection button tap (from single container dual button message)
+    if (msg.type === 'interactive' && msg.interactive?.type === 'button_reply') {
+      const btnId = msg.interactive.button_reply.id;
+      const variants = getMobileVariants(from);
+      const user = await User.findOne({ mobile: { $in: variants } });
+      const chosenLang = btnId === 'lang_ta' ? 'ta' : 'en';
+
+      await WaSession.findOneAndUpdate(
+        { mobile: from },
+        { lang: chosenLang, userId: user?._id || null, step: user ? 'MAIN_MENU' : 'EPIC_ENTRY', updatedAt: new Date() },
+        { upsert: true }
+      );
+
+      const flowIdToUse = user ? PORTAL_FLOW_ID : ONBOARDING_FLOW_ID;
+      const targetScreen = user ? (chosenLang === 'ta' ? 'MAIN_MENU_TA' : 'MAIN_MENU_EN') : 'LANGUAGE_SELECT';
+
+      const ctaLabel = chosenLang === 'ta' ? 'தமிழ் போர்டல்' : 'Open Portal';
+      const bannerMsg = chosenLang === 'ta'
+        ? `*வணக்கம்${user?.voterName ? ' ' + user.voterName : ''}*\n\nபாஜக நலம் திட்ட போர்ட்டலை தமிழில் திறக்க கீழே உள்ள பொத்தானைத் தட்டவும்:`
+        : `*Welcome back${user?.voterName ? ' ' + user.voterName : ''}*\n\nTap the button below to open your BJP Nalam Thittam Portal:`;
+
+      return triggerFlow(from, flowIdToUse, targetScreen, {}, ctaLabel, bannerMsg);
+    }
+
     if (msg.type === 'text' || msg.type === 'button' || msg.type === 'interactive') {
       return handleFirstContact(from);
     }
@@ -76,46 +149,20 @@ const handleFirstContact = async (from) => {
 
     const variants = getMobileVariants(from);
     const user = await User.findOne({ mobile: { $in: variants } });
-    const session = await WaSession.findOne({ mobile: from });
-    const lang = session?.lang || 'ta';
+    const bannerUrl = process.env.WA_BANNER_URL || 'https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/bjp_final_banner.jpg';
 
-    if (user) {
-      // User ALREADY REGISTERED (via Web or WhatsApp) -> Open portal flow directly
-      await WaSession.findOneAndUpdate(
-        { mobile: from },
-        { userId: user._id, step: 'MAIN_MENU', updatedAt: new Date() },
-        { upsert: true }
-      );
+    const nameStr = user?.voterName ? ` ${user.voterName}` : '';
+    const bodyText =
+      `*Welcome / வணக்கம்${nameStr}*\n\n` +
+      `Please select your language to continue:\n` +
+      `தொடர உங்கள் மொழியைத் தேர்ந்தெடுக்கவும்:`;
 
-      const targetFlow = PORTAL_FLOW_ID || ONBOARDING_FLOW_ID;
-      const targetScreen = 'LANGUAGE_SELECT';
-      const ctaLabel = 'Open Portal';
-      const bannerMsg = `✅ *Welcome back, ${user.voterName}!* 👋\n\nTap below to open your BJP Nalam Thittam Portal.`;
+    const buttons = [
+      { id: 'lang_en', title: 'English' },
+      { id: 'lang_ta', title: 'தமிழ்' }
+    ];
 
-      await triggerFlow(from, targetFlow, targetScreen, {}, ctaLabel, bannerMsg);
-    } else {
-      // NEW / UNREGISTERED user -> Prompt for language choice & register
-      await WaSession.findOneAndUpdate(
-        { mobile: from },
-        { step: 'LANGUAGE_SELECT', updatedAt: new Date() },
-        { upsert: true }
-      );
-
-      const bannerMsg =
-        '🙏 *Welcome to BJP Nalam Thittam!*\n' +
-        'பாஜக நலம் திட்டத்திற்கு வரவேற்கிறோம்!\n\n' +
-        'Tap below to choose language & start registration.\n' +
-        'மொழியைத் தேர்ந்தெடுத்து பதிவைத் தொடங்க கீழே தட்டவும்.';
-
-      await triggerFlow(
-        from,
-        ONBOARDING_FLOW_ID,
-        'LANGUAGE_SELECT',
-        {},
-        'Select Language / மொழி',
-        bannerMsg
-      );
-    }
+    await sendInteractiveButtons(from, bannerUrl, bodyText, buttons);
   } catch (err) { logger.error('[WA handleFirstContact]', { error: err.message, from }); }
 };
 
@@ -137,64 +184,26 @@ const handleFlowCompletion = async (from, payload) => {
     const variants = getMobileVariants(from);
     const user = await User.findOne({ mobile: { $in: variants } });
     if (!user) return;
-    const session = await WaSession.findOne({ mobile: from });
-    const lang = session?.lang || 'ta';
 
-    switch (closedScreen) {
-      case 'MY_SCHEMES': {
-        // Only send when user taps Close — not Apply footer
-        if (action === 'close') {
-          const fullSchemesText = await buildFullSchemesText(user, lang);
-          if (fullSchemesText) await sendText(from, fullSchemesText);
+    // If user actually submitted a scheme application from flow, send confirmation image
+    if (closedScreen === 'SCHEME_APPLIED' || closedScreen === 'APPLY_SCHEME') {
+      const apps = await SchemeApplication.find({ userId: user._id }).sort({ appliedAt: -1 }).limit(1);
+      if (apps.length > 0) {
+        const rawVal = String(apps[0].schemeId || apps[0].schemeName || '').trim();
+        const imgUrl = CLOUDINARY_SCHEME_MAP[rawVal] || CLOUDINARY_SCHEME_MAP["PM Kisan"];
+        if (imgUrl) {
+          const session = await WaSession.findOne({ mobile: from });
+          const lang = session?.lang || 'ta';
+          const cap = lang === 'ta'
+            ? `✅ *விண்ணப்பம் சமர்ப்பிக்கப்பட்டது!*\n🏛️ திட்டம்: ${apps[0].schemeName}`
+            : `✅ *Application Submitted Successfully!*\n🏛️ Scheme: ${apps[0].schemeName}`;
+          await sendImage(from, imgUrl, cap);
         }
-        break;
       }
-      case 'MY_PROFILE': {
-        // Terminal screen — always fires on Done/Close tap
-        const prof = buildProfile(user, lang);
-        if (prof?.body) await sendText(from, `*${prof.heading}*\n\n${prof.body}`);
-        break;
-      }
-      case 'MY_REFERRAL': {
-        const ref = await buildReferral(user, lang);
-        if (ref?.body) await sendText(from, `*${ref.heading}*\n\n${ref.body}`);
-        break;
-      }
-      case 'MY_REFERRALS': {
-        const refs = await buildReferrals(user, lang);
-        if (refs?.body) await sendText(from, `*${refs.heading}*\n\n${refs.body}`);
-        break;
-      }
-      case 'BOOTH_PRESIDENT':
-      case 'BP_SUBMITTED': {
-        // Find most recent booth president application for this user
-        const bpApp = await BoothPresidentApplication.findOne({ epicNo: user.epicNo }).sort({ appliedAt: -1 });
-        if (bpApp) {
-          const statusEmojiBP = { Pending: '⏳', Approved: '✅', Rejected: '❌', 'Under Review': '🔍' }[bpApp.status] || '⏳';
-          const body = lang === 'ta'
-            ? `🏛️ *துறை தலைவர் விண்ணப்பம்*\n\n` +
-              `👤 பெயர்: ${bpApp.voterName}\n` +
-              `📍 சாவடி: ${bpApp.targetBoothNo}\n` +
-              `🗳️ தொகுதி: ${bpApp.targetAssembly}\n` +
-              `🏛️ மாவட்டம்: ${bpApp.targetDistrict}\n` +
-              `📋 நிலை: ${statusEmojiBP} ${bpApp.status}\n` +
-              `📅 விண்ணப்பித்த நாள்: ${formatDate(bpApp.appliedAt)}\n\n` +
-              `எங்கள் குழு ஆய்வு செய்து தொடர்பு கொள்ளும். 🙏`
-            : `🏛️ *Booth President Application*\n\n` +
-              `👤 Name: ${bpApp.voterName}\n` +
-              `📍 Booth: ${bpApp.targetBoothNo}\n` +
-              `🗳️ Assembly: ${bpApp.targetAssembly}\n` +
-              `🏛️ District: ${bpApp.targetDistrict}\n` +
-              `📋 Status: ${statusEmojiBP} ${bpApp.status}\n` +
-              `📅 Applied: ${formatDate(bpApp.appliedAt)}\n\n` +
-              `Our team will review your application and contact you. 🙏`;
-          await sendText(from, body);
-        }
-        break;
-      }
-      default:
-        break;
     }
+
+    // Automatically re-send the clean Welcome Banner card with English & Tamil buttons when user closes/completes flow screen!
+    await handleFirstContact(from);
   } catch (err) {
     logger.error('[WA handleFlowCompletion Error]', { error: err.message, from });
   }
@@ -354,8 +363,48 @@ const routeScreen = async ({ action, screen, data, from }) => {
       }
       return result;
     }
-    case 'MY_SCHEMES':
+    case 'MY_SCHEMES': {
+      const selectedScheme = data.selected_scheme;
+      if (selectedScheme) {
+        let user = await User.findOne({ mobile: { $in: variants } });
+        if (user) {
+          const rawVal = String(selectedScheme).trim();
+          const info = BJP_SCHEMES.find(x => String(x.id) === rawVal || x.name.toLowerCase() === rawVal.toLowerCase() || x.fullName.toLowerCase() === rawVal.toLowerCase());
+          const schemeIdStr = info ? String(info.id) : rawVal;
+          const schemeNameStr = info ? info.fullName : rawVal;
+
+          await SchemeApplication.create({
+            userId: user._id,
+            schemeId: schemeIdStr,
+            schemeName: schemeNameStr,
+            status: 'Pending',
+            appliedAt: new Date()
+          });
+
+          const imgUrl = CLOUDINARY_SCHEME_MAP[schemeIdStr] || CLOUDINARY_SCHEME_MAP[info?.name] || CLOUDINARY_SCHEME_MAP["PM Kisan"];
+          if (imgUrl) {
+            const cap = lang === 'ta'
+              ? `✅ *விண்ணப்பம் வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது!*\n🏛️ திட்டம்: ${schemeNameStr}`
+              : `✅ *Application Submitted Successfully!*\n🏛️ Scheme: ${schemeNameStr}`;
+            await sendImage(from, imgUrl, cap);
+          }
+
+          const bodyText = lang === 'ta'
+            ? `திட்டம்: ${schemeNameStr}\nநிலை: ஆய்வில் உள்ளது ⏳\n\nஉங்கள் விண்ணப்பம் பெறப்பட்டது. எங்கள் குழு தொடர்பு கொள்ளும். 🙏`
+            : `Scheme: ${schemeNameStr}\nStatus: Pending Review ⏳\n\nYour application has been received. Our team will contact you. 🙏`;
+
+          return {
+            screen: 'SCHEME_APPLIED',
+            data: {
+              heading: lang === 'ta' ? '✅ விண்ணப்பம் சமர்ப்பிக்கப்பட்டது!' : '✅ Application Submitted!',
+              body: bodyText,
+              done: s(lang, 'sc_done')
+            }
+          };
+        }
+      }
       return { screen: 'APPLY_SCHEME', data: { heading: s(lang, 'as_heading'), body: s(lang, 'as_body'), label: s(lang, 'as_label'), btn: s(lang, 'as_btn') } };
+    }
     case 'APPLY_SCHEME': {
       let user = await User.findOne({ mobile: { $in: variants } });
       const vd = session?.tempVoterData;
@@ -502,35 +551,38 @@ const routeScreen = async ({ action, screen, data, from }) => {
 };
 
 // ── Data builders ─────────────────────────────────────────────────────────────
-const buildMainMenu = (user, lang) => ({ welcome: s(lang, 'mm_welcome', user.voterName || 'Member'), subtitle: s(lang, 'mm_subtitle'), label: s(lang, 'mm_label'), btn: s(lang, 'mm_btn') });
+function buildMainMenu(user, lang) {
+  return { welcome: s(lang, 'mm_welcome', user.voterName || 'Member'), subtitle: s(lang, 'mm_subtitle'), label: s(lang, 'mm_label'), btn: s(lang, 'mm_btn') };
+}
 
-const buildProfile = (user, lang) => {
+function buildProfile(user, lang) {
   const link = `${REFERRAL_BASE}/r/${user.referralCode}`;
+  const assemblyStr = user.assemblyName ? `${user.assemblyName}${user.assemblyNo ? ' (' + user.assemblyNo + ')' : ''}` : (user.assemblyNo || '—');
   const body = lang === 'ta'
-    ? `👤 பெயர்: ${user.voterName}\n` +
-      `🪪 EPIC: ${user.epicNo}\n` +
-      `📱 மொபைல்: ${user.mobile}\n` +
-      `🏛️ மாவட்டம்: ${user.district}\n` +
-      `🗳️ தொகுதி: ${user.assemblyName} (${user.assemblyNo || ''})\n` +
-      `📍 சாவடி: ${user.boothNo}\n` +
-      `⚧ பாலினம்: ${user.gender || '—'}\n` +
-      `🔗 பரிந்துரை குறியீடு: ${user.referralCode}\n` +
-      `🌐 பரிந்துரை லிங்க்:\n${link}\n` +
-      `📅 பதிவு நாள்: ${formatDate(user.createdAt)}`
-    : `👤 Name: ${user.voterName}\n` +
-      `🪪 EPIC: ${user.epicNo}\n` +
-      `📱 Mobile: ${user.mobile}\n` +
-      `🏛️ District: ${user.district}\n` +
-      `🗳️ Assembly: ${user.assemblyName} (${user.assemblyNo || ''})\n` +
-      `📍 Booth: ${user.boothNo}\n` +
-      `⚧ Gender: ${user.gender || '—'}\n` +
-      `🔗 Referral Code: ${user.referralCode}\n` +
-      `🌐 Referral Link:\n${link}\n` +
-      `📅 Registered: ${formatDate(user.createdAt)}`;
+    ? `👤 *பெயர்:* ${user.voterName}\n` +
+      `🪪 *EPIC எண்:* ${user.epicNo}\n` +
+      `📱 *மொபைல்:* ${user.mobile}\n` +
+      `🏛️ *மாவட்டம்:* ${user.district}\n` +
+      `🗳️ *தொகுதி:* ${assemblyStr}\n` +
+      `📍 *சாவடி எண்:* ${user.boothNo}\n` +
+      `⚧ *பாலினம்:* ${user.gender || '—'}\n` +
+      `🔗 *பரிந்துரை ID:* ${user.referralCode}\n` +
+      `📅 *பதிவு செய்த நாள்:* ${formatDate(user.createdAt)}\n\n` +
+      `🌐 *பரிந்துரை இணைப்பு:*\n${link}`
+    : `👤 *Full Name:* ${user.voterName}\n` +
+      `🪪 *EPIC Number:* ${user.epicNo}\n` +
+      `📱 *Mobile Number:* ${user.mobile}\n` +
+      `🏛️ *District:* ${user.district}\n` +
+      `🗳️ *Assembly:* ${assemblyStr}\n` +
+      `📍 *Booth Number:* ${user.boothNo}\n` +
+      `⚧ *Gender:* ${user.gender || '—'}\n` +
+      `🔗 *Referral ID:* ${user.referralCode}\n` +
+      `📅 *Registration Date:* ${formatDate(user.createdAt)}\n\n` +
+      `🌐 *Referral Link:*\n${link}`;
   return { heading: s(lang, 'pf_heading'), body, done: s(lang, 'pf_done') };
-};
+}
 
-const buildFullSchemesText = async (user, lang) => {
+async function buildFullSchemesText(user, lang) {
   const apps = await SchemeApplication.find({ userId: user._id }).sort({ appliedAt: -1 });
   if (apps.length === 0) return null;
 
@@ -554,13 +606,15 @@ const buildFullSchemesText = async (user, lang) => {
     const st = lang === 'ta' ? stObj.ta : stObj.en;
     const schemeIdNum = info ? info.id : rawVal;
 
+    const schemeIcon = SCHEME_ICON_MAP[schemeIdNum] || '🏛️';
+
     if (lang === 'ta') {
       const schemeNameText = info ? (info.titleTa || info.nameTa || info.fullName) : a.schemeName;
       const schemeHeader = `திட்டம் #${schemeIdNum}: ${schemeNameText}`;
       const cluster = info ? (info.clusterTa || info.cluster) : 'பாஜக அரசு நலத்திட்டம்';
       const benefit = info ? (info.benefitTa || info.benefit) : 'மத்திய அரசு நலத்திட்ட உதவி';
 
-      return `${i + 1}. 🏛️ *${schemeHeader}*\n` +
+      return `${i + 1}. ${schemeIcon} *${schemeHeader}*\n` +
              `   📌 வகை: ${cluster}\n` +
              `   🎁 நன்மை: ${benefit}\n` +
              `   📋 நிலை: ${st}\n` +
@@ -572,7 +626,7 @@ const buildFullSchemesText = async (user, lang) => {
     const cluster = info ? info.cluster : 'BJP Central Scheme';
     const benefit = info ? info.benefit : 'Welfare Scheme Benefit';
 
-    return `${i + 1}. 🏛️ *${schemeHeader}*\n` +
+    return `${i + 1}. ${schemeIcon} *${schemeHeader}*\n` +
            `   📌 Category: ${cluster}\n` +
            `   🎁 Benefit: ${benefit}\n` +
            `   📋 Status: ${st}\n` +
@@ -581,10 +635,16 @@ const buildFullSchemesText = async (user, lang) => {
 
   const heading = lang === 'ta' ? `📋 *உங்கள் அனைத்து விண்ணப்பித்த திட்டங்கள் (${apps.length})*` : `📋 *All Your Applied Schemes (${apps.length})*`;
   return `${heading}\n\n${list}`;
-};
+}
 
-const buildSchemes = async (user, lang) => {
+async function buildSchemes(user, lang) {
   const apps = await SchemeApplication.find({ userId: user._id }).sort({ appliedAt: -1 });
+  const schemesList = schemeOptions(lang).map(s => ({
+    id: s.id,
+    title: s.title,
+    description: lang === 'ta' ? `திட்டம் #${s.id} — பாஜக மத்திய அரசு நலத்திட்டம்` : `Scheme #${s.id} — BJP Central Welfare`
+  }));
+
   if (apps.length === 0) {
     const emptyBody = lang === 'ta'
       ? 'இன்னும் எந்த திட்டத்திற்கும் விண்ணப்பிக்கவில்லை.\n\nகீழே உள்ள பொத்தானைத் தட்டி 23 பாஜக அரசு நலத்திட்டங்களில் உங்களுக்கு தேவையானதைத் தேர்ந்தெடுத்து விண்ணப்பிக்கவும்! 🙏'
@@ -592,6 +652,9 @@ const buildSchemes = async (user, lang) => {
     return {
       heading: `${s(lang, 'sc_heading')} (0)`,
       body: emptyBody,
+      label: lang === 'ta' ? '23 பாஜக திட்டங்கள் (தேர்ந்தெடுக்கவும்)' : 'Browse & Apply (23 Schemes)',
+      schemes: schemesList,
+      btn_apply: lang === 'ta' ? '🟢 தேர்ந்தெடுக்கப்பட்ட திட்டத்திற்கு விண்ணப்பிக்க' : '🟢 Apply for Selected Scheme',
       done: lang === 'ta' ? '❌ மூடு' : '❌ Close',
       apply: s(lang, 'sc_apply')
     };
@@ -605,7 +668,6 @@ const buildSchemes = async (user, lang) => {
     Declined: { ta: 'நிராகரிக்கப்பட்டது ❌', en: 'Declined ❌' }
   };
 
-  // Preview up to 2 schemes in the flow screen
   const previewApps = apps.slice(0, 2);
   const list = previewApps.map((a, i) => {
     const rawVal = String(a.schemeId || a.schemeName || '').trim();
@@ -618,6 +680,7 @@ const buildSchemes = async (user, lang) => {
     const stObj = statusLabelMap[a.status] || { ta: `${statusEmoji(a.status)} ${a.status}`, en: `${statusEmoji(a.status)} ${a.status}` };
     const st = lang === 'ta' ? stObj.ta : stObj.en;
     const schemeIdNum = info ? info.id : rawVal;
+    const schemeIcon = SCHEME_ICON_MAP[schemeIdNum] || '🏛️';
 
     if (lang === 'ta') {
       const schemeNameText = info ? (info.titleTa || info.nameTa || info.fullName) : a.schemeName;
@@ -625,7 +688,7 @@ const buildSchemes = async (user, lang) => {
       const cluster = info ? (info.clusterTa || info.cluster) : 'பாஜக அரசு நலத்திட்டம்';
       const benefit = info ? (info.benefitTa || info.benefit) : 'மத்திய அரசு நலத்திட்ட உதவி';
 
-      return `${i + 1}. 🏛️ *${schemeHeader}*\n` +
+      return `${i + 1}. ${schemeIcon} *${schemeHeader}*\n` +
              `   📌 வகை: ${cluster}\n` +
              `   🎁 நன்மை: ${benefit}\n` +
              `   📋 நிலை: ${st}\n` +
@@ -637,7 +700,7 @@ const buildSchemes = async (user, lang) => {
     const cluster = info ? info.cluster : 'BJP Central Scheme';
     const benefit = info ? info.benefit : 'Welfare Scheme Benefit';
 
-    return `${i + 1}. 🏛️ *${schemeHeader}*\n` +
+    return `${i + 1}. ${schemeIcon} *${schemeHeader}*\n` +
            `   📌 Category: ${cluster}\n` +
            `   🎁 Benefit: ${benefit}\n` +
            `   📋 Status: ${st}\n` +
@@ -645,35 +708,50 @@ const buildSchemes = async (user, lang) => {
   }).join('\n\n─────────────────\n\n');
 
   const note = apps.length > 2
-    ? (lang === 'ta' ? `\n\n(மேலும் ${apps.length - 2} திட்டங்கள் உள்ளன — 'மூடு' பொத்தானைத் தட்டி அனைத்தையும் சாட்டில் பார்க்கவும்)` : `\n\n(+${apps.length - 2} more schemes — tap 'Close' to view all in chat)`)
+    ? (lang === 'ta' ? `\n\n(மேலும் ${apps.length - 2} திட்டங்கள் உள்ளன)` : `\n\n(+${apps.length - 2} more schemes)`)
     : '';
 
   return {
     heading: `${s(lang, 'sc_heading')} (${apps.length})`,
     body: `${list}${note}`,
-    done: lang === 'ta' ? '❌ மூடு (அனைத்தையும் சாட்டில் பார்க்க)' : '❌ Close (View All in Chat)',
+    label: lang === 'ta' ? '23 பாஜக திட்டங்கள் (தேர்ந்தெடுக்கவும்)' : 'Browse & Apply (23 Schemes)',
+    schemes: schemesList,
+    btn_apply: lang === 'ta' ? '🟢 தேர்ந்தெடுக்கப்பட்ட திட்டத்திற்கு விண்ணப்பிக்க' : '🟢 Apply for Selected Scheme',
+    done: lang === 'ta' ? '❌ மூடு' : '❌ Close',
     apply: s(lang, 'sc_apply')
   };
-};
+}
 
-const buildReferral = async (user, lang) => {
+async function buildReferral(user, lang) {
   const count = await User.countDocuments({ referredBy: user.referralCode });
   const link = `${REFERRAL_BASE}/r/${user.referralCode}`;
   const body = lang === 'ta'
-    ? `உங்கள் இணைப்பு:\n${link}\n\n📊 மொத்த பரிந்துரைகள்: ${count}\n\nநண்பர்களுடன் பகிர்ந்து அரசு திட்டங்கள் பெற உதவுங்கள்! 🙏`
-    : `Your referral link:\n${link}\n\n📊 Total referrals: ${count}\n\nShare with friends & family to help them access welfare schemes! 🙏`;
+    ? `உங்கள் பரிந்துரை இணைப்பு:\n${link}\n\n📊 மொத்த பரிந்துரைகள்: ${count}\n\nநண்பர்களுடன் பகிர்ந்து அரசு திட்டங்கள் பெற உதவுங்கள்! 🙏`
+    : `Your Referral Link:\n${link}\n\n📊 Total Referrals: ${count}\n\nShare with friends & family to help them access welfare schemes! 🙏`;
   return { heading: s(lang, 'rl_heading'), body, done: s(lang, 'rl_done') };
-};
+}
 
-const buildReferrals = async (user, lang) => {
+async function buildReferrals(user, lang) {
   const refs = await User.find({ referredBy: user.referralCode }).sort({ createdAt: -1 }).limit(20);
-  const body = refs.length === 0
-    ? (lang === 'ta' ? 'இன்னும் யாரும் பதிவு செய்யவில்லை.' : 'No one has registered through your link yet.')
-    : refs.map((r, i) => `${i + 1}. ${r.voterName} — ${r.district} — ${formatDate(r.createdAt)}`).join('\n');
-  return { heading: `${s(lang, 'rf_heading')} (${refs.length})`, body, done: s(lang, 'rf_done') };
-};
+  if (refs.length === 0) {
+    const body = lang === 'ta'
+      ? 'இன்னும் யாரும் உங்கள் இணைப்பு மூலம் பதிவு செய்யவில்லை.\n\nஉங்கள் பரிந்துரை இணைப்பைப் பகிர்ந்து புதிய உறுப்பினர்களை இணையச் சொல்லுங்கள்! 🙏'
+      : 'No one has registered through your link yet.\n\nShare your referral link to invite voters to join! 🙏';
+    return { heading: `${s(lang, 'rf_heading')} (0)`, body, done: s(lang, 'rf_done') };
+  }
 
-const openBoothPresident = async (user, lang) => {
+  const list = refs.map((r, i) => {
+    const name = r.voterName || 'Voter';
+    const dist = r.district || '—';
+    const date = formatDate(r.createdAt);
+    return `${i + 1}. 👤 *${name}*\n   🏛️ ${dist} | 📅 ${date}`;
+  }).join('\n\n');
+
+  const footer = `\n\n📊 *${lang === 'ta' ? 'மொத்த பரிந்துரைகள்' : 'Total Referral Members'}: ${refs.length}*`;
+  return { heading: `${s(lang, 'rf_heading')} (${refs.length})`, body: `${list}${footer}`, done: s(lang, 'rf_done') };
+}
+
+async function openBoothPresident(user, lang) {
   const apps = await BoothPresidentApplication.find({ epicNo: user.epicNo }).sort({ appliedAt: -1 }).lean();
   const existing = apps.find(a => a.status === 'Approved')
                 || apps.find(a => a.status === 'Pending')
@@ -684,19 +762,27 @@ const openBoothPresident = async (user, lang) => {
       ? { Approved: 'அங்கீகரிக்கப்பட்டது ✅', Declined: 'நிராகரிக்கப்பட்டது ❌', Pending: 'ஆய்வில் உள்ளது ⏳' }
       : { Approved: 'Approved ✅', Declined: 'Declined ❌', Pending: 'Under Review ⏳' };
     const st = statusLabelMap[existing.status] || existing.status;
-    const heading = lang === 'ta' ? '🏛️ துறை தலைவர் விண்ணப்பம்' : '🏛️ Booth President Application';
+    const heading = lang === 'ta' ? '🏛️ துறை தலைவர் விண்ணப்ப நிலை' : '🏛️ Booth President Application Status';
     const body = lang === 'ta'
-      ? `உங்கள் விண்ணப்ப விவரங்கள்:\n\n📍 சாவடி: ${existing.targetBoothNo}\n🗳️ தொகுதி: ${existing.targetAssembly}\n🏛️ மாவட்டம்: ${existing.targetDistrict}\n📅 விண்ணப்பித்த தேதி: ${formatDate(existing.appliedAt)}\n\n📋 நிலை: ${st}`
-      : `Your application details:\n\n📍 Booth: ${existing.targetBoothNo}\n🗳️ Assembly: ${existing.targetAssembly}\n🏛️ District: ${existing.targetDistrict}\n📅 Applied: ${formatDate(existing.appliedAt)}\n\n📋 Status: ${st}`;
+      ? `📍 *சாவடி எண்:* சாவடி #${existing.targetBoothNo}\n` +
+        `🗳️ *தொகுதி:* ${existing.targetAssembly}\n` +
+        `🏛️ *மாவட்டம்:* ${existing.targetDistrict}\n` +
+        `📅 *விண்ணப்பித்த நாள்:* ${formatDate(existing.appliedAt)}\n` +
+        `📋 *நிலை:* ${st}`
+      : `📍 *Target Booth:* Booth #${existing.targetBoothNo}\n` +
+        `🗳️ *Assembly:* ${existing.targetAssembly}\n` +
+        `🏛️ *District:* ${existing.targetDistrict}\n` +
+        `📅 *Applied Date:* ${formatDate(existing.appliedAt)}\n` +
+        `📋 *Status:* ${st}`;
     return { screen: 'BP_SUBMITTED', data: { heading, body, done: s(lang, 'bp_done') } };
   }
 
   const body = lang === 'ta'
-    ? `உங்கள் பகுதியில் அதிகாரப்பூர்வ பாஜக துறை தலைவராக சேவை செய்யுங்கள்!\n\nஉங்கள் தற்போதைய சாவடி: ${user.assemblyName} - சாவடி ${user.boothNo}`
-    : `Serve your area as an official BJP Booth President!\n\nYour current booth: ${user.assemblyName} - Booth ${user.boothNo}`;
+    ? `உங்கள் பகுதியில் அதிகாரப்பூர்வ பாஜக துறை தலைவராக சேவை செய்யுங்கள்!\n\n📍 *தற்போதைய சாவடி:* ${user.assemblyName || 'Assembly'} - சாவடி #${user.boothNo}`
+    : `Serve your area as an official BJP Booth President!\n\n📍 *Current Booth:* ${user.assemblyName || 'Assembly'} - Booth #${user.boothNo}`;
   const options = lang === 'ta'
-    ? [ { id: 'registered', title: `✅ என் சாவடி (சாவடி ${user.boothNo})` }, { id: 'custom', title: '🔀 வேறு சாவடியைத் தேர்ந்தெடு' } ]
-    : [ { id: 'registered', title: `✅ My current booth (Booth ${user.boothNo})` }, { id: 'custom', title: '🔀 Choose a different booth' } ];
+    ? [ { id: 'registered', title: `✅ என் சாவடி (சாவடி #${user.boothNo})` }, { id: 'custom', title: '🔀 வேறு சாவடியைத் தேர்ந்தெடுக்கவும்' } ]
+    : [ { id: 'registered', title: `✅ My current booth (Booth #${user.boothNo})` }, { id: 'custom', title: '🔀 Choose a different booth' } ];
   return {
     screen: 'BOOTH_PRESIDENT',
     data: {
@@ -707,7 +793,9 @@ const openBoothPresident = async (user, lang) => {
       btn:   lang === 'ta' ? 'அடுத்து' : 'Next'
     }
   };
-};
+}
+
+
 
 const assembliesForDistrict = async (district) => {
   try {

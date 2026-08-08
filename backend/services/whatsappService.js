@@ -9,7 +9,7 @@ const TOKEN    = process.env.WHATSAPP_TOKEN;
 // BJP banner shown as the image header of the flow trigger message (public HTTPS URL).
 // IMPORTANT: Meta WhatsApp Cloud API only accepts JPEG or PNG.
 const BANNER_URL = process.env.WA_BANNER_URL ||
-  'https://res.cloudinary.com/dkjrdntf/image/upload/w_800,f_jpg/v1785563946/bjp_schemes/bjp_final_banner.jpg';
+  'https://res.cloudinary.com/dkjrdntf/image/upload/w_800,h_418,c_fill,f_jpg,q_auto/v1785563946/bjp_schemes/bjp_final_banner.jpg';
 
 // ── Core send helper ──────────────────────────────────────────────────────────
 const _post = async (payload) => {
@@ -35,6 +35,17 @@ const sendText = async (to, text) => {
     to,
     type: 'text',
     text: { body: text, preview_url: false }
+  });
+};
+
+// ── Send image message ────────────────────────────────────────────────────────
+const sendImage = async (to, imageUrl, caption = '') => {
+  return _post({
+    messaging_product: 'whatsapp',
+    recipient_type:    'individual',
+    to,
+    type: 'image',
+    image: { link: imageUrl, caption }
   });
 };
 
@@ -131,4 +142,31 @@ const uploadFlowJson = async (flowId, flowJsonString) => {
   return res.data;
 };
 
-module.exports = { sendText, triggerFlow, sendTemplate, uploadFlowJson };
+// ── Send interactive buttons message (under 1 image banner) ─────────────────
+const sendInteractiveButtons = async (to, headerImageUrl, bodyText, buttons) => {
+  const actionButtons = buttons.map(b => ({
+    type: 'reply',
+    reply: { id: b.id, title: b.title }
+  }));
+
+  const interactiveObj = {
+    type: 'button',
+    body: { text: bodyText },
+    footer: { text: 'BJP Tamil Nadu — Central Schemes' },
+    action: { buttons: actionButtons }
+  };
+
+  if (headerImageUrl) {
+    interactiveObj.header = { type: 'image', image: { link: headerImageUrl } };
+  }
+
+  return _post({
+    messaging_product: 'whatsapp',
+    recipient_type: 'individual',
+    to,
+    type: 'interactive',
+    interactive: interactiveObj
+  });
+};
+
+module.exports = { sendText, sendImage, triggerFlow, sendInteractiveButtons, sendTemplate, uploadFlowJson };
